@@ -1,5 +1,7 @@
 #import "template.typ": *
 
+// Take a look at the file `template.typ` in the file panel
+// to customize this template and discover how it works.
 #show: project.with(
   title: "Early infant microbiobial metabolism alters brain development",
   authors: (
@@ -8,8 +10,6 @@
     "Laurel Gabard-Durnam",
     "Vanja Klepac-Ceraj",
   ),
-  // Insert your abstract after the colon, wrapped in brackets.
-  // Example: `abstract: [This is my abstract...]`
   abstract: [
     Infancy is a critical window for brain development,
     and that development is shaped by numerous environmental factors.
@@ -20,17 +20,19 @@
 ],
 )
 
-// We generated the example code below so you can see how
-// your document will look. Go ahead and replace it with
-// your own content!
+// Leave comments like this
 
 = Introduction
-#lorem(60)
+
+The brain and the gut are ...
 
 = Results
-#lorem(100)
+
+Here are some results.
 
 #figure(caption: [Figure 1 - A caption])[#image(width: 50%, "placeholder.png")]
+
+And some more...
 
 = Discussion
 #lorem(50)
