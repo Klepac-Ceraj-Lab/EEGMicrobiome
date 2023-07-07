@@ -1,0 +1,31 @@
+image: 123marvin123/typst:0.3.0
+
+stages:
+  - build
+  - deploy
+
+compile_typst:
+    stage: build
+    script:
+        # Compile "main.typ" into "main.pdf"
+        - typst -v compile main.typ
+    artifacts:
+        # Store the PDF(s) as build artifacts so they survive to the next build step (and can be browsed by devs)
+        when: always
+        paths:
+            - ./*.pdf
+
+# From https://gitlab.com/pages/plain-html :
+pages:
+    stage: deploy
+    script:
+        - mkdir .public
+        - cp -r ./* .public
+        - rm -rf public
+        - mv .public public
+    artifacts:
+        paths:
+        - public
+    rules:
+        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
