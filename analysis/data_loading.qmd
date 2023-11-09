@@ -1,0 +1,17 @@
+# Load Data
+
+## Data Sources
+
+Use `Preferences.jl` to set the location of data files.
+
+```{julia}
+using Preferences
+using VKCComputing
+
+set_preferences!(VKCComputing,
+    "airtable_dir"     => "/brewster/kevin/scratch",
+    "mgx_analysis_dir" => "/grace/sequencing/processed/mgx/",
+    "mgx_raw_dir"      => "/grace/sequencing/raw/mgx/rawfastq/",
+    "readonly_pat"     => "patl4LYizNpcRq6cS.958d6be99d5ccb810f6b10d8e6510c6925a6ed8c9ee7a71235a04ac6f303a8c5",
+    "readwrite_pat"    => "<hidden>")
+```

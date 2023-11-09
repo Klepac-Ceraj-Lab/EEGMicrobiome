@@ -1,0 +1,18 @@
+name = "EEGMicrobiome"
+authors = ["Kevin Bonham PhD <kbonham@wellesley.edu>", "Emma Margolis <margolis.emm@northeastern.edu>", "Laurel Gabard-Durnham <l.gabard-durnam@northeastern.edu>", "Vanja Klepac-Ceraj <vklepacc@wellesley.edu"]
+version = "0.1.0"
+
+[deps]
+BiobakeryUtils = "fa5322f5-bd84-5069-834a-abf3230fb8f8"
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+FeatureSetEnrichments = "86280b8e-e847-4559-a126-2dcda5c07d84"
+GLM = "38e38edf-8417-5370-95a0-9cbb8c7f171a"
+HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
+Microbiome = "3bd8f0ae-a0f2-5238-a5af-e1b399a4940c"
+MultipleTesting = "f8716d33-7c4a-5097-896f-ce0ecbd3ef6b"
+Preferences = "21216c6a-2e73-6563-6e65-726566657250"
+VKCComputing = "329a1d7f-a79a-43b8-8671-feb503123859"
+
+[compat]
+julia = "1.10"
