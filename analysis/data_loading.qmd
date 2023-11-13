@@ -2,17 +2,35 @@
 
 ## Data Sources
 
-Use `Preferences.jl` to set the location of data files.
+### Microbiome
+
+Use `Preferences.jl` to set the location of microbiome data files.
 
 ```{julia}
 using Preferences
 using VKCComputing
 
 set_preferences!(VKCComputing,
-    "airtable_dir"     => "/brewster/kevin/scratch",
-    "mgx_analysis_dir" => "/grace/sequencing/processed/mgx/",
-    "mgx_raw_dir"      => "/grace/sequencing/raw/mgx/rawfastq/",
-    "readonly_pat"     => "patl4LYizNpcRq6cS.958d6be99d5ccb810f6b10d8e6510c6925a6ed8c9ee7a71235a04ac6f303a8c5",
-    "readwrite_pat"    => "<hidden>")
+    "airtable_dir"     => "/brewster/kevin/scratch", # where local airtable files will download to
+    "mgx_analysis_dir" => "/grace/sequencing/processed/mgx/", # path to microbiome "*_genefamilies.tsv" files
+    "readonly_pat"     => "patl4LYizNpcRq6cS.958d6be99d5ccb810f6b10d8e6510c6925a6ed8c9ee7a71235a04ac6f303a8c5" # enables reading sample metadata
+)
+```
+
+
+### EEG
+
+See `data/README.md` for data sources.
+
+## Loading data into memory
+
+
+
+```{julia}
+using EEGMicrobiome
+
+eeg = load_eeg()
+
+
 ```
 
