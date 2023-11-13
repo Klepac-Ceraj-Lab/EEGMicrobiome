@@ -15,3 +15,4 @@ set_preferences!(VKCComputing,
     "readonly_pat"     => "patl4LYizNpcRq6cS.958d6be99d5ccb810f6b10d8e6510c6925a6ed8c9ee7a71235a04ac6f303a8c5",
     "readwrite_pat"    => "<hidden>")
 ```
+
