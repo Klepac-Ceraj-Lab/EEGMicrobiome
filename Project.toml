@@ -14,6 +14,7 @@ HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
 Microbiome = "3bd8f0ae-a0f2-5238-a5af-e1b399a4940c"
 MultipleTesting = "f8716d33-7c4a-5097-896f-ce0ecbd3ef6b"
 Preferences = "21216c6a-2e73-6563-6e65-726566657250"
+ThreadsX = "ac1d9e8a-700a-412c-b207-f0111f4b6c0d"
 VKCComputing = "329a1d7f-a79a-43b8-8671-feb503123859"
 
 [compat]
