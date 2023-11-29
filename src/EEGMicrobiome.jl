@@ -2,7 +2,7 @@ module EEGMicrobiome
 
 export load_eeg,
        load_microbiome,
-       load_taxonomic_profiles!
+       load_taxonomic_profiles!,
        load_functional_profiles!
 
 using CSV
@@ -12,6 +12,8 @@ using VKCComputing
 using Preferences
 using BiobakeryUtils: metaphlan_profiles
 using ThreadsX
+using HypothesisTests: MannWhitneyUTest, pvalue
+using MultipleTesting: adjust, BenjaminiHochberg
 using GLM
 
 
@@ -53,7 +55,8 @@ function load_microbiome(subjects)
     subset!(df, :seqprep_ids=> ByRow(s-> !ismissing(s) && base[s][:keep] == 1)) 
     df.seqprep = [base[rec][:uid] for rec in df.seqprep_ids]
     df.age = Union{Missing, Float64}[get(base[rec], :subject_age, missing) for rec in df.biospecimen_ids]
-    return select(df, "subject", "biospecimen", "seqprep", "age")
+    df.visit = [ismissing(first(get(base[rec], :visit, [missing]))) ? missing : base[first(base[rec][:visit])][:uid] for rec in df.biospecimen_ids]
+    return select(df, "subject", "biospecimen", "seqprep", "age", "visit")
     
 end
 
@@ -107,6 +110,7 @@ end
 function runlms(indf, outfile, respcol, featurecols;
                 age_col = "age",
                 formula = term(:func) ~ term(respcol) + term(age_col) + term(:n_segments),
+                prevalence_filter = 0.05
         )
         @debug "Respcol: $respcol"
     lmresults = DataFrame(ThreadsX.map(featurecols) do feature
@@ -115,7 +119,10 @@ function runlms(indf, outfile, respcol, featurecols;
         # ab = collect(indf[!, feature] .+ (minimum(indf[over0, feature])) / 2) # add half-minimum non-zerovalue
         df = select(indf, respcol, age_col, "n_segments")
         over0 = indf[!, feature] .> 0
+        default_ret = (; feature, Name = respcol, coef = NaN, std_err = NaN, z = NaN, pvalue = NaN, lower_95 = NaN, upper_95 = NaN, qvalue = NaN)
         
+        (sum(skipmissing(over0)) / length(over0)) > prevalence_filter || return default_ret
+
         df.func = over0
         # @debug "DataFrame: $df"
 
@@ -128,12 +135,12 @@ function runlms(indf, outfile, respcol, featurecols;
             return NamedTuple(only(filter(row-> row.Name == respcol, eachrow(ct))))    
         catch e
             @warn "hit $e for $feature"
-            return (; feature, Name = respcol, coef = NaN, std_err = NaN, z = NaN, pvalue = NaN, lower_95 = NaN, upper_95 = NaN, qvalue = NaN)
+            return default_ret
         end
     end)
 
     subset!(lmresults, "pvalue"=> ByRow(!isnan))
-    DataFrames.transform!(lmresults, :pvalue => (col-> MultipleTesting.adjust(collect(col), BenjaminiHochberg())) => :qvalue)
+    DataFrames.transform!(lmresults, :pvalue => (col-> adjust(collect(col), BenjaminiHochberg())) => :qvalue)
     sort!(lmresults, :qvalue)
 
     CSV.write(outfile, lmresults)
