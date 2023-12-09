@@ -109,6 +109,7 @@ end
 
 function runlms(indf, outfile, respcol, featurecols;
                 age_col = "age",
+                additional_cols = Symbol[],
                 formula = term(:func) ~ term(respcol) + term(age_col) + term(:n_segments),
                 prevalence_filter = 0.05
         )
@@ -117,7 +118,7 @@ function runlms(indf, outfile, respcol, featurecols;
         # @debug "Feature: $feature"
 
         # ab = collect(indf[!, feature] .+ (minimum(indf[over0, feature])) / 2) # add half-minimum non-zerovalue
-        df = select(indf, respcol, age_col, "n_segments")
+        df = select(indf, respcol, age_col, "n_segments", additional_cols...)
         over0 = indf[!, feature] .> 0
         default_ret = (; feature, Name = respcol, coef = NaN, std_err = NaN, z = NaN, pvalue = NaN, lower_95 = NaN, upper_95 = NaN, qvalue = NaN)
         

@@ -5,6 +5,7 @@ using DataFrames
 using CSV
 using HypothesisTests
 using MultipleTesting
+using GLM
 
 # load data
 eeg = load_eeg()
@@ -12,7 +13,7 @@ eeg.peak_latency_P1_corrected = eeg.peak_latency_P1 .- eeg.peak_latency_N1
 eeg.peak_latency_N2_corrected = eeg.peak_latency_N2 .- eeg.peak_latency_P1
 eeg.peak_amp_P1_corrected = eeg.peak_amp_P1 .- eeg.peak_amp_N1
 eeg.peak_amp_N2_corrected = eeg.peak_amp_N2 .- eeg.peak_amp_P1
-
+rename!(eeg, "age"=> "eeg_age")
 mbo = load_microbiome(eeg.subject)
 
 load_taxonomic_profiles!(mbo)
@@ -27,11 +28,14 @@ mbotps = Tuple((select(
                 subset(mbo, "visit"=> ByRow(v-> !ismissing(v) && v == "$(tp)o"), "subject"=> ByRow(!ismissing)),
                 "subject"
             ), 
-            "subject", "age"=>"stool_age", "seqprep"=>"sample", Cols(Not("age")))
+            "subject", "age"=>"stool_age", "seqprep"=>"sample", "age", Cols(:))
         for tp in tps
 ))
 
 eeg_features = names(eeg, r"peak_")
+
+na_map = FeatureSetEnrichments.get_neuroactive_unirefs()
+na_map_full = FeatureSetEnrichments.get_neuroactive_unirefs(; consolidate=false)
 
 ## Run Linear models
 
@@ -42,9 +46,8 @@ for (tp, df) in zip(tps, mbotps)
     tpi = parse(Int, match(r"\d+", tp).match)
     subeeg = subset(eeg, "timepoint"=> ByRow(==(tp)))
     leftjoin!(subeeg, df; on=:subject)
-    subset!(subeeg, "seqprep"=> ByRow(!ismissing))
+    subset!(subeeg, "sample"=> ByRow(!ismissing))
     for feature in eeg_features
-        contains(feature, "corrected") || continue
         EEGMicrobiome.runlms(subeeg, "./data/outputs/lms/$(feature)_$(tp)_lms.csv", feature, names(subeeg, r"^UniRef"))
     end
 end
@@ -58,10 +61,13 @@ let
     df = mbotps[1]
     subeeg = subset(eeg, "timepoint"=> ByRow(==("6m")))
     leftjoin!(subeeg, df; on=:subject)
-    subset!(subeeg, "seqprep"=> ByRow(!ismissing))
-    @info "$tp microbiome vs 6m eeg, N = $(size(subeeg, 1))"
+    transform!(subeeg, AsTable(["age", "eeg_age"])=> ByRow(nt-> nt.eeg_age - nt.age) => "age_diff")
+    subset!(subeeg, "sample"=> ByRow(!ismissing))
     for feature in eeg_features
-        EEGMicrobiome.runlms(subeeg, "./data/outputs/lms/$(feature)_$(tp)_future6m_lms.csv", feature, names(subeeg, r"^UniRef"))
+        EEGMicrobiome.runlms(subeeg, "./data/outputs/lms/$(feature)_$(tp)_future6m_lms.csv", feature, names(subeeg, r"^UniRef");
+            additional_cols = [:age_diff],
+            formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
+        )
     end
 end
 
@@ -72,10 +78,13 @@ let
     df = mbotps[1]
     subeeg = subset(eeg, "timepoint"=> ByRow(==("12m")))
     leftjoin!(subeeg, df; on=:subject)
-    subset!(subeeg, "seqprep"=> ByRow(!ismissing))
-    @info "$tp microbiome vs 12m eeg, N = $(size(subeeg, 1))"
+    subset!(subeeg, "sample"=> ByRow(!ismissing))
+    transform!(subeeg, AsTable(["age", "eeg_age"])=> ByRow(nt-> nt.eeg_age - nt.age) => "age_diff")
     for feature in eeg_features
-        EEGMicrobiome.runlms(subeeg, "./data/outputs/lms/$(feature)_$(tp)_future12m_lms.csv", feature, names(subeeg, r"^UniRef"))
+        EEGMicrobiome.runlms(subeeg, "./data/outputs/lms/$(feature)_$(tp)_future12m_lms.csv", feature, names(subeeg, r"^UniRef");
+            additional_cols = [:age_diff],
+            formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
+        )
     end
 end
 
@@ -87,17 +96,20 @@ let
     df = mbotps[2]
     subeeg = subset(eeg, "timepoint"=> ByRow(==("12m")))
     leftjoin!(subeeg, df; on=:subject)
-    subset!(subeeg, "seqprep"=> ByRow(!ismissing))
-    @info "$tp microbiome vs 12m eeg, N = $(size(subeeg, 1))"
+    subset!(subeeg, "sample"=> ByRow(!ismissing))
+    transform!(subeeg, AsTable(["age", "eeg_age"])=> ByRow(nt-> nt.eeg_age - nt.age) => "age_diff")
     for feature in eeg_features
-        EEGMicrobiome.runlms(subeeg, "./data/outputs/lms/$(feature)_$(tp)_future12m_lms.csv", feature, names(subeeg, r"^UniRef"))
+        EEGMicrobiome.runlms(subeeg, "./data/outputs/lms/$(feature)_$(tp)_future12m_lms.csv", feature, names(subeeg, r"^UniRef");
+            additional_cols = [:age_diff],
+            formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
+        )
     end
 end
 
 ## Run FSEA
 
-na_map = FeatureSetEnrichments.get_neuroactive_unirefs()
-na_map_full = FeatureSetEnrichments.get_neuroactive_unirefs(; consolidate=false)
+
+#-
 
 fsea_df = let fsea_df = DataFrame()
     for tp in tps, feature in eeg_features
@@ -131,7 +143,7 @@ CSV.write("data/outputs/fsea/true_ages_fsea.csv", fsea_df)
 
 future12m_fsea_df = let fsea_df = DataFrame()
     for tp in ("3m", "6m"), feature in eeg_features
-        contains(feature, "corrected") && continue
+        # contains(feature, "corrected") && continue
         filepath = "./data/outputs/lms/$(feature)_$(tp)_future12m_lms.csv"
         lms = CSV.read(filepath, DataFrame)
 
@@ -161,7 +173,7 @@ CSV.write("data/outputs/fsea/future12m_true_ages_fsea.csv", future12m_fsea_df)
 
 future6m_fsea_df = let fsea_df = DataFrame()
     for feature in eeg_features
-        contains(feature, "corrected") && continue
+        # contains(feature, "corrected") && continue
         tp = "3m"
         filepath = "./data/outputs/lms/$(feature)_$(tp)_future6m_lms.csv"
         lms = CSV.read(filepath, DataFrame)
@@ -268,7 +280,7 @@ let
     df = mbotps[1]
     subeeg = subset(eeg, "timepoint"=> ByRow(==("6m")))
     leftjoin!(subeeg, df; on=:subject)
-    subset!(subeeg, "seqprep"=> ByRow(!ismissing))
+    subset!(subeeg, "sample"=> ByRow(!ismissing))
     @info "$tp microbiome vs 6m eeg, N = $(size(subeeg, 1))"
 end
 let
@@ -276,7 +288,7 @@ let
     df = mbotps[1]
     subeeg = subset(eeg, "timepoint"=> ByRow(==("12m")))
     leftjoin!(subeeg, df; on=:subject)
-    subset!(subeeg, "seqprep"=> ByRow(!ismissing))
+    subset!(subeeg, "sample"=> ByRow(!ismissing))
     @info "$tp microbiome vs 12m eeg, N = $(size(subeeg, 1))"
 end
 let
@@ -284,6 +296,6 @@ let
     df = mbotps[2]
     subeeg = subset(eeg, "timepoint"=> ByRow(==("12m")))
     leftjoin!(subeeg, df; on=:subject)
-    subset!(subeeg, "seqprep"=> ByRow(!ismissing))
+    subset!(subeeg, "sample"=> ByRow(!ismissing))
     @info "$tp microbiome vs 12m eeg, N = $(size(subeeg, 1))"
 end
