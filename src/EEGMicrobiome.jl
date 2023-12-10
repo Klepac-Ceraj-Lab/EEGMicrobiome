@@ -16,10 +16,8 @@ using HypothesisTests: MannWhitneyUTest, pvalue
 using MultipleTesting: adjust, BenjaminiHochberg
 using GLM
 
-
 include("data_loading.jl")
 include("lms.jl")
 include("bugs.jl")
-
 
 end
