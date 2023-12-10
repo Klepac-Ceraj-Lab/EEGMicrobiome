@@ -134,7 +134,7 @@ end
 transform!(fsea_df, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "q₀")
 transform!(groupby(fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
 transform!(groupby(fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
-
+sort!(fsea_df, "q₀")
 CSV.write("data/outputs/fsea/true_ages_fsea.csv", fsea_df)
 
 #- 
@@ -165,7 +165,7 @@ end
 transform!(future12m_fsea_df, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "q₀")
 transform!(groupby(future12m_fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
 transform!(groupby(future12m_fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
-
+sort!(future12m_fsea_df, "q₀")
 CSV.write("data/outputs/fsea/future12m_true_ages_fsea.csv", future12m_fsea_df)
 # future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_true_ages_fsea.csv", DataFrame)
 
@@ -196,7 +196,7 @@ end
 transform!(future6m_fsea_df, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "q₀")
 transform!(groupby(future6m_fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
 transform!(groupby(future6m_fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
-
+sort!(future6m_fsea_df, "q₀")
 CSV.write("data/outputs/fsea/future6m_true_ages_fsea.csv", future6m_fsea_df)
 # future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_true_ages_fsea.csv", DataFrame)
 
