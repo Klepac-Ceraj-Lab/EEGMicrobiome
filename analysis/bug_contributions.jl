@@ -37,13 +37,17 @@ eeg_features = names(eeg, r"peak_")
 na_map = FeatureSetEnrichments.get_neuroactive_unirefs()
 na_map_full = FeatureSetEnrichments.get_neuroactive_unirefs(; consolidate=false)
 
-humann_files = filter(readdir(joinpath(load_preference(VKCComputing, "mgx_analysis_dir"), "humann", "main"); join=true)) do f
-    m = match(r"(SEQ\d+)", f)
-    isnothing(m) && return false
+humann_files = Dict(seq => df for (seq, df) in filter(!isnothing, 
+    map(readdir(joinpath(load_preference(VKCComputing, "mgx_analysis_dir"), "humann", "main"); join=true)) do f
+        m = match(r"(SEQ\d+)", f)
+        isnothing(m) && return nothing
 
-    contains(basename(f), "genefamilies.tsv") &&
-    m[1] ∈ mbo.seqprep
-end
+        if contains(basename(f), "genefamilies.tsv") && m[1] ∈ mbo.seqprep
+            return (String(m[1]), CSV.read(f, DataFrame))
+        else
+            return nothing
+        end
+end))
 
 #-
 

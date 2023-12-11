@@ -136,6 +136,7 @@ transform!(groupby(fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collect(p), Ben
 transform!(groupby(fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
 sort!(fsea_df, "q₀")
 CSV.write("data/outputs/fsea/true_ages_fsea.csv", fsea_df)
+# fsea_df = CSV.read("data/outputs/fsea/true_ages_fsea.csv", DataFrame)
 
 #- 
 
@@ -272,9 +273,111 @@ for i in eachindex(eeg_features), j in eachindex(eeg_features)
 end
 
 fig
-
 #-
 
+using Distances
+using Clustering
+
+fsea_sig = subset(groupby(fsea_df, ["geneset", "timepoint"]), "q₀"=> (col-> any(<(0.2), col)))
+transform!(fsea_sig, AsTable(["es", "q₀"])=> ByRow(nt-> -log(nt.q₀ + 0.00005 ) * nt.es) => "scaled_es")
+
+fsea_es = unstack(fsea_sig, ["geneset", "timepoint"], "eeg_feature", "scaled_es")
+fsea_q = unstack(fsea_sig, ["geneset", "timepoint"], "eeg_feature", "q₀")
+
+es_mat = collect(Matrix(fsea_es[!, 3:end])')
+q_mat = collect(Matrix(fsea_q[!, 3:end])')
+
+dm_genesets = pairwise(Euclidean(), es_mat)
+for i in eachindex(dm_genesets)
+    isnan(dm_genesets[i]) && (dm_genesets[i] = 1.0)
+end
+dm_eeg = pairwise(Euclidean(), es_mat')
+hcl_genesets = hclust(dm_genesets; linkage=:average, branchorder=:optimal)
+hcl_eeg = hclust(dm_eeg; linkage=:average, branchorder=:optimal)
+
+
+#- 
+
+fig = Figure(; size=(900, 900))
+
+ylab = fsea_es.timepoint .* " " .* replace(fsea_es.geneset[hcl_genesets.order],
+            "synthesis"=>"syn.",
+            "degredation"=>"deg."
+            )
+
+ax = Axis(fig[1,1]; xticks = (1:size(es_mat, 1), replace.(names(fsea_es, r"peak_"), "peak_"=>"")[hcl_eeg.order]),
+                    yticks = (1:size(es_mat, 2), ylab),
+                    xticklabelrotation = π / 2)
+
+hm = heatmap!(ax, es_mat[hcl_eeg.order, hcl_genesets.order]; colormap = :RdBu, colorrange=(-4, 4))
+
+let q_ord = @view q_mat[hcl_eeg.order, hcl_genesets.order]
+    es_ord = @view es_mat[hcl_eeg.order, hcl_genesets.order]
+    for ci in CartesianIndices(q_ord)
+        c = abs(es_ord[ci]) < 0.7 ? :black : :lightgray
+        # text!(ax, string(round(es_ord[ci], digits=2)); position=(ci[1],ci[2]), align=(:center, :center), color=c)
+        p = q_ord[ci]
+        stars = p < 0.001 ? "***" : p < 0.05 ? "**" : p < 0.2 ? "*" : ""
+        text!(ax, stars; position=(ci[1],ci[2]), align=(:center, :center), color=c)
+    end
+end
+
+Colorbar(fig[1,2], hm; label = "enrichment score")
+
+save("./data/figures/concurrent_heatmatp.png", fig)
+fig
+#-
+
+fsea_sig = subset(groupby(vcat(future6m_fsea_df, future12m_fsea_df), ["geneset", "timepoint"]), "q₀"=> (col-> any(<(0.2), col)))
+transform!(fsea_sig, AsTable(["es", "q₀"])=> ByRow(nt-> nt.q₀ <= 0.2 ? nt.es : nt.es < 0 ? -0.1 : 0.1)=> "es")
+
+fsea_es = unstack(fsea_sig, ["geneset", "timepoint"], "eeg_feature", "es")
+fsea_q = unstack(fsea_sig, ["geneset", "timepoint"], "eeg_feature", "q₀")
+
+es_mat = collect(Matrix(fsea_es[!, 3:end])')
+q_mat = collect(Matrix(fsea_q[!, 3:end])')
+
+dm_genesets = pairwise(Euclidean(), es_mat)
+for i in eachindex(dm_genesets)
+    isnan(dm_genesets[i]) && (dm_genesets[i] = 1.0)
+end
+dm_eeg = pairwise(Euclidean(), es_mat')
+hcl_genesets = hclust(dm_genesets; linkage=:average, branchorder=:optimal)
+hcl_eeg = hclust(dm_eeg; linkage=:average, branchorder=:optimal)
+
+
+#- 
+
+fig = Figure(; size=(900, 900))
+
+ylab = fsea_es.timepoint .* " " .* replace(fsea_es.geneset[hcl_genesets.order],
+            "synthesis"=>"syn.",
+            "degredation"=>"deg."
+            )
+
+ax = Axis(fig[1,1]; xticks = (1:size(es_mat, 1), replace.(names(fsea_es, r"peak_"), "peak_"=>"")[hcl_eeg.order]),
+                    yticks = (1:size(es_mat, 2), ylab),
+                    xticklabelrotation = π / 2)
+
+hm = heatmap!(ax, es_mat[hcl_eeg.order, hcl_genesets.order]; colormap = :RdBu)
+
+let q_ord = @view q_mat[hcl_eeg.order, hcl_genesets.order]
+    es_ord = @view es_mat[hcl_eeg.order, hcl_genesets.order]
+    for ci in CartesianIndices(q_ord)
+        c = abs(es_ord[ci]) < 0.7 ? :black : :lightgray
+        # text!(ax, string(round(es_ord[ci], digits=2)); position=(ci[1],ci[2]), align=(:center, :center), color=c)
+        p = q_ord[ci]
+        stars = p < 0.001 ? "***" : p < 0.05 ? "**" : p < 0.2 ? "*" : ""
+        text!(ax, stars; position=(ci[1],ci[2]), align=(:center, :center), color=c)
+    end
+end
+
+Colorbar(fig[1,2], hm; label = "enrichment score")
+
+save("./data/figures/future_heatmatp.png", fig)
+fig
+
+#-
 let
     tp = "3m"
     df = mbotps[1]
