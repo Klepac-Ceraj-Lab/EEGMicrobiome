@@ -66,9 +66,13 @@ humann_files = mapreduce(vcat, readdir(joinpath(load_preference(VKCComputing, "m
         return DataFrame()
     end
 end
+
 transform!(humann_files, "species" => ByRow(s -> begin
     s == "unclassified" && return (; genus="unclassified", species="unclassified")
-    (; zip([:genus, :species], split(s, "."))...)
+    (g, s) = split(s, ".")
+
+    contains(g, "_unclassified") && return (; genus=replace(g, "_unclassified"=>""), species="unclassified")
+    (; genus=g, species=s)
 end) => ["genus", "species"]
 )
 
@@ -92,29 +96,22 @@ end
 
 #-
 
+topgenera = mapreduce(vcat, eachrow(subset(fsea_results, "q₀" => ByRow(<(0.2))))) do row
+    tp = row.timepoint
+    gs = row.geneset
+    eeg_feat = row.eeg_feature
 
+    unirefs = na_map[gs]
 
-unirefs = na_map[gs]
+    df = subset(humann_files, "uniref" => ByRow(u -> u ∈ unirefs))
+    df = grouptop(df, 10)
+    df = sort(combine(groupby(df, "genus"), "abundance"=>sum => "abundance"), "abundance"; rev=true)
 
-subdf = let df = subset(humann_files, "uniref" => ByRow(u -> u ∈ unirefs))
-    df2 = leftjoin(mbotps[i], grouptop(df); on="sample")
-    df2 = leftjoin!(select(df2, "visit"=> "timepoint", Cols(:)), select(eeg, "subject", "timepoint", eeg_feat); on=["subject", "timepoint"])
-    subset!(df2, AsTable(["genus", "eeg_age"])=> ByRow(nt-> !any(ismissing, values(nt))))
+    df.timepoint .= tp
+    df.geneset .= gs
+    df.eeg_feature .= eeg_feat
+    df
 end
-
-function sqridx(i)
-    n = isqrt(i)
-    j = i - n*n
-    return j == 0 ? (n, n) :
-           j <= n ? (j, n+1) :
-           (n+1, 2*n+1-j)
-end
-
-cs = Dict(bug=> i for (i, bug) in enumerate(sort(unique(subdf.genus))))
-subdf.color = map(x -> cs[x], subdf.genus)
-
-
-
 
 
 #-
