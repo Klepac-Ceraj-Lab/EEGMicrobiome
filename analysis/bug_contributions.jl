@@ -102,10 +102,6 @@ subdf = let df = subset(humann_files, "uniref" => ByRow(u -> u ∈ unirefs))
     subset!(df2, AsTable(["genus", "eeg_age"])=> ByRow(nt-> !any(ismissing, values(nt))))
 end
 
-cs = Dict(bug=> i for (i, bug) in enumerate(sort(unique(subdf."genus"))))
-subdf.color = map(x -> cs[x], subdf.genus)
-
-
 function sqridx(i)
     n = isqrt(i)
     j = i - n*n
@@ -113,6 +109,11 @@ function sqridx(i)
            j <= n ? (j, n+1) :
            (n+1, 2*n+1-j)
 end
+
+cs = Dict(bug=> i for (i, bug) in enumerate(sort(unique(subdf.genus))))
+subdf.color = map(x -> cs[x], subdf.genus)
+
+
 
 
 
