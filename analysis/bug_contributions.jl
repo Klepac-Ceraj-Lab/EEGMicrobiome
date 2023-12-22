@@ -71,7 +71,7 @@ transform!(humann_files, "species" => ByRow(s -> begin
     s == "unclassified" && return (; genus="unclassified", species="unclassified")
     (g, s) = split(s, ".")
 
-    contains(g, "_unclassified") && return (; genus=replace(g, "_unclassified"=>""), species="unclassified")
+    contains(g, "_unclassified") && return (; genus=replace(g, "_unclassified"=>""), species=s)
     (; genus=g, species=s)
 end) => ["genus", "species"]
 )
@@ -113,6 +113,25 @@ topgenera = mapreduce(vcat, eachrow(subset(fsea_results, "q₀" => ByRow(<(0.2))
     df
 end
 
+topspecies = mapreduce(vcat, eachrow(subset(fsea_results, "q₀" => ByRow(<(0.2))))) do row
+    tp = row.timepoint
+    gs = row.geneset
+    eeg_feat = row.eeg_feature
+
+    unirefs = na_map[gs]
+
+    df = subset(humann_files, "uniref" => ByRow(u -> u ∈ unirefs))
+    df = grouptop(df, 10; groupcol="species")
+    df = sort(combine(groupby(df, "species"), "abundance"=>sum => "abundance"), "abundance"; rev=true)
+
+    df.timepoint .= tp
+    df.geneset .= gs
+    df.eeg_feature .= eeg_feat
+    df
+end
+
+CSV.write("data/outputs/fsea_top_genera.csv", topgenera)
+CSV.write("data/outputs/fsea_top_species.csv", topspecies)
 
 #-
 
@@ -145,4 +164,21 @@ for row in eachrow(subset(fsea_results, "q₀" => ByRow(<(0.2))))
     save(joinpath("data", "figures", "bugs", "$(tp)_$(gs)_$(eeg_feat).png"), fig)
 end
     
+#-
 
+specs = Set(String[])
+genera = Set(String[])
+foreach(readdir(joinpath(load_preference(VKCComputing, "mgx_analysis_dir"), "humann", "main"); join=true)) do f
+    m = match(r"(SEQ\d+)", f)
+    isnothing(m) && return nothing
+    sample = replace(basename(f), r"(SEQ\d+)_S\d+.+" => s"\1")
+    sample ∈ mbo.seqprep || return nothing
+    if contains(basename(f), "genefamilies.tsv") && m[1] ∈ mbo.seqprep
+        @info basename(f)
+        spec = CSV.read(f, DataFrame)[!, 1]
+        filter!(spec -> contains(spec, "|"), spec)
+        newspecs = Set(split(s, "|")[2] for s in spec)
+        union!(specs, newspecs)
+        union!(genera, Set(split(s, ".")[1] for s in newspecs))
+    end
+end
