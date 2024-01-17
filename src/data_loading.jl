@@ -37,6 +37,7 @@ function load_microbiome(subjects)
     df.seqprep = [base[rec][:uid] for rec in df.seqprep_ids]
     df.age = Union{Missing, Float64}[get(base[rec], :subject_age, missing) for rec in df.biospecimen_ids]
     df.visit = [ismissing(first(get(base[rec], :visit, [missing]))) ? missing : base[first(base[rec][:visit])][:uid] for rec in df.biospecimen_ids]
+    unique!(df)
     return select(df, "subject", "biospecimen", "seqprep", "age", "visit")
     
 end
@@ -85,4 +86,15 @@ function load_functional_profiles!(mbiome_tab)
         gfs_wide[!, n] = coalesce.(gfs_wide[!, n], 0.)
     end
     leftjoin!(mbiome_tab, gfs_wide; on=:seqprep)
+end
+
+function load_cohort(cohort)
+    tab = CSV.read("data/outputs/cohort_tables/$(cohort).csv", DataFrame)
+    files = filter(f-> contains(basename(f), "profile") && match(r"SEQ\d+", basename(f)).match ∈ tab.seqprep,
+                   readdir("/grace/sequencing/processed/mgx/metaphlan/"; join = true)
+    )  
+    comm = metaphlan_profiles(files)
+    comm = CommunityProfile(abundances(comm), features(comm), MicrobiomeSample.(replace.(samplenames(comm), r"_S\d+_profile"=>""))) 
+    set!(comm, select(tab, "seqprep"=>"sample"))
+    return comm
 end

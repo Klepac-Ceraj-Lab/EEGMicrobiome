@@ -7,7 +7,7 @@ using HypothesisTests
 using MultipleTesting
 using GLM
 
-# load data
+#kload data
 eeg = load_eeg()
 eeg.peak_latency_P1_corrected = eeg.peak_latency_P1 .- eeg.peak_latency_N1
 eeg.peak_latency_N2_corrected = eeg.peak_latency_N2 .- eeg.peak_latency_P1
