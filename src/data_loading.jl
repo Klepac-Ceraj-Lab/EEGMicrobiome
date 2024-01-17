@@ -95,6 +95,6 @@ function load_cohort(cohort)
     )  
     comm = metaphlan_profiles(files)
     comm = CommunityProfile(abundances(comm), features(comm), MicrobiomeSample.(replace.(samplenames(comm), r"_S\d+_profile"=>""))) 
-    set!(comm, select(tab, "seqprep"=>"sample"))
+    set!(comm, select(tab, "seqprep"=>"sample", Cols(:)))
     return comm
 end

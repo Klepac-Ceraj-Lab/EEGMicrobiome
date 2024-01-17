@@ -6,6 +6,8 @@ export load_eeg,
        load_functional_profiles!,
        load_cohort
 
+export plot_pcoa!
+
 using CSV
 using DataFrames
 using Chain
@@ -17,9 +19,12 @@ using ThreadsX
 using HypothesisTests: MannWhitneyUTest, pvalue
 using MultipleTesting: adjust, BenjaminiHochberg
 using GLM
+using MultivariateStats
+using CairoMakie
 
 include("data_loading.jl")
 include("lms.jl")
 include("bugs.jl")
+include("plotting.jl")
 
 end
