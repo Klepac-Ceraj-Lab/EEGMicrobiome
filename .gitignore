@@ -2,3 +2,4 @@
 LocalPreferences.toml
 *.csv
 .envrc
+data/*
