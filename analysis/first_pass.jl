@@ -8,6 +8,12 @@ using MultipleTesting
 using GLM
 
 #kload data
+concurrent_3m = load_cohort("concurrent_3m")
+concurrent_6m = load_cohort("concurrent_6m")
+concurrent_12m = load_cohort("concurrent_12m")
+future_3m6m = load_cohort("future_3m6m")
+future_3m12m = load_cohort("future_3m12m")
+future_6m12m = load_cohort("future_6m12m")
 eeg = load_eeg()
 eeg.peak_latency_P1_corrected = eeg.peak_latency_P1 .- eeg.peak_latency_N1
 eeg.peak_latency_N2_corrected = eeg.peak_latency_N2 .- eeg.peak_latency_P1
@@ -32,7 +38,8 @@ mbotps = Tuple((select(
         for tp in tps
 ))
 
-eeg_features = names(eeg, r"peak_")
+eeg_features = "peak_latency_" .* ["N1", "P1_corrected", "N2_corrected"]
+eeg_features = [eeg_features; replace.(eeg_features, "latency"=>"amp")]
 
 na_map = FeatureSetEnrichments.get_neuroactive_unirefs()
 na_map_full = FeatureSetEnrichments.get_neuroactive_unirefs(; consolidate=false)
@@ -135,7 +142,7 @@ transform!(fsea_df, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "
 transform!(groupby(fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
 transform!(groupby(fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
 sort!(fsea_df, "q₀")
-CSV.write("data/outputs/fsea/true_ages_fsea.csv", fsea_df)
+CSV.write("data/outputs/fsea/concurrent_consolidated_fsea.csv", fsea_df)
 # fsea_df = CSV.read("data/outputs/fsea/true_ages_fsea.csv", DataFrame)
 
 #- 
@@ -167,7 +174,7 @@ transform!(future12m_fsea_df, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochbe
 transform!(groupby(future12m_fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
 transform!(groupby(future12m_fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
 sort!(future12m_fsea_df, "q₀")
-CSV.write("data/outputs/fsea/future12m_true_ages_fsea.csv", future12m_fsea_df)
+CSV.write("data/outputs/fsea/future12m_consolidated_fsea.csv", future12m_fsea_df)
 # future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_true_ages_fsea.csv", DataFrame)
 
 #-
@@ -198,7 +205,7 @@ transform!(future6m_fsea_df, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochber
 transform!(groupby(future6m_fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
 transform!(groupby(future6m_fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
 sort!(future6m_fsea_df, "q₀")
-CSV.write("data/outputs/fsea/future6m_true_ages_fsea.csv", future6m_fsea_df)
+CSV.write("data/outputs/fsea/future6m_consolidated_fsea.csv", future6m_fsea_df)
 # future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_true_ages_fsea.csv", DataFrame)
 
 #- 
