@@ -1,6 +1,8 @@
 using EEGMicrobiome
 using ThreadsX
+using Chain
 using VKCComputing
+using Distributions
 using CSV
 using DataFrames
 using CairoMakie
@@ -66,3 +68,76 @@ p = plot_pcoa!(ax, pcoa(gfscomm); color=get(gfscomm, :age))
 Colorbar(figure[1,2], p; label="age (months)")
 
 save("data/figures/pcoas/concurrent_all_functions_age.png", figure)
+
+##
+
+figure = Figure(; size=(1200,800))
+ax1 = Axis(figure[1,1]; xticks=(1:2, ["stool", "eeg"]), ylabel="age (months)", title="3m stool -> 6m eeg")
+ax2 = Axis(figure[1,2]; xticks=(1:2, ["stool", "eeg"]), ylabel="age (months)", title="3m stool -> 12m eeg")
+ax3 = Axis(figure[1,3]; xticks=(1:2, ["stool", "eeg"]), ylabel="age (months)", title="3m stool -> 12m eeg")
+
+let df = DataFrame(get(future_3m6m))
+    xs1 = 1 .+ rand(Normal(0.0, 0.05), size(df, 1))
+    xs2 = 2 .+ rand(Normal(0.0, 0.05), size(df, 1))
+    violin!(ax1, repeat([1,2]; inner=size(df,1)), [df.age; df.eeg_age]; color=:gray80)
+    scatter!(ax1, [xs1; xs2], [df.age; df.eeg_age]; color=(:gray50,0.5))
+    foreach(i-> lines!(ax1, [xs1[i], xs2[i]], [df.age[i], df.eeg_age[i]]; color=:gray50), eachindex(xs1))
+end
+let df = DataFrame(get(future_3m12m))
+    xs1 = 1 .+ rand(Normal(0.0, 0.05), size(df, 1))
+    xs2 = 2 .+ rand(Normal(0.0, 0.05), size(df, 1))
+    violin!(ax2, repeat([1,2]; inner=size(df,1)), [df.age; df.eeg_age]; color=:gray80)
+    scatter!(ax2, [xs1; xs2], [df.age; df.eeg_age]; color=(:gray50,0.5))
+    foreach(i-> lines!(ax2, [xs1[i], xs2[i]], [df.age[i], df.eeg_age[i]]; color=:gray50), eachindex(xs1))
+end
+let df = DataFrame(get(future_6m12m))
+    xs1 = 1 .+ rand(Normal(0.0, 0.05), size(df, 1))
+    xs2 = 2 .+ rand(Normal(0.0, 0.05), size(df, 1))
+    violin!(ax3, repeat([1,2]; inner=size(df,1)), [df.age; df.eeg_age]; color=:gray80)
+    scatter!(ax3, [xs1; xs2], [df.age; df.eeg_age]; color=(:gray50,0.5))
+    foreach(i-> lines!(ax3, [xs1[i], xs2[i]], [df.age[i], df.eeg_age[i]]; color=:gray50), eachindex(xs1))
+end
+linkyaxes!(ax1, ax2, ax3)
+save("data/figures/future_age_dists.png", figure)
+
+##
+
+eeg = load_eeg()
+eeg.peak_latency_P1_corrected = eeg.peak_latency_P1 .- eeg.peak_latency_N1
+eeg.peak_latency_N2_corrected = eeg.peak_latency_N2 .- eeg.peak_latency_P1
+eeg.peak_amp_P1_corrected = eeg.peak_amp_P1 .- eeg.peak_amp_N1
+eeg.peak_amp_N2_corrected = eeg.peak_amp_N2 .- eeg.peak_amp_P1
+rename!(eeg, "age"=> "eeg_age")
+mbo = load_microbiome(eeg.subject)
+transform!(mbo, "visit"=>ByRow(v-> replace(v, "mo"=>"m"))=> "visit")
+
+eegmbo = @chain eeg begin
+    select("subject", "timepoint"=>"visit", Cols(:))
+    unique!(["subject", "timepoint"])
+    outerjoin(mbo; on = ["subject", "visit"])
+    groupby("subject")
+    subset(AsTable(["visit", "seqprep", "eeg_age"])=> (nt-> begin
+	# skip subjects without at least 1 eeg and at least 1 seqprep
+	(all(ismissing, nt.seqprep) || all(ismissing(nt.eeg_age))) && return false
+	# keep subjects with at least 1 concurrent eeg/seqprep
+	any(.!ismissing.(nt.seqprep) .& .!ismissing.(nt.eeg_age)) && return true
+	# Keep any remaining subjects that have a seqprep *prior* to an EEG
+	srt = sortperm([parse(Int, replace(v, "m"=>"")) for v in nt.visit])
+	any(findfirst(!ismissing, nt.seqprep[srt]) .<= findfirst(!ismissing, nt.eeg_age[srt]))
+    end))
+end
+
+wide_sub = select(leftjoin(
+    select(unstack(eegmbo, "subject", "visit", "eeg_age"), "subject", "3m"=>"eeg_3m", "6m"=> "eeg_6m", "12m"=>"eeg_12m"),
+    select(unstack(eegmbo, "subject", "visit", "age"), "subject", "3m"=>"seqprep_3m", "6m"=> "seqprep_6m", "12m"=>"seqprep_12m"),
+    on="subject"), "subject", r"3m", r"6m", r"12m")
+
+tps = ("3m", "6m", "12m")
+ldf = DataFrame()
+for row in eachrow(wide_sub)
+    for tp in tps
+	stool_age = row["seqprep_$tp"]
+	eeg_age = row["eeg_$tp"]
+	push!(ldf, (; subject=row.subject, timepoint=tp, stool_age, eeg_age); cols=:union)
+    end
+end

@@ -5,6 +5,7 @@ using DataFrames
 using CSV
 using HypothesisTests
 using MultipleTesting
+using Clustering
 using GLM
 using Distributions
 
@@ -258,24 +259,113 @@ end
 ##
 
 gdf = groupby(fsea_df, "eeg_feature")
-feats = [k.eeg_feature for k in keys(gdf)]
+feats = copy(eeg_features)
 featidx = Dict(f=> i for (i,f) in enumerate(feats))
 gss = unique(fsea_df.geneset)
 gsidx = Dict(f=> i for (i,f) in enumerate(gss))
 
 for feat in feats
-    fig = Figure(; size=(700, 500))
-    ax = Axis(fig[1,1], xlabel="geneset", ylabel = "rank", title=feat)
-    for row in eachrow(gdf[(; eeg_feature=feat)])
-        xpos = gsidx[row.geneset]
-        xs = rand(Normal(0.0, 0.05), length(row.ranks)) .+ xpos
-        med = median(1:row.nfeatures)
-        ys = (row.ranks .- med) ./ med
-        ymed = median(ys)
-        c = row.q₀ > 0.2 ? :gray : ymed < 0 ? :blue : :red
-        scatter!(ax, xs, ys; color = c)    
-        lines!(ax, [xpos - 0.5, xpos + 0.5], [ymed, ymed], color = c)
+    for tp in tps
+        fig = Figure(; size=(700, 500))
+        ax = Axis(fig[1,1], xlabel="geneset", ylabel = "rank", title=feat, xticks=(1:length(gss), gss), xticklabelrotation = pi/4)
+        for row in eachrow(subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp))))
+            xpos = gsidx[row.geneset]
+            xs = rand(Normal(0.0, 0.05), length(row.ranks)) .+ xpos
+            med = median(1:row.nfeatures)
+            ys = (row.ranks .- med) ./ med
+            ymed = median(ys)
+            c = row.q₀ > 0.2 ? :gray : ymed < 0 ? :blue : :red
+            violin!(ax, fill(xpos, length(ys)), ys; color=(c, 0.2))
+            scatter!(ax, xs, ys; color = c)    
+            ylims!(ax, (-1.5, 1.5))
+            #lines!(ax, [xpos - 0.5, xpos + 0.5], [ymed, ymed], color = c)
+        end
+        save("data/figures/$(feat)_$(tp)_fsea_summary.png", fig)
     end
-    save("data/figures/$(feat)_fsea_summary.png", fig)
 end
 
+# latency
+gdf = groupby(fsea_df, ["eeg_feature", "timepoint"])
+lats = filter(f-> contains(f, "latency"), feats)
+amps = filter(f-> contains(f, "amp"), feats)
+latesmat = zeros(length(gss), 9)
+ampesmat = zeros(length(gss), 9)
+
+latqmat = zeros(length(gss), 9)
+ampqmat = zeros(length(gss), 9)
+
+for (i, (feat, tp)) in enumerate(Iterators.product(amps, tps))
+    df = gdf[(; eeg_feature=feat, timepoint=tp)]
+    for row in eachrow(df)
+        ampqmat[gsidx[row.geneset], i] = log(row.q₀ + 1e-4) * sign(row.es)
+        if row.q₀ < 0.2
+            ampesmat[gsidx[row.geneset], i] = row.es
+        end
+    end
+end
+
+    
+for (i, (feat, tp)) in enumerate(Iterators.product(lats, tps))
+    df = gdf[(; eeg_feature=feat, timepoint=tp)]
+    for row in eachrow(df)
+        latqmat[gsidx[row.geneset], i] = log(row.q₀ + 1e-4) * sign(row.es)
+        if row.q₀ < 0.2
+            latesmat[gsidx[row.geneset], i] = row.es
+        end
+    end
+end
+
+ampcl = hclust(pairwise(Euclidean(), ampesmat'); branchorder=:optimal)
+latcl = hclust(pairwise(Euclidean(), latesmat'); branchorder=:optimal)
+#- 
+
+figure = Figure(;size = (1200, 800))
+ax1 = Axis(figure[1,1]; title="3m", xticks = (1:3, amps), xticklabelrotation=pi/4, yticks = (1:length(gss), gss[ampcl.order]))
+ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, amps), xticklabelrotation=pi/4)
+ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, amps), xticklabelrotation=pi/4)
+hideydecorations!.([ax2,ax3])
+
+heatmap!(ax1, ampesmat'[1:3, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax2, ampesmat'[4:6, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+hm = heatmap!(ax3, ampesmat'[7:9, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+Colorbar(figure[1,4], hm; label="E.S.", )
+save("data/figures/concurrent_amp_heatmap.png", figure)
+#-
+figure = Figure(;size = (1200, 800))
+ax1 = Axis(figure[1,1]; title="3m", xticks = (1:3, lats), xticklabelrotation=pi/4, yticks = (1:length(gss), gss[latcl.order]))
+ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, lats), xticklabelrotation=pi/4)
+ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, lats), xticklabelrotation=pi/4)
+hideydecorations!.([ax2,ax3])
+
+heatmap!(ax1, latesmat'[1:3, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax2, latesmat'[4:6, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+hm = heatmap!(ax3, latesmat'[7:9, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+Colorbar(figure[1,4], hm; label="E.S.", )
+save("data/figures/concurrent_lat_heatmap.png", figure)
+#-
+
+figure = Figure(;size = (1200, 800))
+ax1 = Axis(figure[1,1]; title="3m", xticks = (1:3, amps), xticklabelrotation=pi/4, yticks = (1:length(gss), gss[ampcl.order]))
+ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, amps), xticklabelrotation=pi/4)
+ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, amps), xticklabelrotation=pi/4)
+hideydecorations!.([ax2,ax3])
+
+heatmap!(ax1, ampqmat'[1:3, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax2, ampqmat'[4:6, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
+hm = heatmap!(ax3, ampqmat'[7:9, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
+Colorbar(figure[1,4], hm; label="log(qvalue)", )
+save("data/figures/concurrent_amp_q_heatmap.png", figure)
+
+#-
+
+figure = Figure(;size = (1200, 800))
+ax1 = Axis(figure[1,1]; title="3m", xticks = (1:3, lats), xticklabelrotation=pi/4, yticks = (1:length(gss), gss[latcl.order]))
+ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, lats), xticklabelrotation=pi/4)
+ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, lats), xticklabelrotation=pi/4)
+hideydecorations!.([ax2,ax3])
+
+heatmap!(ax1, latqmat'[1:3, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax2, latqmat'[4:6, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
+hm = heatmap!(ax3, latqmat'[7:9, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
+Colorbar(figure[1,4], hm; label="log(qvalue)", )
+save("data/figures/concurrent_lat_q_heatmap.png", figure)
