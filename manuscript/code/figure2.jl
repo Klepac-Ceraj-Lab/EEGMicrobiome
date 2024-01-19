@@ -69,7 +69,7 @@ end
 
 for feature in eeg_features
     @info feature
-    EEGMicrobiome.runlms(future_3m6m_func, "./data/outputs/lms/$(feature)_3m_future6m_lms.csv", feature, names(subeeg, r"^UniRef");
+    EEGMicrobiome.runlms(future_3m6m_func, "./data/outputs/lms/$(feature)_3m_future6m_lms.csv", feature, names(future_3m6m_func, r"^UniRef");
         additional_cols = [:age_diff],
         formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
     )
@@ -77,7 +77,7 @@ end
 
 for feature in eeg_features
     @info feature
-    EEGMicrobiome.runlms(future_3m12m_func, "./data/outputs/lms/$(feature)_3m_future12m_lms.csv", feature, names(subeeg, r"^UniRef");
+    EEGMicrobiome.runlms(future_3m12m_func, "./data/outputs/lms/$(feature)_3m_future12m_lms.csv", feature, names(future_3m12m_func, r"^UniRef");
         additional_cols = [:age_diff],
         formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
     )
@@ -85,7 +85,7 @@ end
 
 for feature in eeg_features
     @info feature
-    EEGMicrobiome.runlms(future_6m12m_func, "./data/outputs/lms/$(feature)_6m_future12m_lms.csv", feature, names(subeeg, r"^UniRef");
+    EEGMicrobiome.runlms(future_6m12m_func, "./data/outputs/lms/$(feature)_6m_future12m_lms.csv", feature, names(future_6m12m_func, r"^UniRef");
         additional_cols = [:age_diff],
         formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
     )
@@ -108,9 +108,15 @@ fsea_df = let fsea_df = DataFrame()
 
         for (key, unirefs) in pairs(na_map)
             idx = findall(lms[!, key])
-            sum(idx) > 5 || continue
+            length(idx) > 5 || continue
             result = fsea(FeatureSetEnrichments.Permutation(5000), lms.z, idx)
-            push!(fsea_df, (; timepoint=tp, eeg_feature=feature, geneset=key, pvalue=pvalue(result), es = enrichment_score(result)))
+            push!(fsea_df, (; timepoint=tp,
+                              eeg_feature = feature,
+                              geneset     = key,
+                              pvalue      = pvalue(result),
+                              es          = enrichment_score(result),
+                              ranks       = idx,
+                              nfeatures   = size(lms, 1)))
         end
     end
     fsea_df
@@ -140,9 +146,15 @@ future12m_fsea_df = let fsea_df = DataFrame()
 
         for (key, unirefs) in pairs(na_map)
             idx = findall(lms[!, key])
-            sum(idx) > 5 || continue
+            length(idx) > 5 || continue
             result = fsea(FeatureSetEnrichments.Permutation(5000), lms.z, idx)
-            push!(fsea_df, (; timepoint="$(tp)_future12m", eeg_feature=feature, geneset=key, pvalue=pvalue(result), es = enrichment_score(result)))
+            push!(fsea_df, (; timepoint="$(tp)_future12m",
+                              eeg_feature = feature,
+                              geneset     = key,
+                              pvalue      = pvalue(result),
+                              es          = enrichment_score(result),
+                              ranks       = idx,
+                              nfeatures   = size(lms, 1)))
         end
     end
     fsea_df
@@ -171,10 +183,17 @@ future6m_fsea_df = let fsea_df = DataFrame()
 
         for (key, unirefs) in pairs(na_map)
             idx = findall(lms[!, key])
-            sum(idx) > 5 || continue
+            length(idx) > 5 || continue
             result = fsea(FeatureSetEnrichments.Permutation(5000), lms.z, idx)
-            push!(fsea_df, (; timepoint="$(tp)_future6m", eeg_feature=feature, geneset=key, pvalue=pvalue(result), es = enrichment_score(result)))
-        end
+            push!(fsea_df, (; timepoint="$(tp)_future6m",
+                              eeg_feature = feature,
+                              geneset     = key,
+                              pvalue      = pvalue(result),
+                              es          = enrichment_score(result),
+                              ranks       = idx,
+                              nfeatures   = size(lms, 1)))
+
+         end
     end
     fsea_df
 end
@@ -185,3 +204,54 @@ transform!(groupby(future6m_fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(
 sort!(future6m_fsea_df, "q₀")
 CSV.write("data/outputs/fsea/future6m_consolidated_fsea.csv", future6m_fsea_df)
 # future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_true_ages_fsea.csv", DataFrame)
+
+
+for row in eachrow(subset(fsea_df, "q₀" => ByRow(<(0.2))))
+    res = fsea(1:row.nfeatures, row.ranks)
+    fig = Figure(; size=(800, 800))
+    gr = GridLayout(fig[1,1])
+    _, ax1, ax2 = plot!(gr, res)
+
+    text!(ax1, 0, 1;
+            text = "$(row.timepoint)\n$(row.eeg_feature)\n$(row.geneset)",
+            align = (:left, :top),
+            offset = (4, -2),
+            space = :relative,
+            fontsize = 12
+    )
+    save("data/figures/enrichments/concurrent_$(row.timepoint)_$(row.eeg_feature)_$(replace(row.geneset, " "=>"-")).png", fig)
+end
+
+for row in eachrow(subset(future12m_fsea_df, "q₀" => ByRow(<(0.2))))
+    res = fsea(1:row.nfeatures, row.ranks)
+    fig = Figure(; size=(800, 800))
+    gr = GridLayout(fig[1,1])
+    _, ax1, ax2 = plot!(gr, res)
+
+    text!(ax1, 0, 1;
+            text = "$(row.timepoint)\n$(row.eeg_feature)\n$(row.geneset)",
+            align = (:left, :top),
+            offset = (4, -2),
+            space = :relative,
+            fontsize = 12
+    )
+    save("data/figures/enrichments/future_$(row.timepoint)_$(row.eeg_feature)_$(replace(row.geneset, " "=>"-")).png", fig)
+end
+
+for row in eachrow(subset(future6m_fsea_df, "q₀" => ByRow(<(0.2))))
+    res = fsea(1:row.nfeatures, row.ranks)
+    fig = Figure(; size=(800, 800))
+    gr = GridLayout(fig[1,1])
+    _, ax1, ax2 = plot!(gr, res)
+
+    text!(ax1, 0, 1;
+            text = "$(row.timepoint)\n$(row.eeg_feature)\n$(row.geneset)",
+            align = (:left, :top),
+            offset = (4, -2),
+            space = :relative,
+            fontsize = 12
+    )
+    save("data/figures/enrichments/future_$(row.timepoint)_$(row.eeg_feature)_$(replace(row.geneset, " "=>"-")).png", fig)
+end
+
+
