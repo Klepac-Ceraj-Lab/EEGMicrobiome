@@ -6,6 +6,7 @@ using CSV
 using HypothesisTests
 using MultipleTesting
 using GLM
+using Distributions
 
 #kload data
 concurrent_3m = load_cohort("concurrent_3m")
@@ -254,4 +255,27 @@ for row in eachrow(subset(future6m_fsea_df, "q₀" => ByRow(<(0.2))))
     save("data/figures/enrichments/future_$(row.timepoint)_$(row.eeg_feature)_$(replace(row.geneset, " "=>"-")).png", fig)
 end
 
+##
+
+gdf = groupby(fsea_df, "eeg_feature")
+feats = [k.eeg_feature for k in keys(gdf)]
+featidx = Dict(f=> i for (i,f) in enumerate(feats))
+gss = unique(fsea_df.geneset)
+gsidx = Dict(f=> i for (i,f) in enumerate(gss))
+
+for feat in feats
+    fig = Figure(; size=(700, 500))
+    ax = Axis(fig[1,1], xlabel="geneset", ylabel = "rank", title=feat)
+    for row in eachrow(gdf[(; eeg_feature=feat)])
+        xpos = gsidx[row.geneset]
+        xs = rand(Normal(0.0, 0.05), length(row.ranks)) .+ xpos
+        med = median(1:row.nfeatures)
+        ys = (row.ranks .- med) ./ med
+        ymed = median(ys)
+        c = row.q₀ > 0.2 ? :gray : ymed < 0 ? :blue : :red
+        scatter!(ax, xs, ys; color = c)    
+        lines!(ax, [xpos - 0.5, xpos + 0.5], [ymed, ymed], color = c)
+    end
+    save("data/figures/$(feat)_fsea_summary.png", fig)
+end
 
