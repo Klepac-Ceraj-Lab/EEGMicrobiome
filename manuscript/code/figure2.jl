@@ -29,9 +29,11 @@ transform!(future_3m6m_func, AsTable(["age", "eeg_age"])=> ByRow(nt-> nt.eeg_age
 load_functional_profiles!(future_3m6m_func);
 
 future_3m12m_func = DataFrame(get(future_3m12m))
+transform!(future_3m12m_func, AsTable(["age", "eeg_age"])=> ByRow(nt-> nt.eeg_age - nt.age)=> "age_diff")
 load_functional_profiles!(future_3m12m_func);
 
 future_6m12m_func = DataFrame(get(future_6m12m))
+transform!(future_6m12m_func, AsTable(["age", "eeg_age"])=> ByRow(nt-> nt.eeg_age - nt.age)=> "age_diff")
 load_functional_profiles!(future_6m12m_func);
 
 ##
@@ -45,20 +47,141 @@ na_map_full = FeatureSetEnrichments.get_neuroactive_unirefs(; consolidate=false)
 
 
 for feature in eeg_features
+    @info feature
     EEGMicrobiome.runlms(concurrent_3m_func, "./data/outputs/lms/$(feature)_3m_lms.csv",
                          feature, names(concurrent_3m_func, r"^UniRef")
     )
 end
 
 for feature in eeg_features
+    @info feature
     EEGMicrobiome.runlms(concurrent_6m_func, "./data/outputs/lms/$(feature)_6m_lms.csv",
                          feature, names(concurrent_6m_func, r"^UniRef")
     )
 end
 
 for feature in eeg_features
+    @info feature
     EEGMicrobiome.runlms(concurrent_12m_func, "./data/outputs/lms/$(feature)_12m_lms.csv",
                          feature, names(concurrent_12m_func, r"^UniRef")
     )
 end
 
+for feature in eeg_features
+    @info feature
+    EEGMicrobiome.runlms(future_3m6m_func, "./data/outputs/lms/$(feature)_3m_future6m_lms.csv", feature, names(subeeg, r"^UniRef");
+        additional_cols = [:age_diff],
+        formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
+    )
+end
+
+for feature in eeg_features
+    @info feature
+    EEGMicrobiome.runlms(future_3m12m_func, "./data/outputs/lms/$(feature)_3m_future12m_lms.csv", feature, names(subeeg, r"^UniRef");
+        additional_cols = [:age_diff],
+        formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
+    )
+end
+
+for feature in eeg_features
+    @info feature
+    EEGMicrobiome.runlms(future_6m12m_func, "./data/outputs/lms/$(feature)_6m_future12m_lms.csv", feature, names(subeeg, r"^UniRef");
+        additional_cols = [:age_diff],
+        formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
+    )
+end
+
+## Run FSEA
+
+tps = ("3m", "6m", "12m")
+
+#-
+fsea_df = let fsea_df = DataFrame()
+    for tp in tps, feature in eeg_features
+        filepath = "./data/outputs/lms/$(feature)_$(tp)_lms.csv"
+        lms = CSV.read(filepath, DataFrame)
+
+        for (key, unirefs) in pairs(na_map)
+            s = Set("UniRef90_$uniref" for uniref in unirefs)
+            lms[!, key] = lms.feature .∈ Ref(s)
+        end
+
+        for (key, unirefs) in pairs(na_map)
+            idx = findall(lms[!, key])
+            sum(idx) > 5 || continue
+            result = fsea(FeatureSetEnrichments.Permutation(5000), lms.z, idx)
+            push!(fsea_df, (; timepoint=tp, eeg_feature=feature, geneset=key, pvalue=pvalue(result), es = enrichment_score(result)))
+        end
+    end
+    fsea_df
+end
+
+transform!(fsea_df, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "q₀")
+transform!(groupby(fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
+transform!(groupby(fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
+sort!(fsea_df, "q₀")
+CSV.write("data/outputs/fsea/concurrent_consolidated_fsea.csv", fsea_df)
+# fsea_df = CSV.read("data/outputs/fsea/true_ages_fsea.csv", DataFrame)
+
+#- 
+
+## Run FSEA
+
+future12m_fsea_df = let fsea_df = DataFrame()
+    for tp in ("3m", "6m"), feature in eeg_features
+        # contains(feature, "corrected") && continue
+        filepath = "./data/outputs/lms/$(feature)_$(tp)_future12m_lms.csv"
+        lms = CSV.read(filepath, DataFrame)
+
+        for (key, unirefs) in pairs(na_map)
+            s = Set("UniRef90_$uniref" for uniref in unirefs)
+            lms[!, key] = lms.feature .∈ Ref(s)
+        end
+
+        for (key, unirefs) in pairs(na_map)
+            idx = findall(lms[!, key])
+            sum(idx) > 5 || continue
+            result = fsea(FeatureSetEnrichments.Permutation(5000), lms.z, idx)
+            push!(fsea_df, (; timepoint="$(tp)_future12m", eeg_feature=feature, geneset=key, pvalue=pvalue(result), es = enrichment_score(result)))
+        end
+    end
+    fsea_df
+end
+
+transform!(future12m_fsea_df, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "q₀")
+transform!(groupby(future12m_fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
+transform!(groupby(future12m_fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
+sort!(future12m_fsea_df, "q₀")
+CSV.write("data/outputs/fsea/future12m_consolidated_fsea.csv", future12m_fsea_df)
+# future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_true_ages_fsea.csv", DataFrame)
+
+#-
+
+future6m_fsea_df = let fsea_df = DataFrame()
+    for feature in eeg_features
+        # contains(feature, "corrected") && continue
+        tp = "3m"
+        filepath = "./data/outputs/lms/$(feature)_$(tp)_future6m_lms.csv"
+        lms = CSV.read(filepath, DataFrame)
+
+        for (key, unirefs) in pairs(na_map)
+            s = Set("UniRef90_$uniref" for uniref in unirefs)
+            lms[!, key] = lms.feature .∈ Ref(s)
+        end
+
+        for (key, unirefs) in pairs(na_map)
+            idx = findall(lms[!, key])
+            sum(idx) > 5 || continue
+            result = fsea(FeatureSetEnrichments.Permutation(5000), lms.z, idx)
+            push!(fsea_df, (; timepoint="$(tp)_future6m", eeg_feature=feature, geneset=key, pvalue=pvalue(result), es = enrichment_score(result)))
+        end
+    end
+    fsea_df
+end
+
+transform!(future6m_fsea_df, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "q₀")
+transform!(groupby(future6m_fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
+transform!(groupby(future6m_fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
+sort!(future6m_fsea_df, "q₀")
+CSV.write("data/outputs/fsea/future6m_consolidated_fsea.csv", future6m_fsea_df)
+# future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_true_ages_fsea.csv", DataFrame)
