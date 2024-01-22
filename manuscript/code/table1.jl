@@ -31,10 +31,12 @@ end
 
 wide_sub = select(leftjoin(
     select(unstack(eegmbo, "subject", "visit", "eeg_age"), "subject", "3m"=>"eeg_3m", "6m"=> "eeg_6m", "12m"=>"eeg_12m"),
-    select(unstack(eegmbo, "subject", "visit", "seqprep"), "subject", "3m"=>"seqprep_3m", "6m"=> "seqprep_6m", "12m"=>"seqprep_12m"),
+    select(unstack(eegmbo, "subject", "visit", "age"), "subject", "3m"=>"seqprep_3m", "6m"=> "seqprep_6m", "12m"=>"seqprep_12m"),
     on="subject"), "subject", r"3m", r"6m", r"12m")
 
 transform!(wide_sub, AsTable(r"3m")=> ByRow(nt-> nt.eeg_3m - nt.seqprep_3m) => "diff_3m",
+		    AsTable(r"6m")=> ByRow(nt-> nt.eeg_6m - nt.seqprep_6m) => "diff_6m",
+		   AsTable(r"12m")=> ByRow(nt-> nt.eeg_12m - nt.seqprep_12m) => "diff_12m")
 
 CSV.write("data/outputs/eeg_microbiome_subjects.csv", wide_sub)
 CSV.write("data/outputs/eeg_microbiome_timepoints.csv", sort(select(eegmbo, "subject", "visit", "eeg_age", "seqprep"), ["subject", "visit"]))
@@ -81,3 +83,15 @@ CSV.write(joinpath(cohortsdir, "future_3m6m.csv"), future_3m6m)
 CSV.write(joinpath(cohortsdir, "future_3m12m.csv"), future_3m12m)
 CSV.write(joinpath(cohortsdir, "future_6m12m.csv"), future_6m12m)
 
+##
+
+fig = Figure(; size=(800, 1200))
+ax1 = Axis(fig[1, 1]; title = "3m", xlabel="eeg age - microbiome age")
+ax2 = Axis(fig[2, 1]; title = "6m", xlabel="eeg age - microbiome age")
+ax3 = Axis(fig[3, 1]; title = "12m", xlabel="eeg age - microbiome age")
+
+hist!(ax1, collect(skipmissing(wide_sub.diff_3m)))
+hist!(ax2, collect(skipmissing(wide_sub.diff_6m)))
+hist!(ax3, collect(skipmissing(wide_sub.diff_12m)))
+
+save("data/figures/age_diff_hist.png", current_figure())
