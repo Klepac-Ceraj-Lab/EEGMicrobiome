@@ -141,3 +141,22 @@ for row in eachrow(wide_sub)
 	push!(ldf, (; subject=row.subject, timepoint=tp, stool_age, eeg_age); cols=:union)
     end
 end
+subset!(ldf, AsTable(["stool_age", "eeg_age"])=> ByRow(nt-> !all(ismissing, nt)))
+transform!(ldf,AsTable(["stool_age", "eeg_age"])=> ByRow(nt-> minimum(skipmissing(values(nt))))=> "minage") 
+sort!(ldf, "minage")
+subind = Dict(s=> i for (i,s) in enumerate(unique(ldf.subject)))
+
+gdf = groupby(ldf, "subject")
+
+figure = Figure(; size=(500, 1200))
+ax = Axis(figure[1,1]; xlabel="age (months)", ylabel = "subject")
+
+for k in keys(gdf)
+    stools = filter(a-> !ismissing(a), gdf[k].stool_age)
+    eegs = filter(a-> !ismissing(a), gdf[k].eeg_age)
+    y = subind[k.subject]    
+    lines!(ax, [extrema([stools;eegs])...], [y,y]; color = :gray)
+    scatter!(ax, stools, fill(y, length(stools)); color = (:orange, 0.4))
+    scatter!(ax, eegs, fill(y, length(eegs)); color = (:purple, 0.4))
+end
+save("data/figures/subject_longitudinal2.png", figure)

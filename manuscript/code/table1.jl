@@ -34,6 +34,7 @@ wide_sub = select(leftjoin(
     select(unstack(eegmbo, "subject", "visit", "seqprep"), "subject", "3m"=>"seqprep_3m", "6m"=> "seqprep_6m", "12m"=>"seqprep_12m"),
     on="subject"), "subject", r"3m", r"6m", r"12m")
 
+transform!(wide_sub, AsTable(r"3m")=> ByRow(nt-> nt.eeg_3m - nt.seqprep_3m) => "diff_3m",
 
 CSV.write("data/outputs/eeg_microbiome_subjects.csv", wide_sub)
 CSV.write("data/outputs/eeg_microbiome_timepoints.csv", sort(select(eegmbo, "subject", "visit", "eeg_age", "seqprep"), ["subject", "visit"]))
