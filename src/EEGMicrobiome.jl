@@ -6,7 +6,11 @@ export load_eeg,
        load_functional_profiles!,
        load_cohort
 
-export plot_pcoa!
+export plot_pcoa!,
+       topbugs,
+       grouptop,
+       plotbugs!
+    
 
 using CSV
 using DataFrames
