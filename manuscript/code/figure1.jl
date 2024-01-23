@@ -150,13 +150,33 @@ gdf = groupby(ldf, "subject")
 
 figure = Figure(; size=(500, 1200))
 ax = Axis(figure[1,1]; xlabel="age (months)", ylabel = "subject")
+stoolc = :firebrick 
+eegc = :dodgerblue
+bothc = :slateblue
 
 for k in keys(gdf)
-    stools = filter(a-> !ismissing(a), gdf[k].stool_age)
-    eegs = filter(a-> !ismissing(a), gdf[k].eeg_age)
-    y = subind[k.subject]    
-    lines!(ax, [extrema([stools;eegs])...], [y,y]; color = :gray)
-    scatter!(ax, stools, fill(y, length(stools)); color = (:orange, 0.4))
-    scatter!(ax, eegs, fill(y, length(eegs)); color = (:purple, 0.4))
+    stools = gdf[k].stool_age
+    eegs = gdf[k].eeg_age
+    y = subind[k.subject]
+    xs = map(zip(stools, eegs)) do (s,e)
+	ismissing(s) && return e
+	ismissing(e) && return s
+	return mean([e,s])
+    end
+    cs = map(zip(stools, eegs)) do (s,e)
+	ismissing(s) && return eegc
+	ismissing(e) && return stoolc
+	return bothc
+    end
+    scatter!(ax, xs, fill(y, length(xs)); color=cs)
+ 
+ 
+    lines!(ax, [extrema(skipmissing([stools;eegs]))...], [y,y]; linestyle=:dash, color = :gray)
+    for s in filter(!ismissing, stools)
+	lines!(ax, [s,s], [y+0.4, y-0.4]; color=stoolc)
+    end
+    for e in filter(!ismissing, eegs)
+	lines!(ax, [e,e], [y+0.4, y-0.4]; color=eegc)
+    end
 end
-save("data/figures/subject_longitudinal2.png", figure)
+save("data/figures/subject_longitudinal.png", figure)

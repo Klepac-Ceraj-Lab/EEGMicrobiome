@@ -9,7 +9,7 @@ using Clustering
 using GLM
 using Distributions
 
-#kload data
+# load data
 concurrent_3m = load_cohort("concurrent_3m")
 concurrent_6m = load_cohort("concurrent_6m")
 concurrent_12m = load_cohort("concurrent_12m")

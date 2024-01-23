@@ -1,6 +1,8 @@
 using VKCComputing
 using EEGMicrobiome
 using DataFrames
+using CSV
+using CairoMakie
 using Chain
 
 # load data
@@ -17,34 +19,33 @@ eegmbo = @chain eeg begin
     select("subject", "timepoint"=>"visit", Cols(:))
     unique!(["subject", "timepoint"])
     outerjoin(mbo; on = ["subject", "visit"])
+    transform(AsTable(["eeg_age", "age"])=> ByRow(nt-> nt.eeg_age - nt.age)=> "age_diff")
     groupby("subject")
-    subset(AsTable(["visit", "seqprep", "eeg_age"])=> (nt-> begin
-	# skip subjects without at least 1 eeg and at least 1 seqprep
-	(all(ismissing, nt.seqprep) || all(ismissing(nt.eeg_age))) && return false
-	# keep subjects with at least 1 concurrent eeg/seqprep
-	any(.!ismissing.(nt.seqprep) .& .!ismissing.(nt.eeg_age)) && return true
-	# Keep any remaining subjects that have a seqprep *prior* to an EEG
+    subset(AsTable(["visit", "age", "eeg_age", "age_diff"]) => (nt-> begin
+	# skip subjects without at least 1 eeg and at least 1 age
+	(all(ismissing, nt.age) || all(ismissing(nt.eeg_age))) && return false
+	# keep subjects with at least 1 concurrent eeg/age that are within 2 months
+	any(.!ismissing.(nt.age) .& .!ismissing.(nt.eeg_age) .& (nt.age_diff .< 2)) && return true
+	# Keep any remaining subjects that have a age *prior* to an EEG
 	srt = sortperm([parse(Int, replace(v, "m"=>"")) for v in nt.visit])
-	any(findfirst(!ismissing, nt.seqprep[srt]) .<= findfirst(!ismissing, nt.eeg_age[srt]))
+	any(findfirst(!ismissing, nt.age[srt]) .<= findfirst(!ismissing, nt.eeg_age[srt]))
     end))
 end
+
+
 
 wide_sub = select(leftjoin(
     select(unstack(eegmbo, "subject", "visit", "eeg_age"), "subject", "3m"=>"eeg_3m", "6m"=> "eeg_6m", "12m"=>"eeg_12m"),
     select(unstack(eegmbo, "subject", "visit", "age"), "subject", "3m"=>"seqprep_3m", "6m"=> "seqprep_6m", "12m"=>"seqprep_12m"),
     on="subject"), "subject", r"3m", r"6m", r"12m")
 
-transform!(wide_sub, AsTable(r"3m")=> ByRow(nt-> nt.eeg_3m - nt.seqprep_3m) => "diff_3m",
-		    AsTable(r"6m")=> ByRow(nt-> nt.eeg_6m - nt.seqprep_6m) => "diff_6m",
-		   AsTable(r"12m")=> ByRow(nt-> nt.eeg_12m - nt.seqprep_12m) => "diff_12m")
-
 CSV.write("data/outputs/eeg_microbiome_subjects.csv", wide_sub)
 CSV.write("data/outputs/eeg_microbiome_timepoints.csv", sort(select(eegmbo, "subject", "visit", "eeg_age", "seqprep"), ["subject", "visit"]))
 
 # Generate table subsets
-concurrent_3m = select(subset(wide_sub, AsTable(r"3m") => ByRow((nt-> all(!ismissing, values(nt))))), "subject")
-concurrent_6m = select(subset(wide_sub, AsTable(r"6m") => ByRow((nt-> all(!ismissing, values(nt))))), "subject")
-concurrent_12m = select(subset(wide_sub, AsTable(r"12m") => ByRow((nt-> all(!ismissing, values(nt))))), "subject")
+concurrent_3m = select(subset(wide_sub, AsTable(r"3m") => ByRow(nt-> !any(ismissing,nt) && abs(nt[1] - nt[2]) < 2)), "subject")
+concurrent_6m = select(subset(wide_sub, AsTable(r"6m") => ByRow(nt-> !any(ismissing,nt) && abs(nt[1] - nt[2]) < 2)), "subject")
+concurrent_12m = select(subset(wide_sub, AsTable(r"12m") => ByRow(nt-> !any(ismissing,nt) && abs(nt[1] - nt[2]) < 2)), "subject")
 
 future_3m6m = select(subset(wide_sub, AsTable(["seqprep_3m", "eeg_6m"]) => ByRow((nt-> all(!ismissing, values(nt))))), "subject")
 future_3m12m = select(subset(wide_sub, AsTable(["seqprep_3m", "eeg_12m"]) => ByRow((nt-> all(!ismissing, values(nt))))), "subject")
@@ -93,5 +94,7 @@ ax3 = Axis(fig[3, 1]; title = "12m", xlabel="eeg age - microbiome age")
 hist!(ax1, collect(skipmissing(wide_sub.diff_3m)))
 hist!(ax2, collect(skipmissing(wide_sub.diff_6m)))
 hist!(ax3, collect(skipmissing(wide_sub.diff_12m)))
+vlines!.((ax1,ax2,ax3), Ref([-2., 2.]))
+linkaxes!(ax1, ax2, ax3)
 
 save("data/figures/age_diff_hist.png", current_figure())
