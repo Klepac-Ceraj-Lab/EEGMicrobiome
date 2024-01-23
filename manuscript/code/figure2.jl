@@ -2,6 +2,7 @@ using FeatureSetEnrichments
 using VKCComputing
 using EEGMicrobiome
 using DataFrames
+using Distances
 using CSV
 using HypothesisTests
 using MultipleTesting
@@ -47,11 +48,33 @@ eeg_features = [eeg_features; replace.(eeg_features, "latency"=>"amp")]
 na_map = FeatureSetEnrichments.get_neuroactive_unirefs()
 na_map_full = FeatureSetEnrichments.get_neuroactive_unirefs(; consolidate=false)
 
+for feature in eeg_features
+    @info feature
+    EEGMicrobiome.runlms(concurrent_3m_func, "./data/outputs/lms/$(feature)_nodiff_3m_lms.csv",
+                         feature, names(concurrent_3m_func, r"^UniRef")
+    )
+end
+
+for feature in eeg_features
+    @info feature
+    EEGMicrobiome.runlms(concurrent_6m_func, "./data/outputs/lms/$(feature)_nodiff_6m_lms.csv",
+                         feature, names(concurrent_6m_func, r"^UniRef")
+    )
+end
+
+for feature in eeg_features
+    @info feature
+    EEGMicrobiome.runlms(concurrent_12m_func, "./data/outputs/lms/$(feature)_nodiff_12m_lms.csv",
+                         feature, names(concurrent_12m_func, r"^UniRef")
+    )
+end
 
 for feature in eeg_features
     @info feature
     EEGMicrobiome.runlms(concurrent_3m_func, "./data/outputs/lms/$(feature)_3m_lms.csv",
                          feature, names(concurrent_3m_func, r"^UniRef")
+        additional_cols = [:age_diff],
+        formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
     )
 end
 
@@ -59,6 +82,8 @@ for feature in eeg_features
     @info feature
     EEGMicrobiome.runlms(concurrent_6m_func, "./data/outputs/lms/$(feature)_6m_lms.csv",
                          feature, names(concurrent_6m_func, r"^UniRef")
+        additional_cols = [:age_diff],
+        formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
     )
 end
 
@@ -66,6 +91,8 @@ for feature in eeg_features
     @info feature
     EEGMicrobiome.runlms(concurrent_12m_func, "./data/outputs/lms/$(feature)_12m_lms.csv",
                          feature, names(concurrent_12m_func, r"^UniRef")
+        additional_cols = [:age_diff],
+        formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
     )
 end
 
@@ -131,6 +158,38 @@ sort!(fsea_df, "q₀")
 CSV.write("data/outputs/fsea/concurrent_consolidated_fsea.csv", fsea_df)
 # fsea_df = CSV.read("data/outputs/fsea/true_ages_fsea.csv", DataFrame)
 
+fsea_df_nodiff = let fsea_df_nodiff = DataFrame()
+    for tp in tps, feature in eeg_features
+        filepath = "./data/outputs/lms/$(feature)_nodiff_$(tp)_lms.csv"
+        lms = CSV.read(filepath, DataFrame)
+
+        for (key, unirefs) in pairs(na_map)
+            s = Set("UniRef90_$uniref" for uniref in unirefs)
+            lms[!, key] = lms.feature .∈ Ref(s)
+        end
+
+        for (key, unirefs) in pairs(na_map)
+            idx = findall(lms[!, key])
+            length(idx) > 5 || continue
+            result = fsea(FeatureSetEnrichments.Permutation(5000), lms.z, idx)
+            push!(fsea_df_nodiff, (; timepoint=tp,
+                              eeg_feature = feature,
+                              geneset     = key,
+                              pvalue      = pvalue(result),
+                              es          = enrichment_score(result),
+                              ranks       = idx,
+                              nfeatures   = size(lms, 1)))
+        end
+    end
+    fsea_df_nodiff
+end
+
+transform!(fsea_df_nodiff, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "q₀")
+transform!(groupby(fsea_df_nodiff, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
+transform!(groupby(fsea_df_nodiff, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
+sort!(fsea_df_nodiff, "q₀")
+CSV.write("data/outputs/fsea/concurrent_nodiff_consolidated_fsea.csv", fsea_df_nodiff)
+# fsea_df = CSV.read("data/outputs/fsea/true_ages_fsea.csv", DataFrame)
 #- 
 
 ## Run FSEA
@@ -369,3 +428,63 @@ heatmap!(ax2, latqmat'[4:6, latcl.order]; colormap=Reverse(:RdBu), colorrange = 
 hm = heatmap!(ax3, latqmat'[7:9, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
 Colorbar(figure[1,4], hm; label="log(qvalue)", )
 save("data/figures/concurrent_lat_q_heatmap.png", figure)
+
+# Nodiff
+gdf = groupby(fsea_df_nodiff, ["eeg_feature", "timepoint"])
+lats = filter(f-> contains(f, "latency"), feats)
+amps = filter(f-> contains(f, "amp"), feats)
+latesmat = zeros(length(gss), 9)
+ampesmat = zeros(length(gss), 9)
+
+latqmat = zeros(length(gss), 9)
+ampqmat = zeros(length(gss), 9)
+
+for (i, (feat, tp)) in enumerate(Iterators.product(amps, tps))
+    df = gdf[(; eeg_feature=feat, timepoint=tp)]
+    for row in eachrow(df)
+        ampqmat[gsidx[row.geneset], i] = log(row.q₀ + 1e-4) * sign(row.es)
+        if row.q₀ < 0.2
+            ampesmat[gsidx[row.geneset], i] = row.es
+        end
+    end
+end
+
+    
+for (i, (feat, tp)) in enumerate(Iterators.product(lats, tps))
+    df = gdf[(; eeg_feature=feat, timepoint=tp)]
+    for row in eachrow(df)
+        latqmat[gsidx[row.geneset], i] = log(row.q₀ + 1e-4) * sign(row.es)
+        if row.q₀ < 0.2
+            latesmat[gsidx[row.geneset], i] = row.es
+        end
+    end
+end
+
+ampcl = hclust(pairwise(Euclidean(), ampesmat'); branchorder=:optimal)
+latcl = hclust(pairwise(Euclidean(), latesmat'); branchorder=:optimal)
+#- 
+
+figure = Figure(;size = (1200, 800))
+ax1 = Axis(figure[1,1]; title="3m", xticks = (1:3, amps), xticklabelrotation=pi/4, yticks = (1:length(gss), gss[ampcl.order]))
+ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, amps), xticklabelrotation=pi/4)
+ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, amps), xticklabelrotation=pi/4)
+hideydecorations!.([ax2,ax3])
+
+heatmap!(ax1, ampesmat'[1:3, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax2, ampesmat'[4:6, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+hm = heatmap!(ax3, ampesmat'[7:9, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+Colorbar(figure[1,4], hm; label="E.S.", )
+save("data/figures/concurrent_nodiff_amp_heatmap.png", figure)
+#-
+figure = Figure(;size = (1200, 800))
+ax1 = Axis(figure[1,1]; title="3m", xticks = (1:3, lats), xticklabelrotation=pi/4, yticks = (1:length(gss), gss[latcl.order]))
+ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, lats), xticklabelrotation=pi/4)
+ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, lats), xticklabelrotation=pi/4)
+hideydecorations!.([ax2,ax3])
+
+heatmap!(ax1, latesmat'[1:3, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax2, latesmat'[4:6, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+hm = heatmap!(ax3, latesmat'[7:9, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+Colorbar(figure[1,4], hm; label="E.S.", )
+save("data/figures/concurrent_nodiff_lat_heatmap.png", figure)
+

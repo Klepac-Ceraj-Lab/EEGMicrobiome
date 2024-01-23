@@ -53,23 +53,23 @@ future_6m12m = select(subset(wide_sub, AsTable(["seqprep_6m", "eeg_12m"]) => ByR
  
 # join relevant data
 
-dropmissing!(leftjoin!(concurrent_3m, select(subset(eegmbo, "visit"=> ByRow(==("3m"))), "subject", "seqprep", "age", "n_segments", r"peak_"); on="subject"))
-dropmissing!(leftjoin!(concurrent_6m, select(subset(eegmbo, "visit"=> ByRow(==("6m"))), "subject", "seqprep", "age", "n_segments", r"peak_"); on="subject"))
-dropmissing!(leftjoin!(concurrent_12m, select(subset(eegmbo, "visit"=> ByRow(==("12m"))), "subject", "seqprep", "age", "n_segments", r"peak_"); on="subject"))
+dropmissing!(leftjoin!(concurrent_3m, select(subset(eegmbo, "visit"=> ByRow(==("3m"))), "subject", "seqprep", "age", "age_diff", "n_segments", r"peak_"); on="subject"))
+dropmissing!(leftjoin!(concurrent_6m, select(subset(eegmbo, "visit"=> ByRow(==("6m"))), "subject", "seqprep", "age", "age_diff", "n_segments", r"peak_"); on="subject"))
+dropmissing!(leftjoin!(concurrent_12m, select(subset(eegmbo, "visit"=> ByRow(==("12m"))), "subject", "seqprep", "age", "age_diff", "n_segments", r"peak_"); on="subject"))
 
 
 @chain future_3m6m begin
-	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("3m"))), "subject", "seqprep", "age"); on="subject")
+	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("3m"))), "subject", "seqprep", "age", "age_diff"); on="subject")
 	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("6m"))), "subject", "eeg_age", "n_segments", r"peak_"); on="subject")
 	dropmissing!
 end
 @chain future_3m12m begin
-	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("3m"))), "subject", "seqprep", "age"); on="subject")
+	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("3m"))), "subject", "seqprep", "age", "age_diff"); on="subject")
 	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("12m"))), "subject", "eeg_age", "n_segments", r"peak_"); on="subject")
 	dropmissing!
 end
 @chain future_6m12m begin
-	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("6m"))), "subject", "seqprep", "age"); on="subject")
+	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("6m"))), "subject", "seqprep", "age", "age_diff"); on="subject")
 	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("12m"))), "subject", "eeg_age", "n_segments", r"peak_"); on="subject")
 	dropmissing!
 end
