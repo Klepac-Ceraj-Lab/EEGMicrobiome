@@ -156,7 +156,7 @@ transform!(groupby(fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collect(p), Ben
 transform!(groupby(fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
 sort!(fsea_df, "q₀")
 CSV.write("data/outputs/fsea/concurrent_consolidated_fsea.csv", fsea_df)
-# fsea_df = CSV.read("data/outputs/fsea/true_ages_fsea.csv", DataFrame)
+# fsea_df = CSV.read("data/outputs/fsea/concurrent_consolidated_fsea.csv", DataFrame)
 
 fsea_df_nodiff = let fsea_df_nodiff = DataFrame()
     for tp in tps, feature in eeg_features
@@ -189,7 +189,7 @@ transform!(groupby(fsea_df_nodiff, "timepoint"), "pvalue"=> (p-> adjust(collect(
 transform!(groupby(fsea_df_nodiff, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
 sort!(fsea_df_nodiff, "q₀")
 CSV.write("data/outputs/fsea/concurrent_nodiff_consolidated_fsea.csv", fsea_df_nodiff)
-# fsea_df = CSV.read("data/outputs/fsea/true_ages_fsea.csv", DataFrame)
+# fsea_df_nodiff = CSV.read("data/outputs/fsea/concurrent_nodiff_consolidated_fsea.csv", DataFrame)
 #- 
 
 ## Run FSEA
@@ -226,7 +226,7 @@ transform!(groupby(future12m_fsea_df, "timepoint"), "pvalue"=> (p-> adjust(colle
 transform!(groupby(future12m_fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
 sort!(future12m_fsea_df, "q₀")
 CSV.write("data/outputs/fsea/future12m_consolidated_fsea.csv", future12m_fsea_df)
-# future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_true_ages_fsea.csv", DataFrame)
+# future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_consolidated_fsea.csv", DataFrame)
 
 #-
 
@@ -264,7 +264,7 @@ transform!(groupby(future6m_fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collec
 transform!(groupby(future6m_fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
 sort!(future6m_fsea_df, "q₀")
 CSV.write("data/outputs/fsea/future6m_consolidated_fsea.csv", future6m_fsea_df)
-# future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_true_ages_fsea.csv", DataFrame)
+# future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_consolidated_fsea.csv", DataFrame)
 
 
 for row in eachrow(subset(fsea_df, "q₀" => ByRow(<(0.2))))
@@ -555,6 +555,15 @@ save("data/figures/future_lat_heatmap.png", figure)
 using Preferences
 na_unirefs = Set(reduce(union, values(na_map)))
 
+mbotps = Dict(
+    "3m"  => concurrent_3m,
+    "6m"  => concurrent_6m,
+    "12m" => concurrent_12m,
+    "3m_future6m" => future_3m6m,
+    "3m_future12m"   => future_3m12m,
+    "6m_future12m"   => future_6m12m
+)
+seqs = Set(mapreduce(samplenames, vcat, values(mbotps)))
 #
 
 
@@ -562,8 +571,8 @@ humann_files = mapreduce(vcat, readdir(joinpath(load_preference(VKCComputing, "m
     m = match(r"(SEQ\d+)", f)
     isnothing(m) && return DataFrame()
     sample = replace(basename(f), r"(SEQ\d+)_S\d+.+" => s"\1")
-    sample ∈ mbo.seqprep || return DataFrame()
-    if contains(basename(f), "genefamilies.tsv") && m[1] ∈ mbo.seqprep
+    sample ∈ seqs || return DataFrame()
+    if contains(basename(f), "genefamilies.tsv") && m[1] ∈ seqs
         @info basename(f)
         df = CSV.read(f, DataFrame)
         rename!(df, ["feature", "abundance"])
@@ -645,14 +654,16 @@ end;
 
 #-
 
-mbotps = Dict(
-    "3m"  => concurrent_3m,
-    "6m"  => concurrent_6m,
-    "12m" => concurrent_12m,
-    "3m_future6m" => future_3m6m,
-    "3m_future12m"   => future_3m12m,
-    "6m_future12m"   => future_6m12m
+mbotps_df = Dict(k => begin
+                     comm = mbotps[k]
+                     df = DataFrame(get(comm))
+                     for f in features(comm)
+                         df[!, string(f)] = vec(abundances(comm[f,:]))
+                     end
+                     df
+                 end for k in keys(mbotps)
 )
+
 
 for row in eachrow(vcat(subset(fsea_df, "q₀" => ByRow(<(0.2))),
                                          subset(future6m_fsea_df, "q₀" => ByRow(<(0.2))),
@@ -665,8 +676,8 @@ for row in eachrow(vcat(subset(fsea_df, "q₀" => ByRow(<(0.2))),
     unirefs = na_map[gs]
 
     subdf = let df = subset(humann_files, "uniref" => ByRow(u -> u ∈ unirefs))
-        df2 = leftjoin(mbotps[tp], grouptop(df); on="sample")
-        df2 = dropmissing(leftjoin!(select(df2, "visit"=> "timepoint", Cols(:)), select(eeg, "subject", "timepoint", eeg_feat); on=["subject", "timepoint"]))
+        df = leftjoin(mbotps_df[tp], grouptop(df); on="sample")
+        subset(df, "genus"=> ByRow(!ismissing))
     end
 
     cs = Dict(bug=> i for (i, bug) in enumerate(sort(unique(subdf."genus"))))
