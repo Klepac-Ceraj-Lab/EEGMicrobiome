@@ -74,8 +74,10 @@ self_tuning_tree = TunedModel(
 rng_samara = StableRNG(2023)
 concurrent_summary_stats = DataFrame()
 
-let modelin = vcat(mbotps_df["3m"], mbotps_df["6m"], mbotps_df["12m"])
-    @warn "Starting $tp"
+let modelin = vcat(mbotps_df["3m"], mbotps_df["6m"], mbotps_df["12m"]; cols=:union)
+    for col in names(modelin, r"s__")
+	modelin[!, col] = coalesce.(modelin[!, col], 0.0)
+    end
     for eeg_feat in eeg_features
 	@info "Testing $eeg_feat"
 	pfolds = partition(unique(modelin.subject), 0.25, 0.25, 0.25; rng=rng_samara)
@@ -139,7 +141,6 @@ let modelin = vcat(mbotps_df["3m"], mbotps_df["6m"], mbotps_df["12m"])
 	    bugs_only_r² = cor(bugs_only_predictions, modelin[test, eeg_feat])^2
 	    append!(concurrent_summary_stats, DataFrame(
 		 feature = fill(eeg_feat, 3),
-		 timepoint = fill(tp, 3),
 		 model = ["age_only", "bugs_only", "age_plus_bugs"],
 		 r² = [age_only_r², bugs_only_r², plus_bugs_r²],
 		 mape = [age_only_err, bugs_only_err, plus_bugs_err],
@@ -190,8 +191,6 @@ let modelin = vcat(mbotps_df["3m"], mbotps_df["6m"], mbotps_df["12m"])
 	lines!(ax1, [age_only_mn, age_only_mx], [age_only_mn, age_only_mx]; color=:gray60, linestyle = :dash)
 	lines!(ax2, [plus_bugs_mn, plus_bugs_mx], [plus_bugs_mn, plus_bugs_mx]; color=:gray60, linestyle = :dash)
 
-
-
 	text!(ax1, 0, 1;
 	    text = "R² = $(round(age_only_r², digits=3))\nMAPE = $(round(age_only_err, digits=3))",
 	    align = (:left, :top),
@@ -208,7 +207,7 @@ let modelin = vcat(mbotps_df["3m"], mbotps_df["6m"], mbotps_df["12m"])
 	    fontsize = 12
 	)
 
-	save("data/figures/rf_models/$(tp)_$(eeg_feat)_all_ages.png", fig)
+	save("data/figures/rf_models/concurrent_$(eeg_feat)_all_ages.png", fig)
     end
 end
 
