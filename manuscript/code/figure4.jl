@@ -72,9 +72,9 @@ self_tuning_tree = TunedModel(
 #-
 
 rng_samara = StableRNG(2023)
-summary_stats = DataFrame()
+concurrent_summary_stats = DataFrame()
 
-for (tp, modelin) in pairs(mbotps_df)
+let modelin = vcat(mbotps_df["3m"], mbotps_df["6m"], mbotps_df["12m"])
     @warn "Starting $tp"
     for eeg_feat in eeg_features
 	@info "Testing $eeg_feat"
@@ -137,8 +137,9 @@ for (tp, modelin) in pairs(mbotps_df)
 
 	    bugs_only_err = mape(bugs_only_predictions, modelin[test, eeg_feat])
 	    bugs_only_r² = cor(bugs_only_predictions, modelin[test, eeg_feat])^2
-	    append!(summary_stats, DataFrame(
+	    append!(concurrent_summary_stats, DataFrame(
 		 feature = fill(eeg_feat, 3),
+		 timepoint = fill(tp, 3),
 		 model = ["age_only", "bugs_only", "age_plus_bugs"],
 		 r² = [age_only_r², bugs_only_r², plus_bugs_r²],
 		 mape = [age_only_err, bugs_only_err, plus_bugs_err],
@@ -211,4 +212,5 @@ for (tp, modelin) in pairs(mbotps_df)
     end
 end
 
-CSV.write("data/outputs/rf_summary_stats.csv", summary_stats)
+CSV.write("data/outputs/rf_concurrent_fold_stats.csv", concurrent_summary_stats)
+CSV.write("data/outputs/rf_concurren_summary_stats.csv",
