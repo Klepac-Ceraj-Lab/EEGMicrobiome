@@ -12,6 +12,7 @@ using CairoMakie
 using SparseArrays
 using MLJ
 using MLJDecisionTreeInterface
+using GLM
 using StableRNGs
 
 concurrent_3m = load_cohort("concurrent_3m")
@@ -40,6 +41,7 @@ mbotps = Dict(
 mbotps_df = Dict(k => begin
                      comm = mbotps[k]
                      df = DataFrame(get(comm))
+		     transform!(df, AsTable(["age", "age_diff"]) => ByRow(nt-> nt.age + nt.age_diff) => "eeg_age")
                      for f in features(comm)
                          df[!, string(f)] = vec(abundances(comm[f,:]))
                      end
@@ -95,9 +97,25 @@ for (tp, modelin) in pairs(mbotps_df)
 	    MLJ.fit!(plus_bugs_tuned; rows=train)
 	    MLJ.fit!(bugs_only_tuned; rows=train)
 
-	    age_only_predictions = MLJ.predict(age_only_tuned; rows=test)
-	    plus_bugs_predictions = MLJ.predict(plus_bugs_tuned; rows=test)
-	    bugs_only_predictions = MLJ.predict(bugs_only_tuned; rows=test)
+	    age_only_correction = lm(@formula(y ~ yhat + 1),
+				     DataFrame("y" => modelin[train, eeg_feat],
+					       "yhat" => MLJ.predict(age_only_tuned; rows=train)
+					       )
+				     )
+	    plus_bugs_correction = lm(@formula(y ~ yhat + 1),
+				     DataFrame("y" => modelin[train, eeg_feat],
+					       "yhat" => MLJ.predict(plus_bugs_tuned; rows=train)
+					       )
+				     )
+	    bugs_only_correction = lm(@formula(y ~ yhat + 1),
+				     DataFrame("y" => modelin[train, eeg_feat],
+					       "yhat" => MLJ.predict(bugs_only_tuned; rows=train)
+					       )
+				     )
+
+	    age_only_predictions = GLM.predict(age_only_correction, DataFrame("yhat" => MLJ.predict(age_only_tuned; rows=test)))
+	    plus_bugs_predictions = GLM.predict(plus_bugs_correction, DataFrame("yhat" => MLJ.predict(plus_bugs_tuned; rows=test)))
+	    bugs_only_predictions = GLM.predict(bugs_only_correction, DataFrame("yhat" => MLJ.predict(bugs_only_tuned; rows=test)))
 
 	    age_only_dfinsert  = Vector{Union{Missing, Float64}}(missing, size(modelin, 1))
 	    plus_bugs_dfinsert = Vector{Union{Missing, Float64}}(missing, size(modelin, 1))
@@ -127,7 +145,7 @@ for (tp, modelin) in pairs(mbotps_df)
 		 fold = fill(i, 3),
 	    ))
 	end
-	
+
 	transform!(predictions, 
 	    AsTable(r"age_only_fold")=> ByRow(nt-> mean(skipmissing(values(nt))))=> "age_only_mean_pred",
 	    AsTable(r"plus_bugs_fold")=> ByRow(nt-> mean(skipmissing(values(nt))))=> "plus_bugs_mean_pred"

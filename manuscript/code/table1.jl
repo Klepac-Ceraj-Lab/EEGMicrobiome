@@ -59,18 +59,21 @@ dropmissing!(leftjoin!(concurrent_12m, select(subset(eegmbo, "visit"=> ByRow(==(
 
 
 @chain future_3m6m begin
-	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("3m"))), "subject", "seqprep", "age", "age_diff"); on="subject")
+	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("3m"))), "subject", "seqprep", "age"); on="subject")
 	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("6m"))), "subject", "eeg_age", "n_segments", r"peak_"); on="subject")
+	transform!(AsTable(["eeg_age", "age"])=> ByRow(nt-> nt.eeg_age - nt.age)=> "age_diff")
 	dropmissing!
 end
 @chain future_3m12m begin
-	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("3m"))), "subject", "seqprep", "age", "age_diff"); on="subject")
+	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("3m"))), "subject", "seqprep", "age"); on="subject")
 	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("12m"))), "subject", "eeg_age", "n_segments", r"peak_"); on="subject")
+	transform!(AsTable(["eeg_age", "age"])=> ByRow(nt-> nt.eeg_age - nt.age)=> "age_diff")
 	dropmissing!
 end
 @chain future_6m12m begin
-	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("6m"))), "subject", "seqprep", "age", "age_diff"); on="subject")
+	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("6m"))), "subject", "seqprep", "age"); on="subject")
 	leftjoin!(select(subset(eegmbo, "visit"=>ByRow(==("12m"))), "subject", "eeg_age", "n_segments", r"peak_"); on="subject")
+	transform!(AsTable(["eeg_age", "age"])=> ByRow(nt-> nt.eeg_age - nt.age)=> "age_diff")
 	dropmissing!
 end
 

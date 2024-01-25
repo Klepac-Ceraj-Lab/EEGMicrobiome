@@ -9,6 +9,7 @@ using MultipleTesting
 using Clustering
 using GLM
 using Distributions
+using CairoMakie
 
 # load data
 concurrent_3m = load_cohort("concurrent_3m")
@@ -28,15 +29,12 @@ concurrent_12m_func = DataFrame(get(concurrent_12m))
 load_functional_profiles!(concurrent_12m_func);
 
 future_3m6m_func = DataFrame(get(future_3m6m))
-transform!(future_3m6m_func, AsTable(["age", "eeg_age"])=> ByRow(nt-> nt.eeg_age - nt.age)=> "age_diff")
 load_functional_profiles!(future_3m6m_func);
 
 future_3m12m_func = DataFrame(get(future_3m12m))
-transform!(future_3m12m_func, AsTable(["age", "eeg_age"])=> ByRow(nt-> nt.eeg_age - nt.age)=> "age_diff")
 load_functional_profiles!(future_3m12m_func);
 
 future_6m12m_func = DataFrame(get(future_6m12m))
-transform!(future_6m12m_func, AsTable(["age", "eeg_age"])=> ByRow(nt-> nt.eeg_age - nt.age)=> "age_diff")
 load_functional_profiles!(future_6m12m_func);
 
 ##
@@ -492,6 +490,10 @@ save("data/figures/concurrent_nodiff_lat_heatmap.png", figure)
 ### Future ####
 
 
+feats = copy(eeg_features)
+featidx = Dict(f=> i for (i,f) in enumerate(feats))
+gss = unique(vcat(future6m_fsea_df, future12m_fsea_df).geneset)
+gsidx = Dict(f=> i for (i,f) in enumerate(gss))
 
 gdf = groupby(vcat(future6m_fsea_df, future12m_fsea_df), ["eeg_feature", "timepoint"])
 lats = filter(f-> contains(f, "latency"), feats)
