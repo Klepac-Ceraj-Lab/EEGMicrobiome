@@ -329,7 +329,7 @@ featidx = Dict(f=> i for (i,f) in enumerate(feats))
 gss = unique(fsea_df.geneset)
 gsidx = Dict(f=> i for (i,f) in enumerate(gss))
 
-cs = ColorSchemes.RdBu[[1.0, 0.85, 0.65, 0.5, 0.35, 0.15, 0.0]]
+cs = ColorSchemes.PuOr_11[[1,3,4,6,8,9,11]]
 cs[4] = colorant"gray70"
 
 for tp in tps
@@ -351,8 +351,9 @@ for tp in tps
         )
         allymed = median(df.z)
         subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
-        lines!(ax, [0.5, size(subdf, 1)+0.5], [allymed, allymed]; color=:gray, linestyle=:dash) 
-        ylims!(ax, extrema(df.z))
+        lines!(ax, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
+        hideydecorations!(ax, grid=false, ticks=false, ticklabels = i != 1)
+        hidexdecorations!(ax, ticks=false, ticklabels=false)
         for row in eachrow(subdf)
             yidx = findall(u-> replace(u, "UniRef90_"=>"") ∈ na_map[row.geneset], df.feature)
             xpos = gsidx[row.geneset]
@@ -364,17 +365,242 @@ for tp in tps
                    row.q₀ < 0.01 ? 1 :       # quite significant
                    row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
             c = ymed < allymed ? cs[cidx] : cs[8 - cidx]
-            violin!(ax, fill(xpos, length(ys)), ys; color=(c, 0.2))
+            violin!(ax, fill(xpos, length(ys)), ys; color=(c, 0.2), orientation=:horizontal)
             scatter!(ax, ys, xs; color = c)    
             lines!(ax, [ymed, ymed], [xpos - 0.4, xpos + 0.4], color = c)
-            hideydecorations!(ax, ticks=false, ticklabels = i != 1)
-            Label(fig[0, i], text = replace(feat, "peak_amp_"=>"", "_corrected"=>"c"), fontsize = 20)
         end
     end
-    Label(fig[-1, :], text = "Concurrent Amplitudes", fontsize = 40)
+    Label(fig[0, :], text = "Concurrent Amplitudes; $tp", fontsize = 30)
     save("data/figures/$(tp)_amplitude_fsea_summary.png", fig)
 end
 
+for feat in filter(contains("amp"), feats)
+    featstr = replace(feat, "peak_"=>"")
+    @warn "$featstr"
+    fig = Figure(; size=(1200, 700))
+    Legend(fig[2,1:3], [MarkerElement(; marker=:rect, color=cs[i]) for i in [1:3;5:7]],
+           ["(-) q < 0.01", "(-) q < 0.1", "(-) q < 0.2", 
+            "(+) q < 0.2", "(+) q < 0.1", "(+) q < 0.01"];
+           orientation=:horizontal, tellheight=true, tellwidth=false)
+    for (i, tp) in enumerate(tps)
+        @info "$tp"
+
+        df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
+        ax = Axis(fig[1,i];
+                  ylabel = "geneset",
+                  xlabel = "z",
+                  title  = tp,
+                  yticks = (1:length(gss), gss)
+        )
+        allymed = median(df.z)
+        subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
+        lines!(ax, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
+        hideydecorations!(ax, grid=false, ticks=false, ticklabels = i != 1)
+        hidexdecorations!(ax, ticks=false, ticklabels=false)
+        for row in eachrow(subdf)
+            yidx = findall(u-> replace(u, "UniRef90_"=>"") ∈ na_map[row.geneset], df.feature)
+            xpos = gsidx[row.geneset]
+            xs = rand(Normal(0.0, 0.05), length(yidx)) .+ xpos
+            ys = df.z[yidx]
+            ymed = median(ys)
+            
+            cidx = row.q₀ > 0.2  ? 4 :       # not significant
+                   row.q₀ < 0.01 ? 1 :       # quite significant
+                   row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
+            c = ymed < allymed ? cs[cidx] : cs[8 - cidx]
+            violin!(ax, fill(xpos, length(ys)), ys; color=(c, 0.2), orientation=:horizontal)
+            scatter!(ax, ys, xs; color = c)    
+            lines!(ax, [ymed, ymed], [xpos - 0.4, xpos + 0.4], color = c)
+        end
+    end
+    Label(fig[0, :], text = "Concurrent $featstr", fontsize = 30)
+    save("data/figures/$(featstr)_fsea_summary.png", fig)
+end
+
+
+for tp in tps
+    @warn "$tp"
+    fig = Figure(; size=(1200, 700))
+    Legend(fig[2,1:3], [MarkerElement(; marker=:rect, color=cs[i]) for i in [1:3;5:7]],
+           ["(-) q < 0.01", "(-) q < 0.1", "(-) q < 0.2", 
+            "(+) q < 0.2", "(+) q < 0.1", "(+) q < 0.01"];
+           orientation=:horizontal, tellheight=true, tellwidth=false)
+    for (i, feat) in enumerate(filter(contains("latency"), feats))
+        @info "$feat"
+
+        df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
+        ax = Axis(fig[1,i];
+                  ylabel = "geneset",
+                  xlabel = "z",
+                  title  = replace(feat, "peak_latency_"=>"", "_corrected"=>"c"),
+                  yticks = (1:length(gss), gss)
+        )
+        allymed = median(df.z)
+        subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
+        lines!(ax, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
+        hideydecorations!(ax, grid=false, ticks=false, ticklabels = i != 1)
+        hidexdecorations!(ax, ticks=false, ticklabels=false)
+        for row in eachrow(subdf)
+            yidx = findall(u-> replace(u, "UniRef90_"=>"") ∈ na_map[row.geneset], df.feature)
+            xpos = gsidx[row.geneset]
+            xs = rand(Normal(0.0, 0.05), length(yidx)) .+ xpos
+            ys = df.z[yidx]
+            ymed = median(ys)
+            
+            cidx = row.q₀ > 0.2  ? 4 :       # not significant
+                   row.q₀ < 0.01 ? 1 :       # quite significant
+                   row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
+            c = ymed < allymed ? cs[cidx] : cs[8 - cidx]
+            violin!(ax, fill(xpos, length(ys)), ys; color=(c, 0.2), orientation=:horizontal)
+            scatter!(ax, ys, xs; color = c)    
+            lines!(ax, [ymed, ymed], [xpos - 0.4, xpos + 0.4], color = c)
+        end
+    end
+    Label(fig[0, :], text = "Concurrent Latencies; $tp", fontsize = 30)
+    save("data/figures/$(tp)_latency_fsea_summary.png", fig)
+end
+
+for feat in filter(contains("latency"), feats)
+    featstr = replace(feat, "peak_"=>"")
+    @warn "$featstr"
+    fig = Figure(; size=(1200, 700))
+    Legend(fig[2,1:3], [MarkerElement(; marker=:rect, color=cs[i]) for i in [1:3;5:7]],
+           ["(-) q < 0.01", "(-) q < 0.1", "(-) q < 0.2", 
+            "(+) q < 0.2", "(+) q < 0.1", "(+) q < 0.01"];
+           orientation=:horizontal, tellheight=true, tellwidth=false)
+    for (i, tp) in enumerate(tps)
+        @info "$tp"
+
+        df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
+        ax = Axis(fig[1,i];
+                  ylabel = "geneset",
+                  xlabel = "z",
+                  title  = tp,
+                  yticks = (1:length(gss), gss)
+        )
+        allymed = median(df.z)
+        subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
+        lines!(ax, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
+        hideydecorations!(ax, grid=false, ticks=false, ticklabels = i != 1)
+        hidexdecorations!(ax, ticks=false, ticklabels=false)
+        for row in eachrow(subdf)
+            yidx = findall(u-> replace(u, "UniRef90_"=>"") ∈ na_map[row.geneset], df.feature)
+            xpos = gsidx[row.geneset]
+            xs = rand(Normal(0.0, 0.05), length(yidx)) .+ xpos
+            ys = df.z[yidx]
+            ymed = median(ys)
+            
+            cidx = row.q₀ > 0.2  ? 4 :       # not significant
+                   row.q₀ < 0.01 ? 1 :       # quite significant
+                   row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
+            c = ymed < allymed ? cs[cidx] : cs[8 - cidx]
+            violin!(ax, fill(xpos, length(ys)), ys; color=(c, 0.2), orientation=:horizontal)
+            scatter!(ax, ys, xs; color = c)    
+            lines!(ax, [ymed, ymed], [xpos - 0.4, xpos + 0.4], color = c)
+        end
+    end
+    Label(fig[0, :], text = "Concurrent $featstr", fontsize = 30)
+    save("data/figures/$(featstr)_fsea_summary.png", fig)
+end
+
+#######
+
+fig = Figure(; size=(1400,1400))
+grid = GridLayout(fig[1,1])
+Label(grid[-1, 1:3], text = "Concurrent Amplitudes", fontsize=30)
+
+Legend(fig[2,1], [MarkerElement(; marker=:rect, color=cs[i]) for i in [1:3;5:7]],
+       ["(-) q < 0.01", "(-) q < 0.1", "(-) q < 0.2", 
+        "(+) q < 0.2", "(+) q < 0.1", "(+) q < 0.01"];
+       orientation=:horizontal, tellheight=true, tellwidth=false)
+for (j, tp) in enumerate(tps)
+    @warn "$tp"
+    Label(grid[j,0]; text = tp, fontsize = 20, tellheight=false, tellwidth=true)
+    for (i, feat) in enumerate(filter(contains("amp"), feats))
+        @info "$feat"
+
+        Label(grid[0,i]; text = replace(feat, r"peak_[a-z]+_"=>"", "_corrected"=>"c"),
+              fontsize = 20,
+              tellheight=true,
+              tellwidth=false)
+        df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
+        ax = Axis(grid[j,i];
+                  ylabel = "geneset",
+                  xlabel = "z",
+                  yticks = (1:length(gss), gss)
+        )
+        allymed = median(df.z)
+        subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
+        lines!(ax, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
+        hideydecorations!(ax, grid=false, ticks=false, ticklabels = i != 1)
+        hidexdecorations!(ax, ticks=false, ticklabels=false)
+        for row in eachrow(subdf)
+            yidx = findall(u-> replace(u, "UniRef90_"=>"") ∈ na_map[row.geneset], df.feature)
+            xpos = gsidx[row.geneset]
+            xs = rand(Normal(0.0, 0.05), length(yidx)) .+ xpos
+            ys = df.z[yidx]
+            ymed = median(ys)
+            
+            cidx = row.q₀ > 0.2  ? 4 :       # not significant
+                   row.q₀ < 0.01 ? 1 :       # quite significant
+                   row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
+            c = ymed < allymed ? cs[cidx] : cs[8 - cidx]
+            violin!(ax, fill(xpos, length(ys)), ys; color=(c, 0.2), orientation=:horizontal)
+            scatter!(ax, ys, xs; color = c)    
+            lines!(ax, [ymed, ymed], [xpos - 0.4, xpos + 0.4], color = c)
+        end
+    end
+    save("data/figures/amplitude_fsea_summary.png", fig)
+end
+
+
+fig = Figure(; size=(1400,1400))
+grid = GridLayout(fig[1,1])
+Label(grid[-1, 1:3], text = "Concurrent Latencies", fontsize=30)
+
+Legend(fig[2,1], [MarkerElement(; marker=:rect, color=cs[i]) for i in [1:3;5:7]],
+       ["(-) q < 0.01", "(-) q < 0.1", "(-) q < 0.2", 
+        "(+) q < 0.2", "(+) q < 0.1", "(+) q < 0.01"];
+       orientation=:horizontal, tellheight=true, tellwidth=false)
+for (j, tp) in enumerate(tps)
+    @warn "$tp"
+    Label(grid[j,0]; text = tp, fontsize = 20, tellheight=false, tellwidth=true)
+    for (i, feat) in enumerate(filter(contains("latency"), feats))
+        @info "$feat"
+
+        Label(grid[0,i]; text = replace(feat, r"peak_[a-z]+_"=>"", "_corrected"=>"c"),
+              fontsize = 20,
+              tellheight=true,
+              tellwidth=false)
+        df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
+        ax = Axis(grid[j,i];
+                  ylabel = "geneset",
+                  xlabel = "z",
+                  yticks = (1:length(gss), gss)
+        )
+        allymed = median(df.z)
+        subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
+        lines!(ax, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
+        hideydecorations!(ax, grid=false, ticks=false, ticklabels = i != 1)
+        hidexdecorations!(ax, ticks=false, ticklabels=false)
+        for row in eachrow(subdf)
+            yidx = findall(u-> replace(u, "UniRef90_"=>"") ∈ na_map[row.geneset], df.feature)
+            xpos = gsidx[row.geneset]
+            xs = rand(Normal(0.0, 0.05), length(yidx)) .+ xpos
+            ys = df.z[yidx]
+            ymed = median(ys)
+            
+            cidx = row.q₀ > 0.2  ? 4 :       # not significant
+                   row.q₀ < 0.01 ? 1 :       # quite significant
+                   row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
+            c = ymed < allymed ? cs[cidx] : cs[8 - cidx]
+            violin!(ax, fill(xpos, length(ys)), ys; color=(c, 0.2), orientation=:horizontal)
+            scatter!(ax, ys, xs; color = c)    
+            lines!(ax, [ymed, ymed], [xpos - 0.4, xpos + 0.4], color = c)
+        end
+    end
+    save("data/figures/latency_fsea_summary.png", fig)
+end
 
 
 # latency
@@ -418,9 +644,9 @@ ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, amps), xticklabelrotation=pi/
 ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, amps), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, ampesmat'[1:3, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, ampesmat'[4:6, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, ampesmat'[7:9, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, ampesmat'[1:3, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax2, ampesmat'[4:6, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+hm = heatmap!(ax3, ampesmat'[7:9, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
 Colorbar(figure[1,4], hm; label="E.S.", )
 save("data/figures/concurrent_amp_heatmap.png", figure)
 #-
@@ -430,9 +656,9 @@ ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, lats), xticklabelrotation=pi/
 ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, lats), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, latesmat'[1:3, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, latesmat'[4:6, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, latesmat'[7:9, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, latesmat'[1:3, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax2, latesmat'[4:6, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+hm = heatmap!(ax3, latesmat'[7:9, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
 Colorbar(figure[1,4], hm; label="E.S.", )
 save("data/figures/concurrent_lat_heatmap.png", figure)
 #-
@@ -443,9 +669,9 @@ ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, amps), xticklabelrotation=pi/
 ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, amps), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, ampqmat'[1:3, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, ampqmat'[4:6, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, ampqmat'[7:9, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, ampqmat'[1:3, ampcl.order]; colormap=Reverse(:roma), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax2, ampqmat'[4:6, ampcl.order]; colormap=Reverse(:roma), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
+hm = heatmap!(ax3, ampqmat'[7:9, ampcl.order]; colormap=Reverse(:roma), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
 Colorbar(figure[1,4], hm; label="log(qvalue)", )
 save("data/figures/concurrent_amp_q_heatmap.png", figure)
 
@@ -457,9 +683,9 @@ ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, lats), xticklabelrotation=pi/
 ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, lats), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, latqmat'[1:3, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, latqmat'[4:6, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, latqmat'[7:9, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, latqmat'[1:3, latcl.order]; colormap=Reverse(:roma), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax2, latqmat'[4:6, latcl.order]; colormap=Reverse(:roma), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
+hm = heatmap!(ax3, latqmat'[7:9, latcl.order]; colormap=Reverse(:roma), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
 Colorbar(figure[1,4], hm; label="log(qvalue)", )
 save("data/figures/concurrent_lat_q_heatmap.png", figure)
 
@@ -504,9 +730,9 @@ ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, amps), xticklabelrotation=pi/
 ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, amps), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, ampesmat'[1:3, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, ampesmat'[4:6, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, ampesmat'[7:9, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, ampesmat'[1:3, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax2, ampesmat'[4:6, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+hm = heatmap!(ax3, ampesmat'[7:9, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
 Colorbar(figure[1,4], hm; label="E.S.", )
 save("data/figures/concurrent_nodiff_amp_heatmap.png", figure)
 #-
@@ -516,9 +742,9 @@ ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, lats), xticklabelrotation=pi/
 ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, lats), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, latesmat'[1:3, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, latesmat'[4:6, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, latesmat'[7:9, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, latesmat'[1:3, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax2, latesmat'[4:6, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+hm = heatmap!(ax3, latesmat'[7:9, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
 Colorbar(figure[1,4], hm; label="E.S.", )
 save("data/figures/concurrent_nodiff_lat_heatmap.png", figure)
 
@@ -526,12 +752,115 @@ save("data/figures/concurrent_nodiff_lat_heatmap.png", figure)
 ### Future ####
 
 
+
+
+
 feats = copy(eeg_features)
 featidx = Dict(f=> i for (i,f) in enumerate(feats))
 gss = unique(vcat(future6m_fsea_df, future12m_fsea_df).geneset)
 gsidx = Dict(f=> i for (i,f) in enumerate(gss))
+tps = unique(vcat(future6m_fsea_df, future12m_fsea_df).timepoint)
+
 
 gdf = groupby(vcat(future6m_fsea_df, future12m_fsea_df), ["eeg_feature", "timepoint"])
+
+fig = Figure(; size=(1400,1400))
+grid = GridLayout(fig[1,1])
+Label(grid[-1, 1:3], text = "Future Amplitudes", fontsize=30)
+
+Legend(fig[2,1], [MarkerElement(; marker=:rect, color=cs[i]) for i in [1:3;5:7]],
+       ["(-) q < 0.01", "(-) q < 0.1", "(-) q < 0.2", 
+        "(+) q < 0.2", "(+) q < 0.1", "(+) q < 0.01"];
+       orientation=:horizontal, tellheight=true, tellwidth=false)
+for (j, tp) in enumerate(tps)
+    @warn "$tp"
+    Label(grid[j,0]; text = replace(tp, "_future"=>"->"), fontsize = 20, tellheight=false, tellwidth=true)
+    for (i, feat) in enumerate(filter(contains("amp"), feats))
+        @info "$feat"
+
+        Label(grid[0,i]; text = replace(feat, r"peak_[a-z]+_"=>"", "_corrected"=>"c"),
+              fontsize = 20,
+              tellheight=true,
+              tellwidth=false)
+        df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
+        ax = Axis(grid[j,i];
+                  ylabel = "geneset",
+                  xlabel = "z",
+                  yticks = (1:length(gss), gss)
+        )
+        allymed = median(df.z)
+        subdf = gdf[(; eeg_feature=feat, timepoint=tp)]
+        lines!(ax, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
+        hideydecorations!(ax, grid=false, ticks=false, ticklabels = i != 1)
+        hidexdecorations!(ax, ticks=false, ticklabels=false)
+        for row in eachrow(subdf)
+            yidx = findall(u-> replace(u, "UniRef90_"=>"") ∈ na_map[row.geneset], df.feature)
+            xpos = gsidx[row.geneset]
+            xs = rand(Normal(0.0, 0.05), length(yidx)) .+ xpos
+            ys = df.z[yidx]
+            ymed = median(ys)
+            
+            cidx = row.q₀ > 0.2  ? 4 :       # not significant
+                   row.q₀ < 0.01 ? 1 :       # quite significant
+                   row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
+            c = ymed < allymed ? cs[cidx] : cs[8 - cidx]
+            violin!(ax, fill(xpos, length(ys)), ys; color=(c, 0.2), orientation=:horizontal)
+            scatter!(ax, ys, xs; color = c)    
+            lines!(ax, [ymed, ymed], [xpos - 0.4, xpos + 0.4], color = c)
+        end
+    end
+    save("data/figures/amplitude_future_fsea_summary.png", fig)
+end
+
+
+fig = Figure(; size=(1400,1400))
+grid = GridLayout(fig[1,1])
+Label(grid[-1, 1:3], text = "Future Latencies", fontsize=30)
+
+Legend(fig[2,1], [MarkerElement(; marker=:rect, color=cs[i]) for i in [1:3;5:7]],
+       ["(-) q < 0.01", "(-) q < 0.1", "(-) q < 0.2", 
+        "(+) q < 0.2", "(+) q < 0.1", "(+) q < 0.01"];
+       orientation=:horizontal, tellheight=true, tellwidth=false)
+for (j, tp) in enumerate(tps)
+    @warn "$tp"
+    Label(grid[j,0]; text = replace(tp, "_future"=>"->"), fontsize = 20, tellheight=false, tellwidth=true)
+    for (i, feat) in enumerate(filter(contains("latency"), feats))
+        @info "$feat"
+
+        Label(grid[0,i]; text = replace(feat, r"peak_[a-z]+_"=>"", "_corrected"=>"c"),
+              fontsize = 20,
+              tellheight=true,
+              tellwidth=false)
+        df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
+        ax = Axis(grid[j,i];
+                  ylabel = "geneset",
+                  xlabel = "z",
+                  yticks = (1:length(gss), gss)
+        )
+        allymed = median(df.z)
+        subdf = gdf[(; eeg_feature=feat, timepoint=tp)]
+        lines!(ax, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
+        hideydecorations!(ax, grid=false, ticks=false, ticklabels = i != 1)
+        hidexdecorations!(ax, ticks=false, ticklabels=false)
+        for row in eachrow(subdf)
+            yidx = findall(u-> replace(u, "UniRef90_"=>"") ∈ na_map[row.geneset], df.feature)
+            xpos = gsidx[row.geneset]
+            xs = rand(Normal(0.0, 0.05), length(yidx)) .+ xpos
+            ys = df.z[yidx]
+            ymed = median(ys)
+            
+            cidx = row.q₀ > 0.2  ? 4 :       # not significant
+                   row.q₀ < 0.01 ? 1 :       # quite significant
+                   row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
+            c = ymed < allymed ? cs[cidx] : cs[8 - cidx]
+            violin!(ax, fill(xpos, length(ys)), ys; color=(c, 0.2), orientation=:horizontal)
+            scatter!(ax, ys, xs; color = c)    
+            lines!(ax, [ymed, ymed], [xpos - 0.4, xpos + 0.4], color = c)
+        end
+    end
+    save("data/figures/latency_future_fsea_summary.png", fig)
+end
+
 lats = filter(f-> contains(f, "latency"), feats)
 amps = filter(f-> contains(f, "amp"), feats)
 latesmat = zeros(length(gss), 9)
@@ -571,9 +900,9 @@ ax2 = Axis(figure[1,2]; title="3m->12m", xticks = (1:3, amps), xticklabelrotatio
 ax3 = Axis(figure[1,3]; title="6m->12m", xticks = (1:3, amps), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, ampesmat'[1:3, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, ampesmat'[4:6, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, ampesmat'[7:9, ampcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, ampesmat'[1:3, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax2, ampesmat'[4:6, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+hm = heatmap!(ax3, ampesmat'[7:9, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
 Colorbar(figure[1,4], hm; label="E.S.", )
 save("data/figures/future_amp_heatmap.png", figure)
 #-
@@ -583,9 +912,9 @@ ax2 = Axis(figure[1,2]; title="3m->12m", xticks = (1:3, lats), xticklabelrotatio
 ax3 = Axis(figure[1,3]; title="6m->12m", xticks = (1:3, lats), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, latesmat'[1:3, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, latesmat'[4:6, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, latesmat'[7:9, latcl.order]; colormap=Reverse(:RdBu), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, latesmat'[1:3, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax2, latesmat'[4:6, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+hm = heatmap!(ax3, latesmat'[7:9, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
 Colorbar(figure[1,4], hm; label="E.S.", )
 save("data/figures/future_lat_heatmap.png", figure)
 
@@ -664,7 +993,7 @@ topspecies = mapreduce(vcat, eachrow(vcat(subset(fsea_df, "q₀" => ByRow(<(0.2)
                                          subset(future12m_fsea_df, "q₀" => ByRow(<(0.2)))
             ))) do row
     tp = row.timepoint
-   gs = row.geneset
+    gs = row.geneset
     eeg_feat = row.eeg_feature
 
     unirefs = na_map[gs]
