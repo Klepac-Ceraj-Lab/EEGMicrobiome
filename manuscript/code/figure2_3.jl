@@ -334,16 +334,21 @@ cs[4] = colorant"gray70"
 
 for tp in tps
     @warn "$tp"
-    for feat in feats
+    fig = Figure(; size=(1200, 700))
+    Legend(fig[2,1:3], [MarkerElement(; marker=:rect, color=cs[i]) for i in [1:3;5:7]],
+           ["(-) q < 0.01", "(-) q < 0.1", "(-) q < 0.2", 
+            "(+) q < 0.2", "(+) q < 0.1", "(+) q < 0.01"];
+           orientation=:horizontal, tellheight=true, tellwidth=false)
+    for (i, feat) in enumerate(filter(contains("amp"), feats))
         @info "$feat"
 
         df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
-        fig = Figure(; size=(700, 500))
-        ax = Axis(fig[1,1], xlabel="geneset", ylabel = "z", title=feat, xticks=(1:length(gss), gss), xticklabelrotation = pi/4)
-        Legend(fig[2,1], [MarkerElement(; marker=:rect, color=cs[i]) for i in [1:3;5:7]],
-                         ["(-) q < 0.01", "(-) q < 0.1", "(-) q < 0.2", 
-                          "(+) q < 0.2", "(+) q < 0.1", "(+) q < 0.01"];
-                    orientation=:horizontal, tellheight=true, tellwidth=false)
+        ax = Axis(fig[1,i];
+                  ylabel = "geneset",
+                  xlabel = "z",
+                  title  = replace(feat, "peak_amp_"=>"", "_corrected"=>"c"),
+                  yticks = (1:length(gss), gss)
+        )
         allymed = median(df.z)
         subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
         lines!(ax, [0.5, size(subdf, 1)+0.5], [allymed, allymed]; color=:gray, linestyle=:dash) 
@@ -358,14 +363,19 @@ for tp in tps
             cidx = row.q₀ > 0.2  ? 4 :       # not significant
                    row.q₀ < 0.01 ? 1 :       # quite significant
                    row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
-            c = row.q₀ > 0.2 ? cs[cidx] : cs[8 - cidx]
+            c = ymed < allymed ? cs[cidx] : cs[8 - cidx]
             violin!(ax, fill(xpos, length(ys)), ys; color=(c, 0.2))
-            scatter!(ax, xs, ys; color = c)    
-            lines!(ax, [xpos - 0.4, xpos + 0.4], [ymed, ymed], color = c)
+            scatter!(ax, ys, xs; color = c)    
+            lines!(ax, [ymed, ymed], [xpos - 0.4, xpos + 0.4], color = c)
+            hideydecorations!(ax, ticks=false, ticklabels = i != 1)
+            Label(fig[0, i], text = replace(feat, "peak_amp_"=>"", "_corrected"=>"c"), fontsize = 20)
         end
-        save("data/figures/$(feat)_$(tp)_fsea_summary.png", fig)
     end
+    Label(fig[-1, :], text = "Concurrent Amplitudes", fontsize = 40)
+    save("data/figures/$(tp)_amplitude_fsea_summary.png", fig)
 end
+
+
 
 # latency
 gdf = groupby(fsea_df, ["eeg_feature", "timepoint"])
