@@ -115,9 +115,12 @@ let modelin = vcat(mbotps_df["3m"], mbotps_df["6m"], mbotps_df["12m"]; cols=:uni
 					       )
 				     )
 
-	    age_only_predictions = GLM.predict(age_only_correction, DataFrame("yhat" => MLJ.predict(age_only_tuned; rows=test)))
-	    plus_bugs_predictions = GLM.predict(plus_bugs_correction, DataFrame("yhat" => MLJ.predict(plus_bugs_tuned; rows=test)))
-	    bugs_only_predictions = GLM.predict(bugs_only_correction, DataFrame("yhat" => MLJ.predict(bugs_only_tuned; rows=test)))
+	    age_only_predictions = MLJ.predict(age_only_tuned; rows=test)
+	    plus_bugs_predictions = MLJ.predict(plus_bugs_tuned; rows=test)
+	    bugs_only_predictions =  MLJ.predict(bugs_only_tuned; rows=test)
+	    #age_only_predictions = GLM.predict(age_only_correction, DataFrame("yhat" => MLJ.predict(age_only_tuned; rows=test)))
+	    #plus_bugs_predictions = GLM.predict(plus_bugs_correction, DataFrame("yhat" => MLJ.predict(plus_bugs_tuned; rows=test)))
+	    #bugs_only_predictions = GLM.predict(bugs_only_correction, DataFrame("yhat" => MLJ.predict(bugs_only_tuned; rows=test)))
 
 	    age_only_dfinsert  = Vector{Union{Missing, Float64}}(missing, size(modelin, 1))
 	    plus_bugs_dfinsert = Vector{Union{Missing, Float64}}(missing, size(modelin, 1))

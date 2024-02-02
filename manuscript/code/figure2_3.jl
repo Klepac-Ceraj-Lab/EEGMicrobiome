@@ -10,6 +10,7 @@ using Clustering
 using GLM
 using Distributions
 using CairoMakie
+using ColorSchemes
 
 # load data
 concurrent_3m = load_cohort("concurrent_3m")
@@ -263,7 +264,14 @@ transform!(groupby(future6m_fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(
 sort!(future6m_fsea_df, "q₀")
 CSV.write("data/outputs/fsea/future6m_consolidated_fsea.csv", future6m_fsea_df)
 # future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_consolidated_fsea.csv", DataFrame)
+#
+############
+# Plotting #
+############
 
+fsea_df = CSV.read("data/outputs/fsea/concurrent_consolidated_fsea.csv", DataFrame)
+future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_consolidated_fsea.csv", DataFrame)
+future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_consolidated_fsea.csv", DataFrame)
 
 for row in eachrow(subset(fsea_df, "q₀" => ByRow(<(0.2))))
     res = fsea(1:row.nfeatures, row.ranks)
@@ -321,21 +329,39 @@ featidx = Dict(f=> i for (i,f) in enumerate(feats))
 gss = unique(fsea_df.geneset)
 gsidx = Dict(f=> i for (i,f) in enumerate(gss))
 
-for feat in feats
-    for tp in tps
+cs = ColorSchemes.RdBu[[1.0, 0.85, 0.65, 0.5, 0.35, 0.15, 0.0]]
+cs[4] = colorant"gray70"
+
+for tp in tps
+    @warn "$tp"
+    for feat in feats
+        @info "$feat"
+
+        df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
         fig = Figure(; size=(700, 500))
-        ax = Axis(fig[1,1], xlabel="geneset", ylabel = "rank", title=feat, xticks=(1:length(gss), gss), xticklabelrotation = pi/4)
-        for row in eachrow(subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp))))
+        ax = Axis(fig[1,1], xlabel="geneset", ylabel = "z", title=feat, xticks=(1:length(gss), gss), xticklabelrotation = pi/4)
+        Legend(fig[2,1], [MarkerElement(; marker=:rect, color=cs[i]) for i in [1:3;5:7]],
+                         ["(-) q < 0.01", "(-) q < 0.1", "(-) q < 0.2", 
+                          "(+) q < 0.2", "(+) q < 0.1", "(+) q < 0.01"];
+                    orientation=:horizontal, tellheight=true, tellwidth=false)
+        allymed = median(df.z)
+        subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
+        lines!(ax, [0.5, size(subdf, 1)+0.5], [allymed, allymed]; color=:gray, linestyle=:dash) 
+        ylims!(ax, extrema(df.z))
+        for row in eachrow(subdf)
+            yidx = findall(u-> replace(u, "UniRef90_"=>"") ∈ na_map[row.geneset], df.feature)
             xpos = gsidx[row.geneset]
-            xs = rand(Normal(0.0, 0.05), length(row.ranks)) .+ xpos
-            med = median(1:row.nfeatures)
-            ys = (row.ranks .- med) ./ med
+            xs = rand(Normal(0.0, 0.05), length(yidx)) .+ xpos
+            ys = df.z[yidx]
             ymed = median(ys)
-            c = row.q₀ > 0.2 ? :gray : ymed < 0 ? :blue : :red
+            
+            cidx = row.q₀ > 0.2  ? 4 :       # not significant
+                   row.q₀ < 0.01 ? 1 :       # quite significant
+                   row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
+            c = row.q₀ > 0.2 ? cs[cidx] : cs[8 - cidx]
             violin!(ax, fill(xpos, length(ys)), ys; color=(c, 0.2))
             scatter!(ax, xs, ys; color = c)    
-            ylims!(ax, (-1.5, 1.5))
-            #lines!(ax, [xpos - 0.5, xpos + 0.5], [ymed, ymed], color = c)
+            lines!(ax, [xpos - 0.4, xpos + 0.4], [ymed, ymed], color = c)
         end
         save("data/figures/$(feat)_$(tp)_fsea_summary.png", fig)
     end
