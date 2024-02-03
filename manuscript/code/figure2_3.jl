@@ -9,7 +9,7 @@ using MultipleTesting
 using Clustering
 using GLM
 using Distributions
-using CairoMakie
+using Caivikkie
 using ColorSchemes
 
 # load data
@@ -323,13 +323,14 @@ end
 
 ##
 
+tps = ("3m", "6m", "12m")
 gdf = groupby(fsea_df, "eeg_feature")
 feats = copy(eeg_features)
 featidx = Dict(f=> i for (i,f) in enumerate(feats))
 gss = unique(fsea_df.geneset)
 gsidx = Dict(f=> i for (i,f) in enumerate(gss))
 
-cs = ColorSchemes.PuOr_11[[1,3,4,6,8,9,11]]
+cs = reverse(ColorSchemes.PuOr_11[[1,3,4,6,8,9,11]])
 cs[4] = colorant"gray70"
 
 for tp in tps
@@ -635,7 +636,7 @@ for (i, (feat, tp)) in enumerate(Iterators.product(lats, tps))
 end
 
 ampcl = hclust(pairwise(Euclidean(), ampesmat'); branchorder=:optimal)
-latcl = hclust(pairwise(Euclidean(), latesmat'); branchorder=:optimal)
+atcl = hclust(pairwise(Euclidean(), latesmat'); branchorder=:optimal)
 #- 
 
 figure = Figure(;size = (1200, 800))
@@ -644,9 +645,9 @@ ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, amps), xticklabelrotation=pi/
 ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, amps), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, ampesmat'[1:3, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, ampesmat'[4:6, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, ampesmat'[7:9, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, ampesmat'[1:3, ampcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
+heatmap!(ax2, ampesmat'[4:6, ampcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
+hm = heatmap!(ax3, ampesmat'[7:9, ampcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
 Colorbar(figure[1,4], hm; label="E.S.", )
 save("data/figures/concurrent_amp_heatmap.png", figure)
 #-
@@ -656,9 +657,9 @@ ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, lats), xticklabelrotation=pi/
 ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, lats), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, latesmat'[1:3, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, latesmat'[4:6, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, latesmat'[7:9, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, latesmat'[1:3, latcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
+heatmap!(ax2, latesmat'[4:6, latcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
+hm = heatmap!(ax3, latesmat'[7:9, latcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
 Colorbar(figure[1,4], hm; label="E.S.", )
 save("data/figures/concurrent_lat_heatmap.png", figure)
 #-
@@ -669,9 +670,9 @@ ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, amps), xticklabelrotation=pi/
 ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, amps), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, ampqmat'[1:3, ampcl.order]; colormap=Reverse(:roma), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, ampqmat'[4:6, ampcl.order]; colormap=Reverse(:roma), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, ampqmat'[7:9, ampcl.order]; colormap=Reverse(:roma), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, ampqmat'[1:3, ampcl.order]; colormap=:vik, colorrange = (-4.0, 4.0), highclip=:orangered, lowclip=:indigo)
+heatmap!(ax2, ampqmat'[4:6, ampcl.order]; colormap=:vik, colorrange = (-4.0, 4.0), highclip=:orangered, lowclip=:indigo)
+hm = heatmap!(ax3, ampqmat'[7:9, ampcl.order]; colormap=:vik, colorrange = (-4.0, 4.0), highclip=:orangered, lowclip=:indigo)
 Colorbar(figure[1,4], hm; label="log(qvalue)", )
 save("data/figures/concurrent_amp_q_heatmap.png", figure)
 
@@ -683,9 +684,9 @@ ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, lats), xticklabelrotation=pi/
 ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, lats), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, latqmat'[1:3, latcl.order]; colormap=Reverse(:roma), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, latqmat'[4:6, latcl.order]; colormap=Reverse(:roma), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, latqmat'[7:9, latcl.order]; colormap=Reverse(:roma), colorrange = (-4.0, 4.0), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, latqmat'[1:3, latcl.order]; colormap=:vik, colorrange = (-4.0, 4.0), highclip=:orangered, lowclip=:indigo)
+heatmap!(ax2, latqmat'[4:6, latcl.order]; colormap=:vik, colorrange = (-4.0, 4.0), highclip=:orangered, lowclip=:indigo)
+hm = heatmap!(ax3, latqmat'[7:9, latcl.order]; colormap=:vik, colorrange = (-4.0, 4.0), highclip=:orangered, lowclip=:indigo)
 Colorbar(figure[1,4], hm; label="log(qvalue)", )
 save("data/figures/concurrent_lat_q_heatmap.png", figure)
 
@@ -730,9 +731,9 @@ ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, amps), xticklabelrotation=pi/
 ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, amps), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, ampesmat'[1:3, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, ampesmat'[4:6, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, ampesmat'[7:9, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, ampesmat'[1:3, ampcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
+heatmap!(ax2, ampesmat'[4:6, ampcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
+hm = heatmap!(ax3, ampesmat'[7:9, ampcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
 Colorbar(figure[1,4], hm; label="E.S.", )
 save("data/figures/concurrent_nodiff_amp_heatmap.png", figure)
 #-
@@ -742,9 +743,9 @@ ax2 = Axis(figure[1,2]; title="6m", xticks = (1:3, lats), xticklabelrotation=pi/
 ax3 = Axis(figure[1,3]; title="12m", xticks = (1:3, lats), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, latesmat'[1:3, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, latesmat'[4:6, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, latesmat'[7:9, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, latesmat'[1:3, latcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
+heatmap!(ax2, latesmat'[4:6, latcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
+hm = heatmap!(ax3, latesmat'[7:9, latcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
 Colorbar(figure[1,4], hm; label="E.S.", )
 save("data/figures/concurrent_nodiff_lat_heatmap.png", figure)
 
@@ -759,7 +760,7 @@ feats = copy(eeg_features)
 featidx = Dict(f=> i for (i,f) in enumerate(feats))
 gss = unique(vcat(future6m_fsea_df, future12m_fsea_df).geneset)
 gsidx = Dict(f=> i for (i,f) in enumerate(gss))
-tps = unique(vcat(future6m_fsea_df, future12m_fsea_df).timepoint)
+tps = String.(unique(vcat(future6m_fsea_df, future12m_fsea_df).timepoint))
 
 
 gdf = groupby(vcat(future6m_fsea_df, future12m_fsea_df), ["eeg_feature", "timepoint"])
@@ -869,7 +870,7 @@ ampesmat = zeros(length(gss), 9)
 latqmat = zeros(length(gss), 9)
 ampqmat = zeros(length(gss), 9)
 
-for (i, (feat, tp)) in enumerate(Iterators.product(amps, unique(DataFrames.select(gdf, :).timepoint)))
+for (i, (feat, tp)) in enumerate(Iterators.product(amps, String.(unique(DataFrames.select(gdf, :).timepoint))))
     df = gdf[(; eeg_feature=feat, timepoint=tp)]
     for row in eachrow(df)
         ampqmat[gsidx[row.geneset], i] = log(row.q₀ + 1e-4) * sign(row.es)
@@ -900,9 +901,9 @@ ax2 = Axis(figure[1,2]; title="3m->12m", xticks = (1:3, amps), xticklabelrotatio
 ax3 = Axis(figure[1,3]; title="6m->12m", xticks = (1:3, amps), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, ampesmat'[1:3, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, ampesmat'[4:6, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, ampesmat'[7:9, ampcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, ampesmat'[1:3, ampcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
+heatmap!(ax2, ampesmat'[4:6, ampcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
+hm = heatmap!(ax3, ampesmat'[7:9, ampcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
 Colorbar(figure[1,4], hm; label="E.S.", )
 save("data/figures/future_amp_heatmap.png", figure)
 #-
@@ -912,9 +913,9 @@ ax2 = Axis(figure[1,2]; title="3m->12m", xticks = (1:3, lats), xticklabelrotatio
 ax3 = Axis(figure[1,3]; title="6m->12m", xticks = (1:3, lats), xticklabelrotation=pi/4)
 hideydecorations!.([ax2,ax3])
 
-heatmap!(ax1, latesmat'[1:3, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-heatmap!(ax2, latesmat'[4:6, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
-hm = heatmap!(ax3, latesmat'[7:9, latcl.order]; colormap=Reverse(:roma), colorrange = (-0.5, 0.5), highclip=:yellow, lowclip=:gray10)
+heatmap!(ax1, latesmat'[1:3, latcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
+heatmap!(ax2, latesmat'[4:6, latcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
+hm = heatmap!(ax3, latesmat'[7:9, latcl.order]; colormap=:vik, colorrange = (-0.5, 0.5), highclip=:orangered, lowclip=:indigo)
 Colorbar(figure[1,4], hm; label="E.S.", )
 save("data/figures/future_lat_heatmap.png", figure)
 
