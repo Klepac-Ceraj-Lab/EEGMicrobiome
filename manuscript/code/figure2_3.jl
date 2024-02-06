@@ -921,6 +921,8 @@ save("data/figures/future_lat_heatmap.png", figure)
 
 ### Bug Contributions ###
 using Preferences
+using Microbiome
+
 na_unirefs = Set(reduce(union, values(na_map)))
 
 mbotps = Dict(
@@ -1000,7 +1002,7 @@ topspecies = mapreduce(vcat, eachrow(vcat(subset(fsea_df, "q₀" => ByRow(<(0.2)
     unirefs = na_map[gs]
 
     df = subset(humann_files, "uniref" => ByRow(u -> u ∈ unirefs))
-    df = grouptop(df, 10; groupcol="species")
+    df = grouptop(df, 20; groupcol="species")
     df = sort(DataFrames.combine(groupby(df, "species"), "abundance"=>sum => "abundance"), "abundance"; rev=true)
 
     df.timepoint .= tp
@@ -1065,8 +1067,81 @@ for row in eachrow(vcat(subset(fsea_df, "q₀" => ByRow(<(0.2))),
     save(joinpath("data", "figures", "bugs", "$(tp)_$(gs)_$(eeg_feat).png"), fig)
 end
     
-#-
+#-##############
+# Spec cormaps #
+################
 
+gdf = groupby(vcat(future6m_fsea_df, future12m_fsea_df), ["eeg_feature", "timepoint"])
+
+bugmapdir = joinpath("data", "figures", "bugmaps")
+isdir(bugmapdir) || mkdir(bugmapdir)
+
+tps = String.(unique(vcat(future6m_fsea_df, future12m_fsea_df).timepoint))
+gsp = groupby(topspecies, ["geneset", "eeg_feature"])
+
+for feat in eeg_features, tp in tps 
+    @warn feat, tp
+    lms = df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
+    for gs in String.(unique(mapreduce(g-> select(g, "geneset").geneset, union, gdf)))
+        sublms = sort(subset(lms, "feature"=> ByRow(f-> replace(f, "UniRef90_"=>"") ∈ na_map[gs])), "z")
+        subsp = sort(subset(get(gsp, (; geneset=gs, eeg_feature=feat), DataFrame(timepoint=String[], abundance=Float64[])),
+                            "timepoint"=> ByRow(==(tps[3]))), "abundance"; rev=true)
+        any(isempty, (sublms, subsp)) && continue
+        @info gs
+
+        subhum = Dict()
+        for row in eachrow(subset(DataFrames.combine(groupby(humann_files, "feature"),
+                                           "abundance"=> sum => "abundance",
+                                           "uniref"=> first => "uniref",
+                                           "species"=> first=> "species"),
+                        "uniref"=> ByRow(u-> u ∈ na_map[gs])
+            ))
+            subhum[row.species] = get(subhum, row.species, Dict())
+            subhum[row.species][row.uniref] = row.abundance
+        end
+        mat = zeros(size(subsp, 1), size(sublms, 1))
+
+        allsp = Set(filter(!=("other"), subsp.species))
+
+        for (i, sp) in enumerate(subsp.species), (j, uniref) in enumerate(sublms.feature)
+            uni = replace(uniref, "UniRef90_"=>"")
+            if sp == "other"
+                mat[i, j] = mapreduce(+, keys(subhum)) do sp
+                    sp ∈ allsp && return 0.0
+                    get(subhum[sp], uni, 0.0)
+                end
+            else
+                mat[i, j] = get(subhum[sp], uni, 0.0)
+            end
+        end
+
+        fig = Figure(; size=(1000,500))
+        grid = GridLayout(fig[1,1])
+        ax_hm = Axis(grid[1,1]; title = string(feat, "; ", tp, "; ", gs))
+        hidedecorations!(ax_hm)
+        ax_u = Axis(grid[1,0]; ylabel="$gs genes")
+        hideydecorations!(ax_u; label=false)
+        hidexdecorations!(ax_u)
+        ax_bug = Axis(grid[2,1]; xlabel="species", xticks = (1:size(subsp, 1), subsp.species), xticklabelrotation=π/4)
+        hideydecorations!(ax_bug)
+
+        hm = heatmap!(ax_hm, mat)
+        uhm = heatmap!(ax_u, reshape(sublms.z, 1, size(sublms, 1)); colormap=:vik)
+        bughm = heatmap!(ax_bug, log.(reshape(subsp.abundance, size(subsp, 1), 1)); colormap= :magma)
+        colgap!(grid, 10)
+        rowgap!(grid, 10)
+        colsize!(grid, 0, Fixed(20))
+        rowsize!(grid, 2, Fixed(20))
+
+        Colorbar(fig[1,2], hm; label = "RPKM")
+        Colorbar(fig[1,3], uhm; label = "z statistic")
+        Colorbar(fig[1,4], bughm; label = "log₂(abundance)")
+
+        save(joinpath(bugmapdir, "$(feat)_$(tp)_$(replace(gs, " " => "-")).png"), fig)
+    end
+end
+
+#-
 specs = Set(String[])
 genera = Set(String[])
 foreach(readdir(joinpath(load_preference(VKCComputing, "mgx_analysis_dir"), "humann", "main"); join=true)) do f
