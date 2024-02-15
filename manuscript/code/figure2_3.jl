@@ -1071,6 +1071,80 @@ end
 # Spec cormaps #
 ################
 
+#### Concurrent ####
+
+gdf = groupby(fsea_df, ["eeg_feature", "timepoint"])
+
+bugmapdir = joinpath("data", "figures", "bugmaps")
+isdir(bugmapdir) || mkdir(bugmapdir)
+
+tps = String.(unique(fsea_df.timepoint))
+gsp = groupby(topspecies, ["geneset", "eeg_feature"])
+
+for feat in eeg_features, tp in tps 
+    @warn feat, tp
+    lms = df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
+    for gs in String.(unique(mapreduce(g-> select(g, "geneset").geneset, union, gdf)))
+        sublms = sort(subset(lms, "feature"=> ByRow(f-> replace(f, "UniRef90_"=>"") ∈ na_map[gs])), "z")
+        subsp = sort(subset(get(gsp, (; geneset=gs, eeg_feature=feat), DataFrame(timepoint=String[], abundance=Float64[])),
+                            "timepoint"=> ByRow(==(tps[3]))), "abundance"; rev=true)
+        any(isempty, (sublms, subsp)) && continue
+        @info gs
+
+        subhum = Dict()
+        for row in eachrow(subset(DataFrames.combine(groupby(humann_files, "feature"),
+                                           "abundance"=> sum => "abundance",
+                                           "uniref"=> first => "uniref",
+                                           "species"=> first=> "species"),
+                        "uniref"=> ByRow(u-> u ∈ na_map[gs])
+            ))
+            subhum[row.species] = get(subhum, row.species, Dict())
+            subhum[row.species][row.uniref] = row.abundance
+        end
+        mat = zeros(size(subsp, 1), size(sublms, 1))
+
+        allsp = Set(filter(!=("other"), subsp.species))
+
+        for (i, sp) in enumerate(subsp.species), (j, uniref) in enumerate(sublms.feature)
+            uni = replace(uniref, "UniRef90_"=>"")
+            if sp == "other"
+                mat[i, j] = mapreduce(+, keys(subhum)) do sp
+                    sp ∈ allsp && return 0.0
+                    get(subhum[sp], uni, 0.0)
+                end
+            else
+                mat[i, j] = get(subhum[sp], uni, 0.0)
+            end
+        end
+
+        fig = Figure(; size=(1000,500))
+        grid = GridLayout(fig[1,1])
+        ax_hm = Axis(grid[1,1]; title = string(feat, "; ", tp, "; ", gs))
+        hidedecorations!(ax_hm)
+        ax_u = Axis(grid[1,0]; ylabel="$gs genes")
+        hideydecorations!(ax_u; label=false)
+        hidexdecorations!(ax_u)
+        ax_bug = Axis(grid[2,1]; xlabel="species", xticks = (1:size(subsp, 1), subsp.species), xticklabelrotation=π/4)
+        hideydecorations!(ax_bug)
+
+        hm = heatmap!(ax_hm, mat)
+        uhm = heatmap!(ax_u, reshape(sublms.z, 1, size(sublms, 1)); colormap=:vik)
+        bughm = heatmap!(ax_bug, log.(reshape(subsp.abundance, size(subsp, 1), 1)); colormap= :magma)
+        colgap!(grid, 10)
+        rowgap!(grid, 10)
+        colsize!(grid, 0, Fixed(20))
+        rowsize!(grid, 2, Fixed(20))
+
+        Colorbar(fig[1,2], hm; label = "RPKM")
+        Colorbar(fig[1,3], uhm; label = "z statistic")
+        Colorbar(fig[1,4], bughm; label = "log₂(abundance)")
+
+        save(joinpath(bugmapdir, "$(feat)_$(tp)_$(replace(gs, " " => "-")).png"), fig)
+    end
+end
+
+#### Future ####
+
 gdf = groupby(vcat(future6m_fsea_df, future12m_fsea_df), ["eeg_feature", "timepoint"])
 
 bugmapdir = joinpath("data", "figures", "bugmaps")
@@ -1142,21 +1216,41 @@ for feat in eeg_features, tp in tps
 end
 
 #-
-specs = Set(String[])
-genera = Set(String[])
-foreach(readdir(joinpath(load_preference(VKCComputing, "mgx_analysis_dir"), "humann", "main"); join=true)) do f
-    m = match(r"(SEQ\d+)", f)
-    isnothing(m) && return nothing
-    sample = replace(basename(f), r"(SEQ\d+)_S\d+.+" => s"\1")
-    sample ∈ mbo.seqprep || return nothing
-    if contains(basename(f), "genefamilies.tsv") && m[1] ∈ mbo.seqprep
-        @info basename(f)
-        spec = CSV.read(f, DataFrame)[!, 1]
-        filter!(spec -> contains(spec, "|"), spec)
-        newspecs = Set(split(s, "|")[2] for s in spec)
-        union!(specs, newspecs)
-        union!(genera, Set(split(s, ".")[1] for s in newspecs))
-    end
+all_3m = commjoin(concurrent_3m, future_3m12m[:, setdiff(samplenames(future_3m12m), samplenames(concurrent_3m))],
+                                 future_3m6m[:, setdiff(samplenames(future_3m6m), union(samplenames(concurrent_3m), samplenames(future_3m12m)))])
+all_6m = commjoin(concurrent_6m, future_6m12m[:, setdiff(samplenames(future_6m12m), samplenames(concurrent_6m))])
+all_12m = copy(concurrent_12m)
+
+#- 
+
+ages = mapreduce(comm-> get(comm, :age), vcat, (all_3m, all_6m, all_12m))
+ntop = 8
+
+tp = "3m_future12m"
+gs = "GABA synthesis"
+feat = "peak_amp_N2_corrected"
+
+sps = subset(topspecies, "timepoint"=> ByRow(==(tp)),
+                        "geneset"=> ByRow(==(gs)),
+                        "eeg_feature"=> ByRow(==(feat)),
+                        "species" => ByRow(!=("other"))
+)
+
+colors = [sp=> c for (sp, c) in zip(sps.species[1:ntop], cgrad(:managua, ntop; categorical=true))]
+
+df = mapreduce(vcat, sps.species[1:ntop]) do sp
+    comms = filter(c-> haskey(c.fidx, sp), (all_3m, all_6m, all_12m))
+    abunds = mapreduce(comm-> vec(collect(abundances(comm[sp, :]))), vcat, comms)
+    ixs = findall(>(0), abunds)
+    isempty(ixs) && return DataFrame(age=Float64[], abundance=Float64[], species=String[])
+
+    DataFrame(age = ages[ixs], abundance = abunds[ixs], species = fill(sp, length(ixs)))
 end
 
-#-
+xyz = data(df) * mapping(:age, :abundance, color=:species, layout=:species)
+layers = smooth() + visual(Scatter)
+fg = draw(layers * xyz, palettes=(; color=colors), figure=(; size=(1500, 1500)))
+
+
+#text!(12, sum(abundances(all_12m[sp,:])); text = [rich(replace(sp, r"s__([A-Z])[a-z]+_"=>s"\1. "); font=:italic, color=:dodgerblue)])  
+save("data/figures/bugs/top_$(tp)_$(gs)_$(feat)_line.png", fg)
