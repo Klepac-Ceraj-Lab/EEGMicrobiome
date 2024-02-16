@@ -26,6 +26,7 @@ Preferences = "21216c6a-2e73-6563-6e65-726566657250"
 StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 ThreadsX = "ac1d9e8a-700a-412c-b207-f0111f4b6c0d"
 VKCComputing = "329a1d7f-a79a-43b8-8671-feb503123859"
+XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 
 [compat]
 julia = "1.10"
