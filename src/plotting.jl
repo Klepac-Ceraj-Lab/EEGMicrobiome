@@ -21,4 +21,12 @@ function plot_pcoa!(ax, M::MultivariateStats.MDS; dims=(1,2), kwargs...)
     scatter!(ax, loadings(M, dims[1]), loadings(M, dims[2]); kwargs...)
 end
 
+function geneset_index(genesets, order)
+    keeps = intersect(order, genesets)
+    Dict(gs => i for (i, gs) in zip(length(keeps):-1:1, keeps))
+end
 
+function format_eeg_str(feature)
+    str = replace(feature, "peak_"=>"")
+    str
+end

@@ -18,6 +18,7 @@
 
 using EEGMicrobiome
 using VKCComputing
+using FeatureSetEnrichments
 using ThreadsX
 using Chain
 using XLSX
@@ -43,6 +44,15 @@ concurrent_12m = load_cohort("concurrent_12m")
 future_3m6m = load_cohort("future_3m6m")
 future_3m12m = load_cohort("future_3m12m")
 future_6m12m = load_cohort("future_6m12m")
+
+##
+
+
+eeg_features = "peak_latency_" .* ["N1", "P1_corrected", "N2_corrected"]
+eeg_features = [eeg_features; replace.(eeg_features, "latency"=>"amp")]
+
+na_map = FeatureSetEnrichments.get_neuroactive_unirefs()
+
 
 eegmbo = let 
 	eeg = load_eeg()
@@ -173,7 +183,59 @@ wide_sub = select(leftjoin(
     on="subject"), "subject", r"3m", r"6m", r"12m"
 )
 
+# Load feature set enrichments
 
+fsea_df = CSV.read("data/outputs/fsea/concurrent_consolidated_fsea.csv", DataFrame)
+future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_consolidated_fsea.csv", DataFrame)
+future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_consolidated_fsea.csv", DataFrame)
+
+geneset_order = [
+	"Acetate synthesis",
+	"Acetate degradation",
+	"Propionate synthesis",
+	"Propionate degradation",
+	"Butyrate synthesis",
+	"Butyrate degradation",
+	"GABA synthesis",
+	"GABA degradation",
+	"Glutamate synthesis",
+	"Glutamate degradation",
+	"Menaquinone synthesis",
+	"Menaquinone degradation",
+	"Inositol synthesis",
+	"Inositol degradation",
+	"Tryptophan synthesis",
+	"Tryptophan degradation",
+	"p-Cresol synthesis",
+	"p-Cresol degradation",
+	"Isovaleric acid synthesis",
+	"Isovaleric acid degradation",
+	"Quinolinic acid synthesis",
+	"Quinolinic acid degradation",
+	"S-Adenosylmethionine synthesis",
+	"S-Adenosylmethionine degradation",
+	"17-beta-Estradiol synthesis",
+	"17-beta-Estradiol degradation",
+	"DOPAC synthesis",
+	"DOPAC degradation",
+	"ClpB"
+]
+gssig = intersect(geneset_order,
+	unique(subset(vcat(fsea_df, future6m_fsea_df, future12m_fsea_df), "q₀" => ByRow(<(0.2))).geneset)
+)
+gsidx = geneset_index(gssig,geneset_order)
+
+alllms = groupby(mapreduce(vcat, Iterators.product(eeg_features, [tps..., ftps...])) do (feat, tp)
+	df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
+	rename!(df, "Name"=>"eeg_feature")
+	df.timepoint .= tp
+	df
+end, ["eeg_feature", "timepoint"])
+
+for gs in gssig
+	@info gs
+	transform!(alllms, "feature"=> ByRow(u-> replace(u, "UniRef90_"=>"") ∈ na_map[gs])=> gs; ungroup=false)
+end
 ##
 
 
@@ -188,6 +250,19 @@ wide_sub = select(leftjoin(
 # 3. Create and plot into specific axes (`Axis()`), add legends etc.
 # 4. Save figures to SVG and PNG formats.
 #
+# ### Colors
+
+colormap_age = :viridis
+colors_timepoints = [tp=> c for (tp, c) in zip(tps, cgrad(colormap_age)[[0., 0.4, 0.8]])]
+colors_sampletype = [st=> c for (st, c) in zip(["stool", "eeg", "both"], cgrad(:tab10; categorical=true)[[1,4,5]])]
+
+colormap_sig = :PuOr
+colors_sig = cgrad(colormap_sig, 11; rev = true, categorical=true)[[1,3,4,8,9,11]]
+insert!(colors_sig, 4, colorant"gray70")
+
+
+
+
 # ### Main figures
 #
 # #### Figure 1
@@ -201,6 +276,11 @@ grid_pcoas = GridLayout(figure1[1:2, 2])
 grid_longsamples = GridLayout(figure1[1:2, 3])
 
 ax_cohort = Axis(grid_cohort[1,1]; aspect = DataAspect(), alignmode=Outside())
+# Legend(grid_cohort[2,1],
+# 	[MarkerElement(; marker=:rect, color=c[2]) for c in colors_timepoints],
+# 	["visit 1", "visit 2", "visit 3"];
+# 	orientation=:horizontal, tellwidth=false, tellheight=true
+# )
 
 ax_eeg_curves = Axis(grid_eeg_curves[1,1]; xlabel="time (ms) relative to stimulus onset",
 		     ylabel="voltage (μV)"
@@ -208,9 +288,9 @@ ax_eeg_curves = Axis(grid_eeg_curves[1,1]; xlabel="time (ms) relative to stimulu
 ax_pcoa_spec = Axis(grid_pcoas[1,1])
 ax_pcoa_func = Axis(grid_pcoas[2,1])
 
-ax_longsamples = Axis(grid_longsamples[3:5,1]; xlabel="age (months)", ylabel = "subject")
-ax_vep_hist = Axis(grid_longsamples[1,1]; ylabel="samples (fraction)")
-ax_stool_hist = Axis(grid_longsamples[2,1]; ylabel="samples (fraction)")
+ax_longsamples = Axis(grid_longsamples[3,1]; xlabel="age (months)", ylabel = "subject")
+ax_eeg_hist = Axis(grid_longsamples[1,1]; ylabel="density", title="eeg")
+ax_stool_hist = Axis(grid_longsamples[2,1]; ylabel="density", title="stool")
 
 
 # ##### Cohort cartoon
@@ -231,40 +311,33 @@ datmean = data(timeseries) * mapping(:ms, :mean, color=:timepoint)
 datlower = data(timeseries) * mapping(:ms, :lower, color=:timepoint)
 datupper = data(timeseries) * mapping(:ms, :upper, color=:timepoint)
 
-eeg_timepoint_colors = [tp=> c for (tp, c) in zip(("3m", "6m", "12m"), cgrad(:solar, 3; categorical=:true))]
-stoo_timepoint_colors = [tp=> c for (tp, c) in zip(("3m", "6m", "12m"), cgrad(:deep, 3; categorical=:true))]
-
 let datage = data(subset(eegmbo, "eeg_age"=>ByRow(!ismissing))) * mapping(:eeg_age=> "age (months)", color="visit")
-	draw!(ax_eeg_hist, datage * AlgebraOfGraphics.density(); palettes=(; color=eeg_timepoint_colors))
+	draw!(ax_eeg_hist, datage * AlgebraOfGraphics.density(); palettes=(; color=colors_timepoints))
 end
 
 let datage = data(subset(eegmbo, "age"=>ByRow(!ismissing))) * mapping(:age=> "age (months)", color="visit")
-	draw!(ax_stool_hist, datage * AlgebraOfGraphics.density(); palettes=(; color=stool_timepoint_colors))
+	draw!(ax_stool_hist, datage * AlgebraOfGraphics.density(); palettes=(; color=colors_timepoints))
 end
 
-mpl = draw!(ax_eeg_curves, datmean * visual(Lines); palettes=(; color=eeg_timepoint_colors))
-dpl = draw!(ax_eeg_curves, datlower * visual(Lines; linestyle=:dash); palettes=(; color=eeg_timepoint_colors))
-draw!(ax_eeg_curves, datupper * visual(Lines; linestyle=:dash); palettes=(; color=eeg_timepoint_colors))
+mpl = draw!(ax_eeg_curves, datmean * visual(Lines); palettes=(; color=colors_timepoints))
+dpl = draw!(ax_eeg_curves, datlower * visual(Lines; linestyle=:dash); palettes=(; color=colors_timepoints))
+draw!(ax_eeg_curves, datupper * visual(Lines; linestyle=:dash); palettes=(; color=colors_timepoints))
 
-Legend(grid_eeg_curves[2,1],
-    [[LineElement(; color=timepoint_colors[i][2]) for i in 1:3],
-     [LineElement(; color=:gray), LineElement(; color=:gray, linestyle=:dash)]
-    ],
-    [["visit 1", "visit 2", "visit 3"],
-     ["mean", "+/- S.E."]],
-    ["visit", "value"];
-    orientation=:horizontal, tellheight=true, tellwidth=false,
+Legend(grid_eeg_curves[1,1],
+     [LineElement(; color=:gray), LineElement(; color=:gray, linestyle=:dash)],
+     ["mean", "+/- S.E."];
+	 tellwidth=false, halign=:right, valign=:top, margin=(10,10,10,10)
 ) 
 
 # ##### PCoAs
 
 
-plt_pcoa_spec = plot_pcoa!(ax_pcoa_spec, species_pco; color=get(concurrent_species, :age))
-Colorbar(grid_pcoas[1,2], plt_pcoa_spec; label = "age (months)")
+plt_pcoa_spec = plot_pcoa!(ax_pcoa_spec, species_pco; color=get(concurrent_species, :age), colormap=colormap_age)
+plt_pcoa_func = plot_pcoa!(ax_pcoa_func, unirefs_pco; color=get(concurrent_unirefs, :age), colormap=colormap_age)
 
-
-plt_pcoa_func = plot_pcoa!(ax_pcoa_func, unirefs_pco; color=get(concurrent_unirefs, :age))
-Colorbar(grid_pcoas[2,2], plt_pcoa_func; label="age (months)")
+Colorbar(grid_pcoas[3,1];
+	limits=extrema(skipmissing(eegmbo.age)), label = "Age (months)", colormap=colormap_age,
+	vertical=false, tellheight=true, tellwidth=false, flipaxis=false)
 
 # ##### Longitudinal
 
@@ -280,6 +353,7 @@ let gdf = groupby(long_sub, "subject")
 	for k in keys(gdf)
 		stools = gdf[k].stool_age
 		eegs = gdf[k].eeg_age
+
 		y = subind[k.subject]
 		xs = map(zip(stools, eegs)) do (s,e)
 			ismissing(s) && return e
@@ -287,38 +361,181 @@ let gdf = groupby(long_sub, "subject")
 			return mean([e,s])
 		end
 		cs = map(zip(stools, eegs)) do (s,e)
-			ismissing(s) && return samples_colors[2][2]
-			ismissing(e) && return samples_colors[1][2]
-			return samples_colors[3][2]
+			ismissing(s) && return colors_sampletype[2][2]
+			ismissing(e) && return colors_sampletype[1][2]
+			return colors_sampletype[3][2]
 		end
 		scatter!(ax_longsamples, xs, fill(y, length(xs)); color=cs)
 	 
 	 
 		lines!(ax_longsamples, [extrema(skipmissing([stools;eegs]))...], [y,y]; linestyle=:dash, color = :gray)
 		for s in filter(!ismissing, stools)
-			lines!(ax_longsamples, [s,s], [y+0.4, y-0.4]; color=samples_colors[1][2])
+			lines!(ax_longsamples, [s,s], [y+0.4, y-0.4]; color=colors_sampletype[1][2])
 		end
 		for e in filter(!ismissing, eegs)
-			lines!(ax_longsamples, [e,e], [y+0.4, y-0.4]; color=samples_colors[2][2])
+			lines!(ax_longsamples, [e,e], [y+0.4, y-0.4]; color=colors_sampletype[2][2])
 		end
 	end
 end
 
-Legend(grid_longsamples[1,1],
-	[MarkerElement(; marker=:circle, color=c[2]) for c in samples_colors],
-	[c[1] for c in samples_colors];
-	halign=:left, valign=:top, tellwidth=false, margin=(10,10,10,10)
-)
-
+# Legend(grid_longsamples[3,1],
+# 	[MarkerElement(; marker=:circle, color=colors_sampletype[i][2]) for i in 1:3],
+# 	["stool", "eeg", "both"];
+# 	tellwidth=false, valign=:top, halign=:left, margin=(10,10,10,10)
+# )
 
 ylims!(ax_longsamples, -2, length(unique(long_sub.subject)) + 2)
 
 
 # tweak some visuals
 
+rowsize!(grid_longsamples, 3, Relative(5/6))
+colsize!(figure1.layout, 1, Relative(1/2))
+
 hidedecorations!(ax_eeg_curves, ticks=false, ticklabels=false, label=false)
 hidedecorations!(ax_pcoa_spec, ticks=false, ticklabels=false, label=false)
 hidedecorations!(ax_pcoa_func, ticks=false, ticklabels=false, label=false)
 hidedecorations!(ax_longsamples, ticks=false, ticklabels=false, label=false)
+hidexdecorations!.((ax_stool_hist, ax_eeg_hist))
+hideydecorations!.((ax_stool_hist, ax_eeg_hist); ticks=false, ticklabels=false, label=false)
 
 save("/home/kevin/Downloads/figure1-inprogress.png", figure1)
+
+# ##### Figure 2
+
+
+figure2 = Figure(; size = (1500,1200))
+
+grid_fsea_dots = GridLayout(figure2[1,1])
+#grid_fsea_heatmaps = GridLayout(figure2[1,2])
+grid_bug_heatmaps = GridLayout(figure2[2, 1])
+
+gs_interval = 5
+tp_interval = 1.5
+
+grid_fsea_latency=GridLayout(grid_fsea_dots[1,1])
+ax_lat = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
+	map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
+		l = Axis(grid_fsea_latency[1,i];
+				 xlabel = "z",
+				 title = lab,
+				 yticks = (tickrange, reverse(gssig)),
+				 )
+		r = Axis(grid_fsea_latency[1,i];
+				 yaxisposition = :right,
+				 yticks = (sort([collect(tickrange); collect(tickrange) .- tp_interval; collect(tickrange) .+ tp_interval]),
+						  repeat(string.(1:3); outer=length(tickrange)))
+				 )
+		(l, r)
+	end
+end
+
+grid_fsea_amplitude=GridLayout(grid_fsea_dots[1,2])
+ax_amp = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
+	map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
+		l = Axis(grid_fsea_amplitude[1,i];
+				 xlabel = "z",
+				 title = lab,
+				 yticks = (tickrange, reverse(gssig)),
+				 )
+		r = Axis(grid_fsea_amplitude[1,i];
+				 yaxisposition = :right,
+				 yticks = (sort([collect(tickrange); collect(tickrange) .- tp_interval; collect(tickrange) .+ tp_interval]),
+						  repeat(string.(1:3); outer=length(tickrange)))
+				 )
+		(l, r)
+	end
+end
+
+for axs in (ax_lat, ax_amp)
+	for (i, (axl, axr)) in enumerate(axs)
+		ylims!.((axl,axr), gs_interval - 2*tp_interval, gs_interval * length(gssig) + 2*tp_interval)
+		xlims!(axl, -3, 3)
+		hidexdecorations!(axl; ticks=false, ticklabels=false, label=false)
+		hideydecorations!(axl, ticks=false, ticklabels=i != 1)
+		hideydecorations!(axr, ticks=false, ticklabels=i != 3)
+		hidexdecorations!(axr)
+	end
+end
+hideydecorations!(ax_amp[1][1], ticks=false)
+
+Legend(grid_fsea_dots[2,1:2], 
+	   [[MarkerElement(; marker=:rect, color=colors_sig[i]) for i in 1:3],
+		[MarkerElement(; marker=:rect, color=colors_sig[i]) for i in 5:7]],
+	   [["q < 0.01", "q < 0.1", "q < 0.2"], 
+		["q < 0.2", "q < 0.1", "q < 0.01"]],
+	   ["(-)", "(+)"];
+	   orientation=:horizontal, tellheight=true, tellwidth=false)
+Label(grid_fsea_dots[0,1], "Latency"; fontsize=20, tellwidth=false)
+Label(grid_fsea_dots[0,2], "Amplitude"; fontsize=20, tellwidth=false)
+
+#-
+
+
+for (j, feat) in enumerate(filter(contains("latency"), eeg_features))
+	gdf = groupby(fsea_df, "eeg_feature")
+    featstr = replace(feat, "peak_latency_"=>"", "_corrected"=>"c")
+    @warn "$featstr"
+    for (i, tp) in enumerate(tps)
+        @info "$tp"
+
+		df =  alllms[(; eeg_feature=feat, timepoint=tp)]
+		allymed = median(df.z)
+
+        subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
+        # lines!(ax_lat, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
+        for row in eachrow(subdf)
+			# haskey(gsidx, row.geneset) || continue
+			yidx = df[!, row.geneset]
+			xpos = gsidx[row.geneset] * gs_interval + (i - 2) * tp_interval
+			ys = df.z[yidx]
+			xs = rand(Normal(0.0, tp_interval / 5), length(ys)) .+ xpos
+            ymed = median(ys)
+            
+            cidx = row.q₀ > 0.2  ? 4 :       # not significant
+                   row.q₀ < 0.01 ? 1 :       # quite significant
+                   row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
+            c = ymed < allymed ? colors_sig[cidx] : colors_sig[8 - cidx]
+            violin!(ax_lat[j][1], fill(xpos, length(ys)), ys; width=tp_interval, color=(c, 0.2), orientation=:horizontal)
+            scatter!(ax_lat[j][1], ys, xs; color = c)    
+			lines!(ax_lat[j][1], [ymed, ymed], [xpos - tp_interval/2, xpos + tp_interval/2]; color = c)
+        end
+    end
+end
+
+
+for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
+	gdf = groupby(fsea_df, "eeg_feature")
+    featstr = replace(feat, "peak_amp"=>"", "_corrected"=>"c")
+    @warn "$featstr"
+    for (i, tp) in enumerate(tps)
+        @info "$tp"
+
+		df =  alllms[(; eeg_feature=feat, timepoint=tp)]
+		allymed = median(df.z)
+
+        subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
+        # lines!(ax_lat, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
+        for row in eachrow(subdf)
+			# haskey(gsidx, row.geneset) || continue
+			yidx = df[!, row.geneset]
+			xpos = gsidx[row.geneset] * gs_interval + (i - 2) * tp_interval
+			ys = df.z[yidx]
+			xs = rand(Normal(0.0, tp_interval / 5), length(ys)) .+ xpos
+            ymed = median(ys)
+            
+            cidx = row.q₀ > 0.2  ? 4 :       # not significant
+                   row.q₀ < 0.01 ? 1 :       # quite significant
+                   row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
+            c = ymed < allymed ? colors_sig[cidx] : colors_sig[8 - cidx]
+            violin!(ax_amp[j][1], fill(xpos, length(ys)), ys; width=tp_interval, color=(c, 0.2), orientation=:horizontal)
+            scatter!(ax_amp[j][1], ys, xs; color = c)    
+			lines!(ax_amp[j][1], [ymed, ymed], [xpos - tp_interval/2, xpos + tp_interval/2]; color = c)
+        end
+    end
+end
+
+
+
+# for feat in filter(contains("latency"), feats)
+save("/home/kevin/Downloads/figure2-inprogress.png", figure2)

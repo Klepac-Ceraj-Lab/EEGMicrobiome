@@ -11,6 +11,8 @@ export plot_pcoa!,
        grouptop,
        plotbugs!
     
+export geneset_index,
+       format_eeg_str
 
 using CSV
 using DataFrames
