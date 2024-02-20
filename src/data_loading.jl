@@ -90,11 +90,18 @@ end
 
 function load_cohort(cohort)
     tab = CSV.read("data/outputs/cohort_tables/$(cohort).csv", DataFrame)
+    tab.peak_latency_P1_corrected = tab.peak_latency_P1 .- tab.peak_latency_N1
+    tab.peak_latency_N2_corrected = tab.peak_latency_N2 .- tab.peak_latency_P1
+    tab.peak_amp_P1_corrected = tab.peak_amp_P1 .- tab.peak_amp_N1
+    tab.peak_amp_N2_corrected = tab.peak_amp_N2 .- tab.peak_amp_P1
+ 
+
     files = filter(f-> contains(basename(f), "profile") && match(r"SEQ\d+", basename(f)).match ∈ tab.seqprep,
                    readdir("/grace/sequencing/processed/mgx/metaphlan/"; join = true)
     )  
     comm = metaphlan_profiles(files)
     comm = CommunityProfile(abundances(comm), features(comm), MicrobiomeSample.(replace.(samplenames(comm), r"_S\d+_profile"=>""))) 
+
     set!(comm, select(tab, "seqprep"=>"sample", Cols(:)))
     return comm
 end

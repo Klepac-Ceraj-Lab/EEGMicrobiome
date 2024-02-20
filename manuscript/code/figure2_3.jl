@@ -1012,12 +1012,12 @@ topspecies = mapreduce(vcat, eachrow(vcat(subset(fsea_df, "q₀" => ByRow(<(0.2)
 end
 
 CSV.write("data/outputs/fsea_top_genera.csv", topgenera)
+CSV.write("data/outputs/fsea_top_species.csv", topspecies)
+
+
 open("data/outputs/topspecies.txt", "w") do io
     println.(io, filter(!=("other"), unique(topspecies.species)));
 end;
-
-
-CSV.write("data/outputs/fsea_top_species.csv", topspecies)
 open("data/outputs/topgenera.txt", "w") do io
     println.(io, filter(!=("other"), unique(topgenera.genus)))
 end;

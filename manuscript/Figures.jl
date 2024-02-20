@@ -19,12 +19,13 @@
 using EEGMicrobiome
 using VKCComputing
 using FeatureSetEnrichments
+using Preferences
 using ThreadsX
 using Chain
 using XLSX
 using FileIO
 using CSV
-using DataFrames
+sing DataFrames
 using Distributions
 using Microbiome
 using BiobakeryUtils
@@ -46,7 +47,6 @@ future_3m12m = load_cohort("future_3m12m")
 future_6m12m = load_cohort("future_6m12m")
 
 ##
-
 
 eeg_features = "peak_latency_" .* ["N1", "P1_corrected", "N2_corrected"]
 eeg_features = [eeg_features; replace.(eeg_features, "latency"=>"amp")]
@@ -236,6 +236,54 @@ for gs in gssig
 	@info gs
 	transform!(alllms, "feature"=> ByRow(u-> replace(u, "UniRef90_"=>"") ∈ na_map[gs])=> gs; ungroup=false)
 end
+##
+
+topspecies = CSV.read("data/outputs/fsea_top_species.csv", DataFrame)
+
+humann_files = let
+	seqs = Set(mapreduce(samplenames, vcat,
+		(concurrent_3m, concurrent_6m, concurrent_12m,
+		 future_3m6m, future_3m12m, future_6m12m)))
+	na_unirefs = Set(reduce(union, values(na_map)))
+	humann_files = mapreduce(vcat, readdir(joinpath(load_preference(VKCComputing, "mgx_analysis_dir"), "humann", "main"); join=true)) do f
+		m = match(r"(SEQ\d+)", f)
+		isnothing(m) && return DataFrame()
+		sample = replace(basename(f), r"(SEQ\d+)_S\d+.+" => s"\1")
+		sample ∈ seqs || return DataFrame()
+		if contains(basename(f), "genefamilies.tsv") && m[1] ∈ seqs
+			@info basename(f)
+			df = CSV.read(f, DataFrame)
+			rename!(df, ["feature", "abundance"])
+			subset!(df, "feature" => ByRow(f -> contains(f, "|")))
+			transform!(df, "feature" => ByRow(f -> begin
+				(uniref, species) = split(f, "|")
+				uniref = replace(uniref, "UniRef90_" => "")
+				return (; uniref, species)
+			end) => ["uniref", "species"])
+			subset!(df, "uniref" => ByRow(u -> u ∈ na_unirefs))
+			df.sample .= sample
+			return df
+		else
+			return DataFrame()
+		end
+	end
+
+	transform!(humann_files, "species" => ByRow(s -> begin
+		s == "unclassified" && return (; genus="unclassified", species="unclassified")
+		(g, s) = split(s, ".")
+
+		contains(g, "_unclassified") && return (; genus=replace(g, "_unclassified"=>""), species=s)
+		(; genus=g, species=s)
+	end) => ["genus", "species"]
+	)
+	
+	for gs in gssig
+		@info gs
+		transform!(humann_files, "uniref"=> ByRow(u-> u ∈ na_map[gs])=> gs)
+	end
+	groupby(humann_files, "species")
+end
+
 ##
 
 
@@ -457,7 +505,7 @@ end
 for axs in (ax_lat, ax_amp)
 	for (i, (axl, axr)) in enumerate(axs)
 		ylims!.((axl,axr), gs_interval - 2*tp_interval, gs_interval * length(gssig) + 2*tp_interval)
-		xlims!(axl, -3, 3)
+		xlims!(axl, -dotsxlim, dotsxlim)
 		hidexdecorations!(axl; ticks=false, ticklabels=false, label=false)
 		hideydecorations!(axl, ticks=false, ticklabels=i != 1)
 		hideydecorations!(axr, ticks=false, ticklabels=i != 3)
@@ -467,10 +515,10 @@ for axs in (ax_lat, ax_amp)
 			mid = gsidx[gs] * gs_interval
 			isodd(gsidx[gs]) || continue
 			span = gs_interval / 2
-			poly!(axl, Point2f.([(-3, mid - span),
-										  (3, mid - span),
-										  (3, mid + span),
-										  (-3, mid + span)]);
+			poly!(axl, Point2f.([(-dotsxlim, mid - span),
+								 (dotsxlim, mid - span),
+								 (dotsxlim, mid + span),
+								 (-dotsxlim, mid + span)]);
 				  color=("gray80", 0.4))
 		end
 
@@ -554,6 +602,7 @@ end
 
 #-
 
+ax_bug_heatmaps = Axis(grid_bug_heatmaps[1,1]; )
 
 
 
