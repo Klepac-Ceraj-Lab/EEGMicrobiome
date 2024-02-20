@@ -258,7 +258,7 @@ colors_sampletype = [st=> c for (st, c) in zip(["stool", "eeg", "both"], cgrad(:
 
 colormap_sig = :PuOr
 colors_sig = cgrad(colormap_sig, 11; rev = true, categorical=true)[[1,3,4,8,9,11]]
-insert!(colors_sig, 4, colorant"gray70")
+insert!(colors_sig, 4, colorant"white")
 
 
 
@@ -410,8 +410,9 @@ grid_fsea_dots = GridLayout(figure2[1,1])
 #grid_fsea_heatmaps = GridLayout(figure2[1,2])
 grid_bug_heatmaps = GridLayout(figure2[2, 1])
 
-gs_interval = 5
+gs_interval = 6
 tp_interval = 1.5
+dotsxlim = 3
 
 grid_fsea_latency=GridLayout(grid_fsea_dots[1,1])
 ax_lat = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
@@ -423,8 +424,11 @@ ax_lat = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
 				 )
 		r = Axis(grid_fsea_latency[1,i];
 				 yaxisposition = :right,
-				 yticks = (sort([collect(tickrange); collect(tickrange) .- tp_interval; collect(tickrange) .+ tp_interval]),
-						  repeat(string.(1:3); outer=length(tickrange)))
+				 yticklabelsize = 6,
+				 yticks = (sort([collect(tickrange);
+								 collect(tickrange) .- tp_interval;
+								 collect(tickrange) .+ tp_interval]),
+						  repeat(string.(3:-1:1); outer=length(tickrange)))
 				 )
 		(l, r)
 	end
@@ -440,8 +444,11 @@ ax_amp = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
 				 )
 		r = Axis(grid_fsea_amplitude[1,i];
 				 yaxisposition = :right,
-				 yticks = (sort([collect(tickrange); collect(tickrange) .- tp_interval; collect(tickrange) .+ tp_interval]),
-						  repeat(string.(1:3); outer=length(tickrange)))
+				 yticklabelsize = 6,
+				 yticks = (sort([collect(tickrange);
+								 collect(tickrange) .- tp_interval;
+								 collect(tickrange) .+ tp_interval]),
+						  repeat(string.(3:-1:1); outer=length(tickrange)))
 				 )
 		(l, r)
 	end
@@ -455,6 +462,18 @@ for axs in (ax_lat, ax_amp)
 		hideydecorations!(axl, ticks=false, ticklabels=i != 1)
 		hideydecorations!(axr, ticks=false, ticklabels=i != 3)
 		hidexdecorations!(axr)
+
+		for gs in gssig
+			mid = gsidx[gs] * gs_interval
+			isodd(gsidx[gs]) || continue
+			span = gs_interval / 2
+			poly!(axl, Point2f.([(-3, mid - span),
+										  (3, mid - span),
+										  (3, mid + span),
+										  (-3, mid + span)]);
+				  color=("gray80", 0.4))
+		end
+
 	end
 end
 hideydecorations!(ax_amp[1][1], ticks=false)
@@ -483,11 +502,9 @@ for (j, feat) in enumerate(filter(contains("latency"), eeg_features))
 		allymed = median(df.z)
 
         subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
-        # lines!(ax_lat, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
         for row in eachrow(subdf)
-			# haskey(gsidx, row.geneset) || continue
 			yidx = df[!, row.geneset]
-			xpos = gsidx[row.geneset] * gs_interval + (i - 2) * tp_interval
+			xpos = gsidx[row.geneset] * gs_interval + (2 - i) * tp_interval
 			ys = df.z[yidx]
 			xs = rand(Normal(0.0, tp_interval / 5), length(ys)) .+ xpos
             ymed = median(ys)
@@ -497,7 +514,7 @@ for (j, feat) in enumerate(filter(contains("latency"), eeg_features))
                    row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
             c = ymed < allymed ? colors_sig[cidx] : colors_sig[8 - cidx]
             violin!(ax_lat[j][1], fill(xpos, length(ys)), ys; width=tp_interval, color=(c, 0.2), orientation=:horizontal)
-            scatter!(ax_lat[j][1], ys, xs; color = c)    
+            scatter!(ax_lat[j][1], ys, xs; color = c, strokewidth=0.5, markersize = 4)    
 			lines!(ax_lat[j][1], [ymed, ymed], [xpos - tp_interval/2, xpos + tp_interval/2]; color = c)
         end
     end
@@ -519,7 +536,7 @@ for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
         for row in eachrow(subdf)
 			# haskey(gsidx, row.geneset) || continue
 			yidx = df[!, row.geneset]
-			xpos = gsidx[row.geneset] * gs_interval + (i - 2) * tp_interval
+			xpos = gsidx[row.geneset] * gs_interval + (2 - i) * tp_interval
 			ys = df.z[yidx]
 			xs = rand(Normal(0.0, tp_interval / 5), length(ys)) .+ xpos
             ymed = median(ys)
@@ -529,11 +546,14 @@ for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
                    row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
             c = ymed < allymed ? colors_sig[cidx] : colors_sig[8 - cidx]
             violin!(ax_amp[j][1], fill(xpos, length(ys)), ys; width=tp_interval, color=(c, 0.2), orientation=:horizontal)
-            scatter!(ax_amp[j][1], ys, xs; color = c)    
+            scatter!(ax_amp[j][1], ys, xs; color = c, strokewidth=0.5, markersize = 4)    
 			lines!(ax_amp[j][1], [ymed, ymed], [xpos - tp_interval/2, xpos + tp_interval/2]; color = c)
         end
     end
 end
+
+#-
+
 
 
 

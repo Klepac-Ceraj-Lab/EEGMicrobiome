@@ -1083,7 +1083,7 @@ gsp = groupby(topspecies, ["geneset", "eeg_feature"])
 
 for feat in eeg_features, tp in tps 
     @warn feat, tp
-    lms = df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
+    lms = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
     for gs in String.(unique(mapreduce(g-> select(g, "geneset").geneset, union, gdf)))
         sublms = sort(subset(lms, "feature"=> ByRow(f-> replace(f, "UniRef90_"=>"") ∈ na_map[gs])), "z")
         subsp = sort(subset(get(gsp, (; geneset=gs, eeg_feature=feat), DataFrame(timepoint=String[], abundance=Float64[])),
