@@ -32,6 +32,8 @@ using BiobakeryUtils
 using CairoMakie
 using AlgebraOfGraphics
 using SparseArrays
+using Clustering
+using Distances
 
 # Next, we'll load the data.
 # The `load_cohort()` fucntion is written in `src/data_loading.jl`.
@@ -284,7 +286,70 @@ humann_files = let
 	groupby(humann_files, "species")
 end
 
+topspec_idx = Dict(s=> i for (i, s) in enumerate(sort(unique(filter(!=("other"), topspecies.species)))))
+
+topspec_eeg_cormat_3m = zeros(length(keys(topspec_idx)), 6)
+topspec_eeg_cormat_6m = zeros(length(keys(topspec_idx)), 6)
+topspec_eeg_cormat_12m = zeros(length(keys(topspec_idx)), 6)
+
+for (i, feat) in enumerate(eeg_features), spc in keys(topspec_idx)
+	if haskey(concurrent_3m.fidx, spc)
+		topspec_eeg_cormat_3m[topspec_idx[spc], i] = cor(
+			vec(abundances(concurrent_3m[spc, :])),
+			get(concurrent_3m, Symbol(feat))
+		)
+	end
+	if haskey(concurrent_6m.fidx, spc)
+		topspec_eeg_cormat_6m[topspec_idx[spc], i] = cor(
+			vec(abundances(concurrent_6m[spc, :])),
+			get(concurrent_6m, Symbol(feat))
+		)
+	end
+	if haskey(concurrent_12m.fidx, spc)
+		topspec_eeg_cormat_12m[topspec_idx[spc], i] = cor(
+			vec(abundances(concurrent_12m[spc, :])),
+			get(concurrent_12m, Symbol(feat))
+		)
+	end
+end
+
+topspec_eeg_hcl_3m_row = hclust(
+	pairwise(Euclidean(), topspec_eeg_cormat_3m; dims=1);
+	linkage=:average,
+	branchorder=:optimal
+)
+topspec_eeg_hcl_3m_col = hclust(
+	pairwise(Euclidean(), topspec_eeg_cormat_3m; dims=2);
+	linkage=:average,
+	branchorder=:optimal
+)
+
+topspec_eeg_hcl_6m_row = hclust(
+	pairwise(Euclidean(), topspec_eeg_cormat_6m; dims=1);
+	linkage=:average,
+	branchorder=:optimal
+)
+topspec_eeg_hcl_6m_col = hclust(
+	pairwise(Euclidean(), topspec_eeg_cormat_6m; dims=2);
+	linkage=:average,
+	branchorder=:optimal
+)
+
+topspec_eeg_hcl_12m_row = hclust(
+	pairwise(Euclidean(), topspec_eeg_cormat_12m; dims=1);
+	linkage=:average,
+	branchorder=:optimal
+)
+topspec_eeg_hcl_12m_col = hclust(
+	pairwise(Euclidean(), topspec_eeg_cormat_12m; dims=2);
+	linkage=:average,
+	branchorder=:optimal
+)
 ##
+
+
+##
+
 
 
 # ## Plotting
@@ -347,7 +412,7 @@ ax_stool_hist = Axis(grid_longsamples[2,1]; ylabel="density", title="stool")
 # Note: to get this into the right position/size
 # without distortion, edits have to be made to the original image.
 
-image!(ax_cohort, rotr90(load("manuscript/mainfigures/eegfig1a.png")))
+image!(ax_cohort, rotr90(load("manuscript/mainfigures/figure_draft1.png")))
 
 hidedecorations!(ax_cohort)
 hidespines!(ax_cohort)
@@ -554,14 +619,14 @@ for (j, feat) in enumerate(filter(contains("latency"), eeg_features))
 			yidx = df[!, row.geneset]
 			xpos = gsidx[row.geneset] * gs_interval + (2 - i) * tp_interval
 			ys = df.z[yidx]
-			xs = rand(Normal(0.0, tp_interval / 5), length(ys)) .+ xpos
+			xs = rand(Normal(0.0, tp_interval / 8), length(ys)) .+ xpos
             ymed = median(ys)
             
             cidx = row.q₀ > 0.2  ? 4 :       # not significant
                    row.q₀ < 0.01 ? 1 :       # quite significant
                    row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
             c = ymed < allymed ? colors_sig[cidx] : colors_sig[8 - cidx]
-            violin!(ax_lat[j][1], fill(xpos, length(ys)), ys; width=tp_interval, color=(c, 0.2), orientation=:horizontal)
+            violin!(ax_lat[j][1], fill(xpos, length(ys)), ys; width=tp_interval*1.5, color=(c, 0.4), orientation=:horizontal)
             scatter!(ax_lat[j][1], ys, xs; color = c, strokewidth=0.5, markersize = 4)    
 			lines!(ax_lat[j][1], [ymed, ymed], [xpos - tp_interval/2, xpos + tp_interval/2]; color = c)
         end
@@ -586,14 +651,14 @@ for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
 			yidx = df[!, row.geneset]
 			xpos = gsidx[row.geneset] * gs_interval + (2 - i) * tp_interval
 			ys = df.z[yidx]
-			xs = rand(Normal(0.0, tp_interval / 5), length(ys)) .+ xpos
+			xs = rand(Normal(0.0, tp_interval / 8), length(ys)) .+ xpos
             ymed = median(ys)
             
             cidx = row.q₀ > 0.2  ? 4 :       # not significant
                    row.q₀ < 0.01 ? 1 :       # quite significant
                    row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
             c = ymed < allymed ? colors_sig[cidx] : colors_sig[8 - cidx]
-            violin!(ax_amp[j][1], fill(xpos, length(ys)), ys; width=tp_interval, color=(c, 0.2), orientation=:horizontal)
+            violin!(ax_amp[j][1], fill(xpos, length(ys)), ys; width=tp_interval*1.5, color=(c, 0.4), orientation=:horizontal)
             scatter!(ax_amp[j][1], ys, xs; color = c, strokewidth=0.5, markersize = 4)    
 			lines!(ax_amp[j][1], [ymed, ymed], [xpos - tp_interval/2, xpos + tp_interval/2]; color = c)
         end
@@ -602,7 +667,9 @@ end
 
 #-
 
-ax_bug_heatmaps = Axis(grid_bug_heatmaps[1,1]; )
+ax_bug_heatmap_3m = Axis(grid_bug_heatmaps[1,1]; title="3m")
+ax_bug_heatmap_6m = Axis(grid_bug_heatmaps[1,2]; title="6m")
+ax_bug_heatmap_12m = Axis(grid_bug_heatmaps[1,3]; title="12m")
 
 
 
