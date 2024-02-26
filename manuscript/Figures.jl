@@ -1,3 +1,4 @@
+using AlgebraOfGraphics: categorical
 # # EEG and the Microbiome - figures
 # 
 # This notebook contains code and explanations
@@ -287,6 +288,7 @@ humann_files = let
 end
 
 topspec_idx = Dict(s=> i for (i, s) in enumerate(sort(unique(filter(!=("other"), topspecies.species)))))
+topspec_unirefs_idx = Dict(u=> i for (i, u) in enumerate(unique(select(humann_files, "uniref").uniref)))
 
 topspec_eeg_cormat_3m = zeros(length(keys(topspec_idx)), 6)
 topspec_eeg_cormat_6m = zeros(length(keys(topspec_idx)), 6)
@@ -313,40 +315,75 @@ for (i, feat) in enumerate(eeg_features), spc in keys(topspec_idx)
 	end
 end
 
+topspec_eeg_cormat_full = hcat(topspec_eeg_cormat_3m, topspec_eeg_cormat_6m, topspec_eeg_cormat_12m)
+
 topspec_eeg_hcl_3m_row = hclust(
 	pairwise(Euclidean(), topspec_eeg_cormat_3m; dims=1);
-	linkage=:average,
+	linkage=:complete,
 	branchorder=:optimal
 )
 topspec_eeg_hcl_3m_col = hclust(
 	pairwise(Euclidean(), topspec_eeg_cormat_3m; dims=2);
-	linkage=:average,
+	linkage=:complete,
 	branchorder=:optimal
 )
 
 topspec_eeg_hcl_6m_row = hclust(
 	pairwise(Euclidean(), topspec_eeg_cormat_6m; dims=1);
-	linkage=:average,
+	linkage=:complete,
 	branchorder=:optimal
 )
 topspec_eeg_hcl_6m_col = hclust(
 	pairwise(Euclidean(), topspec_eeg_cormat_6m; dims=2);
-	linkage=:average,
+	linkage=:complete,
 	branchorder=:optimal
 )
 
 topspec_eeg_hcl_12m_row = hclust(
 	pairwise(Euclidean(), topspec_eeg_cormat_12m; dims=1);
-	linkage=:average,
+	linkage=:complete,
 	branchorder=:optimal
 )
 topspec_eeg_hcl_12m_col = hclust(
 	pairwise(Euclidean(), topspec_eeg_cormat_12m; dims=2);
-	linkage=:average,
+	linkage=:complete,
 	branchorder=:optimal
 )
+
+topspec_eeg_hcl_full_row = hclust(
+    pairwise(Euclidean(), topspec_eeg_cormat_full; dims=2);
+	linkage=:complete,
+	branchorder=:optimal
+)
+topspec_eeg_hcl_full_col = hclust(
+    pairwise(Euclidean(), topspec_eeg_cormat_full; dims=1);
+	linkage=:complete,
+	branchorder=:optimal
+)
+
 ##
 
+topspec_unirefs_abmat = spzeros(length(keys(topspec_unirefs_idx)), length(topspec_idx))
+
+for subdf in humann_files
+	spec = first(subdf.species)
+	haskey(topspec_idx, spec) || continue
+	abs = combine(groupby(subdf, "uniref"), "uniref" => first => "uniref", "abundance"=> mean => "abmean")
+	for row in eachrow(abs)
+		topspec_unirefs_abmat[topspec_unirefs_idx[row.uniref], topspec_idx[spec]] = row.abmean
+	end
+end
+ 
+topspec_unirefs_hcl_row = hclust(
+    pairwise(Euclidean(), topspec_unirefs_abmat; dims=2);
+	linkage=:complete,
+	branchorder=:optimal
+)
+topspec_unirefs_hcl_col = hclust(
+    pairwise(Euclidean(), topspec_unirefs_abmat; dims=1);
+	linkage=:complete,
+	branchorder=:optimal
+)
 
 ##
 
@@ -368,6 +405,8 @@ topspec_eeg_hcl_12m_col = hclust(
 colormap_age = :viridis
 colors_timepoints = [tp=> c for (tp, c) in zip(tps, cgrad(colormap_age)[[0., 0.4, 0.8]])]
 colors_sampletype = [st=> c for (st, c) in zip(["stool", "eeg", "both"], cgrad(:tab10; categorical=true)[[1,4,5]])]
+colors_eeg_kind = [kd=> c for (kd, c) in zip(["amp", "latency"], cgrad(:tab10; categorical=true)[[2,3]])]
+colors_eeg_peaks = [pk=> c for (pk, c) in zip(["N1", "P1c", "N2c"], cgrad(:Accent_4; categorical=true)[2:4])]
 
 colormap_sig = :PuOr
 colors_sig = cgrad(colormap_sig, 11; rev = true, categorical=true)[[1,3,4,8,9,11]]
@@ -382,11 +421,11 @@ insert!(colors_sig, 4, colorant"white")
 
 figure1 = Figure(; size = (1200,800))
 
-grid_cohort = GridLayout(figure1[1,1])
-grid_eeg_curves = GridLayout(figure1[2,1])
+grid_cohort = GridLayout(figure1[1,1:2])
+grid_longsamples = GridLayout(figure1[2:3, 1])
+grid_eeg_curves = GridLayout(figure1[2,2])
 
-grid_pcoas = GridLayout(figure1[1:2, 2])
-grid_longsamples = GridLayout(figure1[1:2, 3])
+grid_pcoas = GridLayout(figure1[3, 2])
 
 ax_cohort = Axis(grid_cohort[1,1]; aspect = DataAspect(), alignmode=Outside())
 # Legend(grid_cohort[2,1],
@@ -399,7 +438,7 @@ ax_eeg_curves = Axis(grid_eeg_curves[1,1]; xlabel="time (ms) relative to stimulu
 		     ylabel="voltage (μV)"
 )
 ax_pcoa_spec = Axis(grid_pcoas[1,1])
-ax_pcoa_func = Axis(grid_pcoas[2,1])
+ax_pcoa_func = Axis(grid_pcoas[1,2])
 
 ax_longsamples = Axis(grid_longsamples[3,1]; xlabel="age (months)", ylabel = "subject")
 ax_eeg_hist = Axis(grid_longsamples[1,1]; ylabel="density", title="eeg")
@@ -448,7 +487,7 @@ Legend(grid_eeg_curves[1,1],
 plt_pcoa_spec = plot_pcoa!(ax_pcoa_spec, species_pco; color=get(concurrent_species, :age), colormap=colormap_age)
 plt_pcoa_func = plot_pcoa!(ax_pcoa_func, unirefs_pco; color=get(concurrent_unirefs, :age), colormap=colormap_age)
 
-Colorbar(grid_pcoas[3,1];
+Colorbar(grid_pcoas[2,1:2];
 	limits=extrema(skipmissing(eegmbo.age)), label = "Age (months)", colormap=colormap_age,
 	vertical=false, tellheight=true, tellwidth=false, flipaxis=false)
 
@@ -503,7 +542,7 @@ ylims!(ax_longsamples, -2, length(unique(long_sub.subject)) + 2)
 # tweak some visuals
 
 rowsize!(grid_longsamples, 3, Relative(5/6))
-colsize!(figure1.layout, 1, Relative(1/2))
+colsize!(figure1.layout, 1, Relative(1/3))
 
 hidedecorations!(ax_eeg_curves, ticks=false, ticklabels=false, label=false)
 hidedecorations!(ax_pcoa_spec, ticks=false, ticklabels=false, label=false)
@@ -517,15 +556,16 @@ save("/home/kevin/Downloads/figure1-inprogress.png", figure1)
 # ##### Figure 2
 
 
-figure2 = Figure(; size = (1500,1200))
+figure2 = Figure(; size = (1100,600))
 
 grid_fsea_dots = GridLayout(figure2[1,1])
-#grid_fsea_heatmaps = GridLayout(figure2[1,2])
-grid_bug_heatmaps = GridLayout(figure2[2, 1])
+# grid_fsea_heatmaps = GridLayout(figure2[1,2])
+# grid_bug_heatmaps = GridLayout(figure2[2, 1])
 
 gs_interval = 6
 tp_interval = 1.5
 dotsxlim = 3
+fsea_marker_size=6
 
 grid_fsea_latency=GridLayout(grid_fsea_dots[1,1])
 ax_lat = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
@@ -572,8 +612,8 @@ for axs in (ax_lat, ax_amp)
 		ylims!.((axl,axr), gs_interval - 2*tp_interval, gs_interval * length(gssig) + 2*tp_interval)
 		xlims!(axl, -dotsxlim, dotsxlim)
 		hidexdecorations!(axl; ticks=false, ticklabels=false, label=false)
-		hideydecorations!(axl, ticks=false, ticklabels=i != 1)
-		hideydecorations!(axr, ticks=false, ticklabels=i != 3)
+		hideydecorations!(axl, ticks=i != 1, ticklabels=i != 1)
+		hideydecorations!(axr, ticks=i != 3, ticklabels=i != 3)
 		hidexdecorations!(axr)
 
 		for gs in gssig
@@ -627,7 +667,7 @@ for (j, feat) in enumerate(filter(contains("latency"), eeg_features))
                    row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
             c = ymed < allymed ? colors_sig[cidx] : colors_sig[8 - cidx]
             violin!(ax_lat[j][1], fill(xpos, length(ys)), ys; width=tp_interval*1.5, color=(c, 0.4), orientation=:horizontal)
-            scatter!(ax_lat[j][1], ys, xs; color = c, strokewidth=0.5, markersize = 4)    
+            scatter!(ax_lat[j][1], ys, xs; color = c, strokewidth=0.5, markersize = fsea_marker_size)    
 			lines!(ax_lat[j][1], [ymed, ymed], [xpos - tp_interval/2, xpos + tp_interval/2]; color = c)
         end
     end
@@ -659,7 +699,7 @@ for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
                    row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
             c = ymed < allymed ? colors_sig[cidx] : colors_sig[8 - cidx]
             violin!(ax_amp[j][1], fill(xpos, length(ys)), ys; width=tp_interval*1.5, color=(c, 0.4), orientation=:horizontal)
-            scatter!(ax_amp[j][1], ys, xs; color = c, strokewidth=0.5, markersize = 4)    
+            scatter!(ax_amp[j][1], ys, xs; color = c, strokewidth=0.5, markersize = fsea_marker_size)    
 			lines!(ax_amp[j][1], [ymed, ymed], [xpos - tp_interval/2, xpos + tp_interval/2]; color = c)
         end
     end
@@ -667,11 +707,54 @@ end
 
 #-
 
-ax_bug_heatmap_3m = Axis(grid_bug_heatmaps[1,1]; title="3m")
-ax_bug_heatmap_6m = Axis(grid_bug_heatmaps[1,2]; title="6m")
-ax_bug_heatmap_12m = Axis(grid_bug_heatmaps[1,3]; title="12m")
 
-
-
+# ax_bug_heatmap = Axis(grid_bug_heatmaps[1,1]; 
+# 	yticks = (1:size(topspec_eeg_cormat_full, 1),
+# 			  collect(keys(topspec_idx))[sortperm(collect(values(topspec_idx)))][topspec_eeg_hcl_full_col.order]
+# 	),
+# )
+# hidexdecorations!(ax_bug_heatmap)
+# ax_bug_annotations = Axis(grid_bug_heatmaps[2,1])
+# hidedecorations!(ax_bug_annotations)
+#
+# Legend(grid_bug_heatmaps[1,2],
+# 	   [MarkerElement(; color=c, marker=:rect) for c in mapreduce(
+#			x-> x[2], vcat, [colors_timepoints; colors_eeg_peaks; colors_eeg_kind]
+#			)
+#	   ],
+# 	   mapreduce(x-> x[1], vcat, [colors_timepoints; colors_eeg_peaks; colors_eeg_kind])
+# )
+#
+# # ax_bug_heatmap_6m = Axis(grid_bug_heatmaps[1,2]; title="6m", )
+# # ax_bug_heatmap_12m = Axis(grid_bug_heatmaps[1,3]; title="12m")
+#
+# heatmap!(ax_bug_heatmap,
+#		collect(topspec_unirefs_abmat)[topspec_unirefs_hcl_col.order, topspec_unirefs_hcl_row.order]
+# )
+#
+# for (i, (feat, tp)) in enumerate(
+# 	vec((collect(Iterators.product(eeg_features, tps))))[topspec_eeg_hcl_full_row.order]
+# )
+# 	_, kind, peak = split(replace(feat, "_corrected"=>"c"), "_")
+# 	kindcol = Dict(colors_eeg_kind)[kind]
+# 	peakcol = Dict(colors_eeg_peaks)[peak]
+# 	tpcol = Dict(colors_timepoints)[tp]
+# 	poly!(ax_bug_annotations, Point2f.([
+# 				(i-0.5, 0), (i+0.5, 0), (i+0.5, 1), (i-0.5, 1)
+# 			]); color=kindcol)
+#
+# 	poly!(ax_bug_annotations, Point2f.([
+# 				(i-0.5, 1), (i+0.5, 1), (i+0.5, 2), (i-0.5, 2)
+# 			]); color=peakcol)
+#
+# 	poly!(ax_bug_annotations, Point2f.([
+# 				(i-0.5, 2), (i+0.5, 2), (i+0.5, 3), (i-0.5, 3)
+# 			]); color=tpcol)
+#
+# end
+# tightlimits!(ax_bug_annotations)
+# rowsize!(figure2.layout, 2, Relative(1/3))
+# colgap!.((grid_fsea_latency, grid_fsea_amplitude), 2)
+#
 # for feat in filter(contains("latency"), feats)
 save("/home/kevin/Downloads/figure2-inprogress.png", figure2)
