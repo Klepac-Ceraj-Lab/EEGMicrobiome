@@ -423,9 +423,9 @@ figure1 = Figure(; size = (1200,800))
 
 grid_cohort = GridLayout(figure1[1,1:2])
 grid_longsamples = GridLayout(figure1[2:3, 1])
-grid_eeg_curves = GridLayout(figure1[2,2])
+grid_eeg_curves = GridLayout(figure1[3,2])
 
-grid_pcoas = GridLayout(figure1[3, 2])
+grid_pcoas = GridLayout(figure1[2, 2])
 
 ax_cohort = Axis(grid_cohort[1,1]; aspect = DataAspect(), alignmode=Outside())
 # Legend(grid_cohort[2,1],
