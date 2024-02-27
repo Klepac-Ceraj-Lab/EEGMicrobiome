@@ -191,6 +191,7 @@ wide_sub = select(leftjoin(
 fsea_df = CSV.read("data/outputs/fsea/concurrent_consolidated_fsea.csv", DataFrame)
 future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_consolidated_fsea.csv", DataFrame)
 future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_consolidated_fsea.csv", DataFrame)
+futfsea_df = vcat(future6m_fsea_df, future12m_fsea_df)
 
 geneset_order = [
 	"Acetate synthesis",
@@ -451,7 +452,7 @@ ax_stool_hist = Axis(grid_longsamples[2,1]; ylabel="density", title="stool")
 # Note: to get this into the right position/size
 # without distortion, edits have to be made to the original image.
 
-image!(ax_cohort, rotr90(load("manuscript/mainfigures/figure_draft1.png")))
+image!(ax_cohort, rotr90(load("manuscript/mainfigures/FinalConceptFigure.png")))
 
 hidedecorations!(ax_cohort)
 hidespines!(ax_cohort)
@@ -543,6 +544,7 @@ ylims!(ax_longsamples, -2, length(unique(long_sub.subject)) + 2)
 
 rowsize!(grid_longsamples, 3, Relative(5/6))
 colsize!(figure1.layout, 1, Relative(1/3))
+rowsize!(figure1.layout, 1, Relative(1/4))
 
 hidedecorations!(ax_eeg_curves, ticks=false, ticklabels=false, label=false)
 hidedecorations!(ax_pcoa_spec, ticks=false, ticklabels=false, label=false)
@@ -768,22 +770,38 @@ figure3 = Figure(; size = (1050, 750))
 
 
 grid_future_violins = GridLayout(figure3[1,1])
-grid_fsea_dots = GridLayout(figure3[2,1])
+grid_futfsea_dots = GridLayout(figure3[2,1])
+ax_future_violins = map(
 
-gs_interval = 6
-tp_interval = 1.5
-dotsxlim = 3
-fsea_marker_size=6
-
-grid_fsea_latency=GridLayout(grid_fsea_dots[1,1])
-ax_lat = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
+grid_futfsea_latency=GridLayout(grid_futfsea_dots[1,1])
+ax_futlat = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
 	map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
-		l = Axis(grid_fsea_latency[1,i];
+		l = Axis(grid_futfsea_latency[1,i];
 				 xlabel = "z",
 				 title = lab,
 				 yticks = (tickrange, reverse(gssig)),
 				 )
-		r = Axis(grid_fsea_latency[1,i];
+		r = Axis(grid_futfsea_latency[1,i];
+				 yaxisposition = :right,
+				 yticklabelsize = 6,
+				 yticks = (sort([collect(tickrange);
+								 collect(tickrange) .- tp_interval;
+								 collect(tickrange) .+ tp_interval]),
+						   repeat(["6m->12m", "3m->12m", "3m->6m"]; outer=length(tickrange)))
+				 )
+		(l, r)
+	end
+end
+
+grid_futfsea_amplitude=GridLayout(grid_futfsea_dots[1,2])
+ax_futamp = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
+	map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
+		l = Axis(grid_futfsea_amplitude[1,i];
+				 xlabel = "z",
+				 title = lab,
+				 yticks = (tickrange, reverse(gssig)),
+				 )
+		r = Axis(grid_futfsea_amplitude[1,i];
 				 yaxisposition = :right,
 				 yticklabelsize = 6,
 				 yticks = (sort([collect(tickrange);
@@ -795,27 +813,7 @@ ax_lat = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
 	end
 end
 
-grid_fsea_amplitude=GridLayout(grid_fsea_dots[1,2])
-ax_amp = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
-	map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
-		l = Axis(grid_fsea_amplitude[1,i];
-				 xlabel = "z",
-				 title = lab,
-				 yticks = (tickrange, reverse(gssig)),
-				 )
-		r = Axis(grid_fsea_amplitude[1,i];
-				 yaxisposition = :right,
-				 yticklabelsize = 6,
-				 yticks = (sort([collect(tickrange);
-								 collect(tickrange) .- tp_interval;
-								 collect(tickrange) .+ tp_interval]),
-						  repeat(string.(3:-1:1); outer=length(tickrange)))
-				 )
-		(l, r)
-	end
-end
-
-for axs in (ax_lat, ax_amp)
+for axs in (ax_futlat, ax_futamp)
 	for (i, (axl, axr)) in enumerate(axs)
 		ylims!.((axl,axr), gs_interval - 2*tp_interval, gs_interval * length(gssig) + 2*tp_interval)
 		xlims!(axl, -dotsxlim, dotsxlim)
@@ -837,26 +835,31 @@ for axs in (ax_lat, ax_amp)
 
 	end
 end
-hideydecorations!(ax_amp[1][1], ticks=false)
+hideydecorations!(ax_futamp[1][1], ticks=false)
 
-Legend(grid_fsea_dots[2,1:2], 
+Legend(grid_futfsea_dots[2,1:2], 
 	   [[MarkerElement(; marker=:rect, color=colors_sig[i]) for i in 1:3],
 		[MarkerElement(; marker=:rect, color=colors_sig[i]) for i in 5:7]],
 	   [["q < 0.01", "q < 0.1", "q < 0.2"], 
 		["q < 0.2", "q < 0.1", "q < 0.01"]],
 	   ["(-)", "(+)"];
 	   orientation=:horizontal, tellheight=true, tellwidth=false)
-Label(grid_fsea_dots[0,1], "Latency"; fontsize=20, tellwidth=false)
-Label(grid_fsea_dots[0,2], "Amplitude"; fontsize=20, tellwidth=false)
+Label(grid_futfsea_dots[0,1], "Latency"; fontsize=20, tellwidth=false)
+Label(grid_futfsea_dots[0,2], "Amplitude"; fontsize=20, tellwidth=false)
+
+#-
+
+for (i, df) in enumerate((future_3m6m, future_3m12m, future_6m12m))
+	
 
 #-
 
 
 for (j, feat) in enumerate(filter(contains("latency"), eeg_features))
-	gdf = groupby(fsea_df, "eeg_feature")
+	gdf = groupby(futfsea_df, "eeg_feature")
     featstr = replace(feat, "peak_latency_"=>"", "_corrected"=>"c")
     @warn "$featstr"
-    for (i, tp) in enumerate(tps)
+    for (i, tp) in enumerate(ftps)
         @info "$tp"
 
 		df =  alllms[(; eeg_feature=feat, timepoint=tp)]
@@ -874,26 +877,26 @@ for (j, feat) in enumerate(filter(contains("latency"), eeg_features))
                    row.q₀ < 0.01 ? 1 :       # quite significant
                    row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
             c = ymed < allymed ? colors_sig[cidx] : colors_sig[8 - cidx]
-            violin!(ax_lat[j][1], fill(xpos, length(ys)), ys; width=tp_interval*1.5, color=(c, 0.4), orientation=:horizontal)
-            scatter!(ax_lat[j][1], ys, xs; color = c, strokewidth=0.5, markersize = fsea_marker_size)    
-			lines!(ax_lat[j][1], [ymed, ymed], [xpos - tp_interval/2, xpos + tp_interval/2]; color = c)
+            violin!(ax_futlat[j][1], fill(xpos, length(ys)), ys; width=tp_interval*1.5, color=(c, 0.4), orientation=:horizontal)
+            scatter!(ax_futlat[j][1], ys, xs; color = c, strokewidth=0.5, markersize = fsea_marker_size)    
+			lines!(ax_futlat[j][1], [ymed, ymed], [xpos - tp_interval/2, xpos + tp_interval/2]; color = c)
         end
     end
 end
 
 
 for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
-	gdf = groupby(fsea_df, "eeg_feature")
+	gdf = groupby(futfsea_df, "eeg_feature")
     featstr = replace(feat, "peak_amp"=>"", "_corrected"=>"c")
     @warn "$featstr"
-    for (i, tp) in enumerate(tps)
+    for (i, tp) in enumerate(ftps)
         @info "$tp"
 
 		df =  alllms[(; eeg_feature=feat, timepoint=tp)]
 		allymed = median(df.z)
 
         subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
-        # lines!(ax_lat, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
+        # lines!(ax_futlat, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
         for row in eachrow(subdf)
 			# haskey(gsidx, row.geneset) || continue
 			yidx = df[!, row.geneset]
@@ -906,13 +909,15 @@ for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
                    row.q₀ < 0.01 ? 1 :       # quite significant
                    row.q₀ < 0.1  ? 2 : 3 # somewhat significant / not very significant
             c = ymed < allymed ? colors_sig[cidx] : colors_sig[8 - cidx]
-            violin!(ax_amp[j][1], fill(xpos, length(ys)), ys; width=tp_interval*1.5, color=(c, 0.4), orientation=:horizontal)
-            scatter!(ax_amp[j][1], ys, xs; color = c, strokewidth=0.5, markersize = fsea_marker_size)    
-			lines!(ax_amp[j][1], [ymed, ymed], [xpos - tp_interval/2, xpos + tp_interval/2]; color = c)
+            violin!(ax_futamp[j][1], fill(xpos, length(ys)), ys; width=tp_interval*1.5, color=(c, 0.4), orientation=:horizontal)
+            scatter!(ax_futamp[j][1], ys, xs; color = c, strokewidth=0.5, markersize = fsea_marker_size)    
+			lines!(ax_futamp[j][1], [ymed, ymed], [xpos - tp_interval/2, xpos + tp_interval/2]; color = c)
         end
     end
 end
 
 #-
+rowsize!(figure3.layout, 2, Relative(3/4))
 
 
+save("/home/kevin/Downloads/figure3-inprogress.png", figure3)
