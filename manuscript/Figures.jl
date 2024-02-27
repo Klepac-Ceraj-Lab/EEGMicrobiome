@@ -770,16 +770,20 @@ figure3 = Figure(; size = (1050, 750))
 
 
 grid_future_violins = GridLayout(figure3[1,1])
-grid_futfsea_dots = GridLayout(figure3[2,1])
-ax_future_violins = map(
+grid_futfsea_dots = GridLayout(figure3[1,2])
+ax_future_violins = map(enumerate((future_3m6m, future_3m12m, future_6m12m))) do (i, comm)
+	Axis(grid_future_violins[i,1]; ylabel = "age (months)", xticks = ([1,2], ["stool", "eeg"]), xlabel="collection type")
+end
 
 grid_futfsea_latency=GridLayout(grid_futfsea_dots[1,1])
 ax_futlat = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
 	map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
 		l = Axis(grid_futfsea_latency[1,i];
 				 xlabel = "z",
+				 xticklabelsize= 10,
 				 title = lab,
 				 yticks = (tickrange, reverse(gssig)),
+				 yticklabelsize=10,
 				 )
 		r = Axis(grid_futfsea_latency[1,i];
 				 yaxisposition = :right,
@@ -798,8 +802,10 @@ ax_futamp = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
 	map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
 		l = Axis(grid_futfsea_amplitude[1,i];
 				 xlabel = "z",
+				 xticklabelsize=10,
 				 title = lab,
 				 yticks = (tickrange, reverse(gssig)),
+				 yticklabelsize=10,
 				 )
 		r = Axis(grid_futfsea_amplitude[1,i];
 				 yaxisposition = :right,
@@ -807,7 +813,7 @@ ax_futamp = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
 				 yticks = (sort([collect(tickrange);
 								 collect(tickrange) .- tp_interval;
 								 collect(tickrange) .+ tp_interval]),
-						  repeat(string.(3:-1:1); outer=length(tickrange)))
+						  repeat(["6m->12m", "3m->12m", "3m->6m"]; outer=length(tickrange)))
 				 )
 		(l, r)
 	end
@@ -837,19 +843,29 @@ for axs in (ax_futlat, ax_futamp)
 end
 hideydecorations!(ax_futamp[1][1], ticks=false)
 
-Legend(grid_futfsea_dots[2,1:2], 
+Legend(grid_future_violins[4,1], 
 	   [[MarkerElement(; marker=:rect, color=colors_sig[i]) for i in 1:3],
 		[MarkerElement(; marker=:rect, color=colors_sig[i]) for i in 5:7]],
 	   [["q < 0.01", "q < 0.1", "q < 0.2"], 
 		["q < 0.2", "q < 0.1", "q < 0.01"]],
 	   ["(-)", "(+)"];
-	   orientation=:horizontal, tellheight=true, tellwidth=false)
-Label(grid_futfsea_dots[0,1], "Latency"; fontsize=20, tellwidth=false)
-Label(grid_futfsea_dots[0,2], "Amplitude"; fontsize=20, tellwidth=false)
+	   orientation=:horizontal, tellheight=true, tellwidth=false, nbanks=3)
+Label(grid_futfsea_dots[0,1], "Latency"; fontsize=12, tellwidth=false)
+Label(grid_futfsea_dots[0,2], "Amplitude"; fontsize=12, tellwidth=false)
 
 #-
 
-for (i, df) in enumerate((future_3m6m, future_3m12m, future_6m12m))
+for (i, comm) in enumerate((future_3m6m, future_3m12m, future_6m12m))
+	ax = ax_future_violins[i]
+	df = DataFrame(get(comm))
+	violin!(ax, repeat([1,2]; inner=size(df,1)), [df.age; df.eeg_age]; color=:gray80)
+	for row in eachrow(df)
+		xs = [1,2] .+ rand(Normal(0,0.05))
+		ys = [row.age, row.eeg_age]
+		lines!(ax, xs, ys; color=:gray60, linestyle=:dash, linewidth=2)
+		scatter!(ax, xs, ys; color=(:gray50, 0.3), strokewidth=1)
+	end
+end
 	
 
 #-
@@ -917,7 +933,8 @@ for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
 end
 
 #-
-rowsize!(figure3.layout, 2, Relative(3/4))
+colsize!(figure3.layout, 2, Relative(4/5))
+linkyaxes!(ax_future_violins...)
 
 
 save("/home/kevin/Downloads/figure3-inprogress.png", figure3)
