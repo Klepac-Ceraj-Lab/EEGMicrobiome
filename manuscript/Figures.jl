@@ -1,4 +1,3 @@
-using AlgebraOfGraphics: categorical
 # # EEG and the Microbiome - figures
 # 
 # This notebook contains code and explanations
@@ -26,12 +25,13 @@ using Chain
 using XLSX
 using FileIO
 using CSV
-sing DataFrames
+using DataFrames
 using Distributions
 using Microbiome
 using BiobakeryUtils
 using CairoMakie
 using AlgebraOfGraphics
+using AlgebraOfGraphics: categorical
 using SparseArrays
 using Clustering
 using Distances
@@ -643,8 +643,6 @@ Legend(grid_fsea_dots[2,1:2],
 		["q < 0.2", "q < 0.1", "q < 0.01"]],
 	   ["(-)", "(+)"];
 	   orientation=:horizontal, tellheight=true, tellwidth=false)
-Label(grid_fsea_dots[0,1], "Latency"; fontsize=20, tellwidth=false)
-Label(grid_fsea_dots[0,2], "Amplitude"; fontsize=20, tellwidth=false)
 
 #-
 
@@ -710,58 +708,6 @@ for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
     end
 end
 
-#-
-
-
-# ax_bug_heatmap = Axis(grid_bug_heatmaps[1,1]; 
-# 	yticks = (1:size(topspec_eeg_cormat_full, 1),
-# 			  collect(keys(topspec_idx))[sortperm(collect(values(topspec_idx)))][topspec_eeg_hcl_full_col.order]
-# 	),
-# )
-# hidexdecorations!(ax_bug_heatmap)
-# ax_bug_annotations = Axis(grid_bug_heatmaps[2,1])
-# hidedecorations!(ax_bug_annotations)
-#
-# Legend(grid_bug_heatmaps[1,2],
-# 	   [MarkerElement(; color=c, marker=:rect) for c in mapreduce(
-#			x-> x[2], vcat, [colors_timepoints; colors_eeg_peaks; colors_eeg_kind]
-#			)
-#	   ],
-# 	   mapreduce(x-> x[1], vcat, [colors_timepoints; colors_eeg_peaks; colors_eeg_kind])
-# )
-#
-# # ax_bug_heatmap_6m = Axis(grid_bug_heatmaps[1,2]; title="6m", )
-# # ax_bug_heatmap_12m = Axis(grid_bug_heatmaps[1,3]; title="12m")
-#
-# heatmap!(ax_bug_heatmap,
-#		collect(topspec_unirefs_abmat)[topspec_unirefs_hcl_col.order, topspec_unirefs_hcl_row.order]
-# )
-#
-# for (i, (feat, tp)) in enumerate(
-# 	vec((collect(Iterators.product(eeg_features, tps))))[topspec_eeg_hcl_full_row.order]
-# )
-# 	_, kind, peak = split(replace(feat, "_corrected"=>"c"), "_")
-# 	kindcol = Dict(colors_eeg_kind)[kind]
-# 	peakcol = Dict(colors_eeg_peaks)[peak]
-# 	tpcol = Dict(colors_timepoints)[tp]
-# 	poly!(ax_bug_annotations, Point2f.([
-# 				(i-0.5, 0), (i+0.5, 0), (i+0.5, 1), (i-0.5, 1)
-# 			]); color=kindcol)
-#
-# 	poly!(ax_bug_annotations, Point2f.([
-# 				(i-0.5, 1), (i+0.5, 1), (i+0.5, 2), (i-0.5, 2)
-# 			]); color=peakcol)
-#
-# 	poly!(ax_bug_annotations, Point2f.([
-# 				(i-0.5, 2), (i+0.5, 2), (i+0.5, 3), (i-0.5, 3)
-# 			]); color=tpcol)
-#
-# end
-# tightlimits!(ax_bug_annotations)
-# rowsize!(figure2.layout, 2, Relative(1/3))
-# colgap!.((grid_fsea_latency, grid_fsea_amplitude), 2)
-#
-# for feat in filter(contains("latency"), feats)
 save("/home/kevin/Downloads/figure2-inprogress.png", figure2)
 save("manuscript/mainfigures/figure2.svg", figure2)
 
