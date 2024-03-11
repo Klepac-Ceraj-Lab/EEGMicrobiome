@@ -154,40 +154,6 @@ unirefs_pco = pcoa(concurrent_unirefs)
 concurrent_species = commjoin(concurrent_3m, concurrent_6m, concurrent_12m)
 species_pco = pcoa(concurrent_species)
 
-
-eeg = load_eeg()
-eeg.peak_latency_P1_corrected = eeg.peak_latency_P1 .- eeg.peak_latency_N1
-eeg.peak_latency_N2_corrected = eeg.peak_latency_N2 .- eeg.peak_latency_P1
-eeg.peak_amp_P1_corrected = eeg.peak_amp_P1 .- eeg.peak_amp_N1
-eeg.peak_amp_N2_corrected = eeg.peak_amp_N2 .- eeg.peak_amp_P1
-rename!(eeg, "age"=> "eeg_age")
-mbo = load_microbiome(eeg.subject)
-transform!(mbo, "visit"=>ByRow(v-> replace(v, "mo"=>"m"))=> "visit")
-
-eegmbo = @chain eeg begin
-    select("subject", "timepoint"=>"visit", Cols(:))
-    unique!(["subject", "timepoint"])
-    outerjoin(mbo; on = ["subject", "visit"])
-    groupby("subject")
-    subset(AsTable(["visit", "seqprep", "eeg_age"])=> (nt-> begin
-	# skip subjects without at least 1 eeg and at least 1 seqprep
-	(all(ismissing, nt.seqprep) || all(ismissing(nt.eeg_age))) && return false
-	# keep subjects with at least 1 concurrent eeg/seqprep
-	any(.!ismissing.(nt.seqprep) .& .!ismissing.(nt.eeg_age)) && return true
-	# Keep any remaining subjects that have a seqprep *prior* to an EEG
-	srt = sortperm([parse(Int, replace(v, "m"=>"")) for v in nt.visit])
-	any(findfirst(!ismissing, nt.seqprep[srt]) .<= findfirst(!ismissing, nt.eeg_age[srt]))
-    end))
-end
-
-wide_sub = select(leftjoin(
-    select(unstack(eegmbo, "subject", "visit", "eeg_age"), "subject", "3m"=>"eeg_3m", "6m"=> "eeg_6m", "12m"=>"eeg_12m"),
-    select(unstack(eegmbo, "subject", "visit", "age"), "subject", "3m"=>"seqprep_3m", "6m"=> "seqprep_6m", "12m"=>"seqprep_12m"),
-    on="subject"), "subject", r"3m", r"6m", r"12m"
-)
-
-# Load feature set enrichments
-
 fsea_df = CSV.read("data/outputs/fsea/concurrent_consolidated_fsea.csv", DataFrame)
 future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_consolidated_fsea.csv", DataFrame)
 future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_consolidated_fsea.csv", DataFrame)
@@ -891,3 +857,5 @@ linkyaxes!(ax_future_violins...)
 
 save("/home/kevin/Downloads/figure3-inprogress.png", figure3)
 save("manuscript/mainfigures/figure3.svg", figure3)
+
+
