@@ -160,28 +160,32 @@ future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_consolidated_fsea.csv"
 futfsea_df = vcat(future6m_fsea_df, future12m_fsea_df)
 
 geneset_order = [
+	# SCFAs
 	"Acetate synthesis",
 	"Acetate degradation",
 	"Propionate synthesis",
 	"Propionate degradation",
 	"Butyrate synthesis",
 	"Butyrate degradation",
+	"Isovaleric acid synthesis",
+	"Isovaleric acid degradation",
+	# gaba/glut
 	"GABA synthesis",
 	"GABA degradation",
 	"Glutamate synthesis",
 	"Glutamate degradation",
+	# tryptophan stuff
+	"Tryptophan synthesis",
+	"Tryptophan degradation",
+	"Quinolinic acid synthesis",
+	"Quinolinic acid degradation",
+	# other
 	"Menaquinone synthesis",
 	"Menaquinone degradation",
 	"Inositol synthesis",
 	"Inositol degradation",
-	"Tryptophan synthesis",
-	"Tryptophan degradation",
 	"p-Cresol synthesis",
 	"p-Cresol degradation",
-	"Isovaleric acid synthesis",
-	"Isovaleric acid degradation",
-	"Quinolinic acid synthesis",
-	"Quinolinic acid degradation",
 	"S-Adenosylmethionine synthesis",
 	"S-Adenosylmethionine degradation",
 	"17-beta-Estradiol synthesis",
@@ -379,8 +383,61 @@ colormap_sig = :PuOr
 colors_sig = cgrad(colormap_sig, 11; rev = true, categorical=true)[[1,3,4,8,9,11]]
 insert!(colors_sig, 4, colorant"white")
 
+# ### Tables
+#
+# #### Table 2
+
+table2 = subset(fsea_df, "timepoint"=> ByRow(t-> t ∈ tps),
+		   "q₀"=> ByRow(<(0.2)),
+		   "geneset"=> ByRow(g-> g ∈ geneset_order[1:18])
+)
+transform!(table2, "eeg_feature" => ByRow(f-> begin
+			(_, p, n...) = split(f, "_")
+			n = first(n)
+			return (; feature=p, peak=n)
+	end) => ["feature", "peak"]
+)
+transform!(table2, "timepoint"=> ByRow(x-> Dict("3m"=> 1, "6m"=> 2, "12m"=> 3)[x]) => "visit")
+select!(table2, "visit", "geneset", "feature", "peak", "es"=> "E.S.", "q₀"=> "q value")
+sort!(table2, [
+	"visit",
+	order("geneset"; by = x-> findfirst(==(x), geneset_order)),
+	"feature",
+	order("peak"; by = x-> findfirst(==(x), ("N1", "P1", "N2")))
+	]
+)
+CSV.write("/home/kevin/Downloads/Table2.csv", table2)
 
 
+# #### Table 3
+
+table3 = subset(vcat(future6m_fsea_df, future12m_fsea_df),
+		    "timepoint"=> ByRow(t-> t ∈ ftps),
+		    "q₀"=> ByRow(<(0.2)),
+		    "geneset"=> ByRow(g-> g ∈ geneset_order[1:18])
+)
+transform!(table3, "eeg_feature" => ByRow(f-> begin
+			(_, p, n...) = split(f, "_")
+			n = first(n)
+			return (; feature=p, peak=n)
+	end) => ["feature", "peak"]
+)
+transform!(table3, "timepoint"=> ByRow(x-> begin
+		(st, vep) = match(r"^(\d+m)_future(\d+m)$", x).captures
+		vd = Dict("3m"=> 1, "6m"=> 2, "12m"=> 3)
+		return (; stool = vd[st], VEP = vd[vep])
+	end) => ["stool", "VEP"]
+)
+select!(table3, "stool", "VEP", "geneset", "feature", "peak", "es"=> "E.S.", "q₀"=> "q value")
+sort!(table3, [
+	"stool",
+	"VEP",
+	order("geneset"; by = x-> findfirst(==(x), geneset_order)),
+	"feature",
+	order("peak"; by = x-> findfirst(==(x), ("N1", "P1", "N2")))
+	]
+)
+CSV.write("/home/kevin/Downloads/Table3.csv", table3)
 
 # ### Main figures
 #
@@ -402,12 +459,19 @@ ax_cohort = Axis(grid_cohort[1,1]; aspect = DataAspect(), alignmode=Outside())
 # )
 
 ax_eeg_curves = Axis(grid_eeg_curves[1,1]; xlabel="time (ms) relative to stimulus onset",
-		     ylabel="voltage (μV)"
+		     ylabel="voltage (μV)",
+			 yminorticksvisible=true,
+			 yminorticks=IntervalsBetween(5)
 )
 ax_pcoa_spec = Axis(grid_pcoas[1,1])
 ax_pcoa_func = Axis(grid_pcoas[1,2])
 
-ax_longsamples = Axis(grid_longsamples[3,1]; xlabel="age (months)", ylabel = "subject")
+ax_longsamples = Axis(grid_longsamples[3,1];
+					 xlabel ="age (months)",
+					 xticks = 0:3:18,
+					 limits = ((0., 19.), nothing),
+					 ylabel = "subject"
+				)
 ax_eeg_hist = Axis(grid_longsamples[1,1]; ylabel="density", title="eeg")
 ax_stool_hist = Axis(grid_longsamples[2,1]; ylabel="density", title="stool")
 
@@ -512,13 +576,14 @@ rowsize!(grid_longsamples, 3, Relative(5/6))
 colsize!(figure1.layout, 1, Relative(1/3))
 rowsize!(figure1.layout, 1, Relative(1/4))
 
-hidedecorations!(ax_eeg_curves, ticks=false, ticklabels=false, label=false)
+hidedecorations!(ax_eeg_curves, ticks=false, ticklabels=false, label=false, minorticks=false)
 hidedecorations!(ax_pcoa_spec, ticks=false, ticklabels=false, label=false)
 hidedecorations!(ax_pcoa_func, ticks=false, ticklabels=false, label=false)
 hidedecorations!(ax_longsamples, ticks=false, ticklabels=false, label=false)
 hidexdecorations!.((ax_stool_hist, ax_eeg_hist))
 hideydecorations!.((ax_stool_hist, ax_eeg_hist); ticks=false, ticklabels=false, label=false)
 linkyaxes!(ax_eeg_hist, ax_stool_hist)
+linkxaxes!(ax_eeg_hist, ax_stool_hist, ax_longsamples)
 
 save("/home/kevin/Downloads/figure1-inprogress.png", figure1)
 save("manuscript/mainfigures/figure1.svg", figure1)

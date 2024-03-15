@@ -96,9 +96,14 @@ function load_cohort(cohort)
     tab.peak_amp_N2_corrected = tab.peak_amp_N2 .- tab.peak_amp_P1
  
 
-    files = filter(f-> contains(basename(f), "profile") && match(r"SEQ\d+", basename(f)).match ∈ tab.seqprep,
+    files = filter(f-> contains(basename(f), "profile") &&
+                       match(r"SEQ\d+", basename(f)).match ∈ tab.seqprep,
                    readdir("/grace/sequencing/processed/mgx/metaphlan/"; join = true)
     )  
+    # length(files) == size(tab, 1) || throw(ArgumentError(
+    #     "Mismatch between eeg and microbiome data, missing: $(
+    #         setdiff(tab.seqprep, map(f-> replace(basename(f), r"_S\d+.+"=>""), files)))"
+    #    ))
     comm = metaphlan_profiles(files)
     comm = CommunityProfile(abundances(comm), features(comm), MicrobiomeSample.(replace.(samplenames(comm), r"_S\d+_profile"=>""))) 
 
