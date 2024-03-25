@@ -159,41 +159,50 @@ future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_consolidated_fsea.csv", 
 future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_consolidated_fsea.csv", DataFrame)
 futfsea_df = vcat(future6m_fsea_df, future12m_fsea_df)
 
-geneset_order = [
-	# SCFAs
-	"Acetate synthesis",
-	"Acetate degradation",
-	"Propionate synthesis",
-	"Propionate degradation",
-	"Butyrate synthesis",
-	"Butyrate degradation",
-	"Isovaleric acid synthesis",
-	"Isovaleric acid degradation",
-	# gaba/glut
-	"GABA synthesis",
-	"GABA degradation",
-	"Glutamate synthesis",
-	"Glutamate degradation",
-	# tryptophan stuff
-	"Tryptophan synthesis",
-	"Tryptophan degradation",
-	"Quinolinic acid synthesis",
-	"Quinolinic acid degradation",
-	# other
-	"Menaquinone synthesis",
-	"Menaquinone degradation",
-	"Inositol synthesis",
-	"Inositol degradation",
-	"p-Cresol synthesis",
-	"p-Cresol degradation",
-	"S-Adenosylmethionine synthesis",
-	"S-Adenosylmethionine degradation",
-	"17-beta-Estradiol synthesis",
-	"17-beta-Estradiol degradation",
-	"DOPAC synthesis",
-	"DOPAC degradation",
-	"ClpB"
-]
+geneset_types = (;
+	neurotransmitters = [
+		"GABA synthesis",
+		"GABA degradation",
+		"Glutamate synthesis",
+		"Glutamate degradation",
+		],
+	nt_metabolism = [
+		# tryptophan/serotonin stuff
+		"Tryptophan synthesis",
+		"Tryptophan degradation",
+		"Quinolinic acid synthesis",
+		"Quinolinic acid degradation",
+		# dopamine stuff
+		"DOPAC synthesis",
+		"DOPAC degradation",
+		],
+	scfa = [
+		"Acetate synthesis",
+		"Acetate degradation",
+		"Propionate synthesis",
+		"Propionate degradation",
+		"Butyrate synthesis",
+		"Butyrate degradation",
+		"Isovaleric acid synthesis",
+		"Isovaleric acid degradation",
+		],
+	other = [
+		"Menaquinone synthesis",
+		"Menaquinone degradation",
+		"Inositol synthesis",
+		"Inositol degradation",
+		"p-Cresol synthesis",
+		"p-Cresol degradation",
+		"S-Adenosylmethionine synthesis",
+		"S-Adenosylmethionine degradation",
+		"17-beta-Estradiol synthesis",
+		"17-beta-Estradiol degradation",
+		"ClpB"
+		]
+)
+gs_types_rev = Dict(gs=>t for t in keys(geneset_types) for gs in geneset_types[t]) 
+
+geneset_order = vcat(geneset_types...)
 gssig = intersect(geneset_order,
 	unique(subset(vcat(fsea_df, future6m_fsea_df, future12m_fsea_df), "q₀" => ByRow(<(0.2))).geneset)
 )
@@ -383,13 +392,15 @@ colormap_sig = :PuOr
 colors_sig = cgrad(colormap_sig, 11; rev = true, categorical=true)[[1,3,4,8,9,11]]
 insert!(colors_sig, 4, colorant"white")
 
+colors_gstypes = Dict(gst => c for (gst, c) in zip(keys(geneset_types), cgrad(:tab10; categorical=true)[[10,3,2,9]]))
+
 # ### Tables
 #
 # #### Table 2
 
 table2 = subset(fsea_df, "timepoint"=> ByRow(t-> t ∈ tps),
 		   "q₀"=> ByRow(<(0.2)),
-		   "geneset"=> ByRow(g-> g ∈ geneset_order[1:18])
+		   "geneset"=> ByRow(g-> g ∈ geneset_order)
 )
 transform!(table2, "eeg_feature" => ByRow(f-> begin
 			(_, p, n...) = split(f, "_")
@@ -403,10 +414,14 @@ sort!(table2, [
 	"visit",
 	order("geneset"; by = x-> findfirst(==(x), geneset_order)),
 	"feature",
-	order("peak"; by = x-> findfirst(==(x), ("N1", "P1", "N2")))
+	# order("peak"; by = x-> findfirst(==(x), ("N1", "P1", "N2")))
+	"E.S."
 	]
 )
-CSV.write("/home/kevin/Downloads/Table2.csv", table2)
+
+for v in 1:3
+	CSV.write("/home/kevin/Downloads/Table2_v$v.csv", subset(table2, "visit"=> ByRow(==(v))))
+end
 
 
 # #### Table 3
@@ -414,7 +429,7 @@ CSV.write("/home/kevin/Downloads/Table2.csv", table2)
 table3 = subset(vcat(future6m_fsea_df, future12m_fsea_df),
 		    "timepoint"=> ByRow(t-> t ∈ ftps),
 		    "q₀"=> ByRow(<(0.2)),
-		    "geneset"=> ByRow(g-> g ∈ geneset_order[1:18])
+		    "geneset"=> ByRow(g-> g ∈ geneset_order)
 )
 transform!(table3, "eeg_feature" => ByRow(f-> begin
 			(_, p, n...) = split(f, "_")
@@ -434,10 +449,13 @@ sort!(table3, [
 	"VEP",
 	order("geneset"; by = x-> findfirst(==(x), geneset_order)),
 	"feature",
-	order("peak"; by = x-> findfirst(==(x), ("N1", "P1", "N2")))
+	# order("peak"; by = x-> findfirst(==(x), ("N1", "P1", "N2")))
+	"E.S."
 	]
 )
-CSV.write("/home/kevin/Downloads/Table3.csv", table3)
+for (s, v) in zip((1,1,2), (2,3,3))
+	CSV.write("/home/kevin/Downloads/Table3_$(s)_$(v).csv", subset(table3, "stool"=>ByRow(==(s)), "VEP"=>ByRow(==(v))))
+end
 
 # ### Main figures
 #
@@ -509,9 +527,14 @@ draw!(ax_eeg_curves, datupper * visual(Lines; linestyle=:dash); palettes=(; colo
 Legend(grid_eeg_curves[1,1],
      [LineElement(; color=:gray), LineElement(; color=:gray, linestyle=:dash)],
      ["mean", "+/- S.E."];
-	 tellwidth=false, halign=:right, valign=:top, margin=(10,10,10,10)
+	 tellwidth=false, halign=:right, valign=:bottom, margin=(10,10,10,10)
 ) 
 
+Legend(grid_eeg_curves[1,1],
+    [LineElement(; color=c[2]) for c in colors_timepoints],
+    ["Visit $i" for i in 1:3];
+	tellwidth=false, halign=:right, valign=:top, margin=(10,10,10,10)
+) 
 # ##### PCoAs
 
 
@@ -609,7 +632,7 @@ ax_lat = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
 		l = Axis(grid_fsea_latency[1,i];
 				 xlabel = "z",
 				 title = lab,
-				 yticks = (tickrange, reverse(gssig)),
+				 yticks = (tickrange, [rich(g;color=colors_gstypes[gs_types_rev[g]]) for g in reverse(gssig)]),
 				 )
 		r = Axis(grid_fsea_latency[1,i];
 				 yaxisposition = :right,
@@ -629,7 +652,7 @@ ax_amp = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
 		l = Axis(grid_fsea_amplitude[1,i];
 				 xlabel = "z",
 				 title = lab,
-				 yticks = (tickrange, reverse(gssig)),
+				 yticks = (tickrange, [rich(g;color=colors_gstypes[gs_types_rev[g]]) for g in reverse(gssig)]),
 				 )
 		r = Axis(grid_fsea_amplitude[1,i];
 				 yaxisposition = :right,
@@ -765,7 +788,7 @@ ax_futlat = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
 				 xlabel = "z",
 				 xticklabelsize= 10,
 				 title = lab,
-				 yticks = (tickrange, reverse(gssig)),
+				 yticks = (tickrange, [rich(g;color=colors_gstypes[gs_types_rev[g]]) for g in reverse(gssig)]),
 				 yticklabelsize=10,
 				 )
 		r = Axis(grid_futfsea_latency[1,i];
@@ -787,7 +810,7 @@ ax_futamp = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
 				 xlabel = "z",
 				 xticklabelsize=10,
 				 title = lab,
-				 yticks = (tickrange, reverse(gssig)),
+				 yticks = (tickrange, [rich(g;color=colors_gstypes[gs_types_rev[g]]) for g in reverse(gssig)]),
 				 yticklabelsize=10,
 				 )
 		r = Axis(grid_futfsea_amplitude[1,i];
