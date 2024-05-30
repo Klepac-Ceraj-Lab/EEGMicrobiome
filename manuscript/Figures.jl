@@ -61,6 +61,7 @@ eegmbo = let
 	eeg = load_eeg()
 	rename!(eeg, "age"=> "eeg_age")
 	mbo = load_microbiome(eeg.subject)
+	dropmissing!(mbo, "visit")
 	transform!(mbo, "visit"=>ByRow(v-> replace(v, "mo"=>"m"))=> "visit")
 
 	@chain eeg begin
@@ -83,9 +84,9 @@ end
 long_sub = let
 	wide_sub = select(
 		leftjoin(
-			select(unstack(eegmbo, "subject", "visit", "eeg_age"),
+			select(unstack(eegmbo, "subject", "visit", "eeg_age"; combine=first),
 				   "subject", "3m"=>"eeg_3m", "6m"=> "eeg_6m", "12m"=>"eeg_12m"),
-			select(unstack(eegmbo, "subject", "visit", "age"),
+			select(unstack(eegmbo, "subject", "visit", "age"; combine=first),
 				   "subject", "3m"=>"seqprep_3m", "6m"=> "seqprep_6m", "12m"=>"seqprep_12m"),
 		on="subject"),
 		"subject", r"3m", r"6m", r"12m"
@@ -946,4 +947,24 @@ linkyaxes!(ax_future_violins...)
 save("/home/kevin/Downloads/figure3-inprogress.png", figure3)
 save("manuscript/mainfigures/figure3.svg", figure3)
 
+# ## Summary Ideas
+#
+# We really need some way to summarize results,
+# for a possible figure 4.
+# `./analyis/network.jl` has some code to generate
+# edgelists that can be imported into cytoscape,
+# which is one possibility. Here are some others.
+#
+# ### Volcano plots
+
+volcano = Figure(; size=(800,1200))
+
+for (i, v) in enumerate(tps)
+	df = subset(fsea_df, "timepoint"=> ByRow(==(v)))
+	ax = Axis(volcano[i, 1]; xlabel="E.S.", ylabel="log(Q)")
+	scatter!(df.es, -1 .* log.(df.q₀ .+ 0.0005); color= map(eachrow(df)) do row
+		row.q₀ < 0.2 || return :gray
+		color_gstypes[gs_types_rev[gsrow.geneset]]
+	end)
+end
 
