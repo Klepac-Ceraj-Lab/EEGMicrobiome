@@ -106,6 +106,14 @@ timeseries = mapreduce(vcat, ("3m", "6m", "12m")) do tp
     dropmissing!(df)
 end
 
+# Load FSEA data
+
+fsea_df = CSV.read("data/outputs/fsea/concurrent_consolidated_fsea.csv", DataFrame)
+future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_consolidated_fsea.csv", DataFrame)
+future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_consolidated_fsea.csv", DataFrame)
+futfsea_df = vcat(future6m_fsea_df, future12m_fsea_df)
+
+
 # Load gene functions files for samples that we have microbiomes for:
 
 
@@ -169,6 +177,65 @@ spl = nfeatures(concurrent_species)
         dims = 2
     ) |> only 
 end
+
+#-
+
+sigfsea = mapreduce(df-> subset(df, "q₀"=> ByRow(<(0.2))), vcat, (fsea_df, futfsea_df))
+transform!(sigfsea, "eeg_feature"=> ByRow(f-> split(replace(replace(f, r"peak_(latency|amp)_(N1|P1|N2)(_corrected)?"=> s"\1_\2"), "latency"=>"lat"), "_")) => ["peak", "ftype"])
+transform!(sigfsea, AsTable(["peak", "ftype"]) => ByRow(nt-> join(values(nt), "_")) => "eeg_abrev")
+
+geneset_types = (;
+	neurotransmitters = [
+		"GABA synthesis",
+		"GABA degradation",
+		"Glutamate synthesis",
+		"Glutamate degradation",
+		],
+	nt_metabolism = [
+		# tryptophan/serotonin stuff
+		"Tryptophan synthesis",
+		"Tryptophan degradation",
+		"Quinolinic acid synthesis",
+		"Quinolinic acid degradation",
+		# dopamine stuff
+		"DOPAC synthesis",
+		"DOPAC degradation",
+		],
+	scfa = [
+		"Acetate synthesis",
+		"Acetate degradation",
+		"Propionate synthesis",
+		"Propionate degradation",
+		"Butyrate synthesis",
+		"Butyrate degradation",
+		"Isovaleric acid synthesis",
+		"Isovaleric acid degradation",
+		],
+	other = [
+		"Menaquinone synthesis",
+		"Menaquinone degradation",
+		"Inositol synthesis",
+		"Inositol degradation",
+		"p-Cresol synthesis",
+		"p-Cresol degradation",
+		"S-Adenosylmethionine synthesis",
+		"S-Adenosylmethionine degradation",
+		"17-beta-Estradiol synthesis",
+		"17-beta-Estradiol degradation",
+		"ClpB"
+		]
+)
+gs_types_rev = Dict(gs=>t for t in keys(geneset_types) for gs in geneset_types[t]) 
+
+transform!(sigfsea, "geneset"=> ByRow(gs-> gs_types_rev[gs])=> "gs_type")
+transform!(sigfsea, "geneset"=> ByRow(gs-> replace(gs, "synthesis"=> "syn", "degradation"=> "deg")) => "gs_abrev")
+transform!(sigfsea, AsTable(["q₀", "es"]) => (col-> begin
+                                                        minq = minimum(col[1])
+                                                        scaled = map((q,e)-> e * -log(q + minq /2), zip(col[1], col[2]))
+                                                        lb, ub = extrema(scaled)
+                                                        [s < 0 ? -(s / lb) : s / ub for s in scaled]
+                                                    end) => "edgeweight")
+CSV.write("/home/kevin/Downloads/eeg_graph.csv", select(sigfsea, "timepoint", "gs_abrev", "eeg_abrev", "peak", "ftype", "gs_type", "q₀", "es"))
 
 
 #-
