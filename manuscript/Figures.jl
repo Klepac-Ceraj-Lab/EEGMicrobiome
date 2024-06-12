@@ -957,14 +957,88 @@ save("manuscript/mainfigures/figure3.svg", figure3)
 #
 # ### Volcano plots
 
-volcano = Figure(; size=(800,1200))
+volcano = Figure(; size=(500,900))
 
 for (i, v) in enumerate(tps)
 	df = subset(fsea_df, "timepoint"=> ByRow(==(v)))
 	ax = Axis(volcano[i, 1]; xlabel="E.S.", ylabel="log(Q)")
 	scatter!(df.es, -1 .* log.(df.q₀ .+ 0.0005); color= map(eachrow(df)) do row
 		row.q₀ < 0.2 || return :gray
-		color_gstypes[gs_types_rev[gsrow.geneset]]
+		colors_gstypes[gs_types_rev[row.geneset]]
 	end)
+	Label(volcano[i,0], v; tellheight=false)
+end
+	
+Legend(volcano[1:3,2], [MarkerElement(; marker=:circle, color = colors_gstypes[t]) for t in keys(geneset_types)],
+					   [String(t) for t in keys(geneset_types)]
+)
+
+save("/home/kevin/Downloads/volcano-fsea.png", current_figure())
+
+#-
+
+volcano = Figure(; size=(1500,800))
+
+for (j, p) in enumerate(eeg_features)
+	for (i, v) in enumerate(tps)
+		df = subset(fsea_df, "timepoint"=> ByRow(==(v)), "eeg_feature"=> ByRow(==(p)))
+		ax = Axis(volcano[i, j]; xlabel="E.S.", ylabel="log(Q)")
+		scatter!(df.es, -1 .* log.(df.q₀ .+ 0.0005); color= map(eachrow(df)) do row
+			row.q₀ < 0.2 || return :gray
+			colors_gstypes[gs_types_rev[row.geneset]]
+		end)
+		Label(volcano[i,0], v; tellheight=false)
+	end
+	Label(volcano[0,j], p; tellwidth=false)
+end
+	
+Legend(volcano[1:3,length(eeg_features)+1], [MarkerElement(; marker=:circle, color = colors_gstypes[t]) for t in keys(geneset_types)],
+					   [String(t) for t in keys(geneset_types)]
+)
+
+save("/home/kevin/Downloads/volcano-fsea-peaks.png", current_figure())
+
+# ### Vanja bars
+#
+# Another idea to summarize from Vanja, looking at counts of significant hits.
+
+bars = Figure(; size=(900, 400))
+
+for (i, v) in enumerate(tps)
+	df = subset(fsea_df, "timepoint"=> ByRow(==(v)))
+	ax = Axis(bars[1,i]; ylabel="count")
+	toplot = mapreduce(vcat, enumerate(eeg_features)) do (j,f)
+		 subdf = subset(df, "eeg_feature"=> ByRow(==(f)))
+		 map(enumerate(collect(keys(geneset_types)))) do (k, gs)
+			  n = count(<(0.2), subset(subdf, "geneset"=> ByRow(g-> g ∈ geneset_types[gs])).q₀)
+			  (; feature=f, fidx = j, geneset=gs, gidx = k, n_sig=n)
+		 end
+	 end |> DataFrame
+
+	 barplot!(ax, toplot.fidx, toplot.n_sig; stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
 end
 
+save("/home/kevin/Downloads/bars-fsea.png", current_figure())
+
+
+#-
+
+bars = Figure(; size=(900, 400))
+
+for (i, v) in enumerate(tps)
+	df = subset(fsea_df, "timepoint"=> ByRow(==(v)))
+	ax = Axis(bars[1,i]; ylabel="count")
+	toplot = mapreduce(vcat, enumerate(eeg_features)) do (j,f)
+		 subdf = subset(df, "eeg_feature"=> ByRow(==(f)))
+		 map(enumerate(collect(keys(geneset_types)))) do (k, gs)
+			 npos = count(<(0.2), subset(subdf, "geneset"=> ByRow(g-> g ∈ geneset_types[gs])).q₀, "es"=> ByRow(>(0)))
+			 nneg = count(<(0.2), subset(subdf, "geneset"=> ByRow(g-> g ∈ geneset_types[gs])).q₀, "es"=> ByRow(<(0)))
+			 (; feature=f, fidx = j, geneset=gs, gidx = k, n_sig=(npos, nneg))
+		 end
+	 end |> DataFrame
+
+	 barplot!(ax, toplot.fidx, getindex.(toplot.n_sig, 1); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+	 barplot!(ax, toplot.fidx, -1 .* getindex.(toplot.n_sig, 2); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+end
+
+save("/home/kevin/Downloads/bars-fsea.png", current_figure())
