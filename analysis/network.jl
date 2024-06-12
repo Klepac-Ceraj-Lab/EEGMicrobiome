@@ -229,13 +229,23 @@ gs_types_rev = Dict(gs=>t for t in keys(geneset_types) for gs in geneset_types[t
 
 transform!(sigfsea, "geneset"=> ByRow(gs-> gs_types_rev[gs])=> "gs_type")
 transform!(sigfsea, "geneset"=> ByRow(gs-> replace(gs, "synthesis"=> "syn", "degradation"=> "deg")) => "gs_abrev")
-transform!(sigfsea, AsTable(["q₀", "es"]) => (col-> begin
-                                                        minq = minimum(col[1])
-                                                        scaled = map((q,e)-> e * -log(q + minq /2), zip(col[1], col[2]))
-                                                        lb, ub = extrema(scaled)
-                                                        [s < 0 ? -(s / lb) : s / ub for s in scaled]
-                                                    end) => "edgeweight")
-CSV.write("/home/kevin/Downloads/eeg_graph.csv", select(sigfsea, "timepoint", "gs_abrev", "eeg_abrev", "peak", "ftype", "gs_type", "q₀", "es"))
+transform!(sigfsea, AsTable(["q₀", "es"]) => (cols-> begin
+    minq = minimum(filter(>(0), cols[1]))
+    scaled = map(((q,e),)-> e * -log(q + minq /2), zip(cols[1], cols[2]))
+    lb, ub = extrema(scaled)
+    [s < 0 ? -(s / lb) : s / ub for s in scaled]
+end) => "edgeweight")
+transform!(sigfsea, AsTable(["q₀", "es"]) => ByRow(nt -> begin
+    (q, e) = values(nt)
+    sign(e) * (q < 0.01 ? 3 : q < 0.1 ? 2 : 1)
+end) => "edgecolor")
+
+let graphdf = subset(select(sigfsea, "timepoint", "gs_abrev", "eeg_abrev", "peak", "ftype", "gs_type", "q₀", "es", "edgeweight", "edgecolor"))
+    CSV.write("/home/kevin/Downloads/eeg_graph.csv", graphdf)
+    for v in (tps..., ftps...)
+        CSV.write("/home/kevin/Downloads/eeg_graph_$v.csv", subset(graphdf, "timepoint"=> ByRow(==(v))))
+    end
+end
 
 
 #-
