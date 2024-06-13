@@ -957,7 +957,7 @@ save("manuscript/mainfigures/figure3.svg", figure3)
 #
 # ### Volcano plots
 
-volcano = Figure(; size=(500,900))
+volcano = Figure(; size=(700,900))
 
 for (i, v) in enumerate(tps)
 	df = subset(fsea_df, "timepoint"=> ByRow(==(v)))
@@ -1002,11 +1002,12 @@ save("/home/kevin/Downloads/volcano-fsea-peaks.png", current_figure())
 #
 # Another idea to summarize from Vanja, looking at counts of significant hits.
 
-bars = Figure(; size=(900, 400))
+bars = Figure(; size=(900, 600))
+axs = Axis[]
 
 for (i, v) in enumerate(tps)
 	df = subset(fsea_df, "timepoint"=> ByRow(==(v)))
-	ax = Axis(bars[1,i]; ylabel="count")
+	ax = Axis(bars[1,i]; ylabel="count", xticks=(1:length(eeg_features), eeg_features), xticklabelrotation=pi/2)
 	toplot = mapreduce(vcat, enumerate(eeg_features)) do (j,f)
 		 subdf = subset(df, "eeg_feature"=> ByRow(==(f)))
 		 map(enumerate(collect(keys(geneset_types)))) do (k, gs)
@@ -1015,30 +1016,48 @@ for (i, v) in enumerate(tps)
 		 end
 	 end |> DataFrame
 
-	 barplot!(ax, toplot.fidx, toplot.n_sig; stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+	barplot!(ax, toplot.fidx, toplot.n_sig; stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+	Label(bars[0, i], v; tellwidth=false)
+	push!(axs, ax)
+
 end
+
+Legend(bars[1, length(tps)+1], [MarkerElement(; marker=:rect, color = colors_gstypes[t]) for t in keys(geneset_types)],
+					   [String(t) for t in keys(geneset_types)]
+)
+
+linkyaxes!(axs...)
 
 save("/home/kevin/Downloads/bars-fsea.png", current_figure())
 
 
 #-
 
-bars = Figure(; size=(900, 400))
+bars = Figure(; size=(900, 600))
+axs = Axis[]
 
 for (i, v) in enumerate(tps)
 	df = subset(fsea_df, "timepoint"=> ByRow(==(v)))
-	ax = Axis(bars[1,i]; ylabel="count")
+	ax = Axis(bars[1,i]; ylabel="count", xticks=(1:length(eeg_features), eeg_features), xticklabelrotation=pi/2)
 	toplot = mapreduce(vcat, enumerate(eeg_features)) do (j,f)
 		 subdf = subset(df, "eeg_feature"=> ByRow(==(f)))
 		 map(enumerate(collect(keys(geneset_types)))) do (k, gs)
-			 npos = count(<(0.2), subset(subdf, "geneset"=> ByRow(g-> g ∈ geneset_types[gs])).q₀, "es"=> ByRow(>(0)))
-			 nneg = count(<(0.2), subset(subdf, "geneset"=> ByRow(g-> g ∈ geneset_types[gs])).q₀, "es"=> ByRow(<(0)))
+			 npos = count(<(0.2), subset(subdf, "geneset"=> ByRow(g-> g ∈ geneset_types[gs]), "es"=> ByRow(>(0))).q₀)
+			 nneg = count(<(0.2), subset(subdf, "geneset"=> ByRow(g-> g ∈ geneset_types[gs]), "es"=> ByRow(<(0))).q₀)
 			 (; feature=f, fidx = j, geneset=gs, gidx = k, n_sig=(npos, nneg))
 		 end
-	 end |> DataFrame
+	end |> DataFrame
 
-	 barplot!(ax, toplot.fidx, getindex.(toplot.n_sig, 1); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
-	 barplot!(ax, toplot.fidx, -1 .* getindex.(toplot.n_sig, 2); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+	barplot!(ax, toplot.fidx, getindex.(toplot.n_sig, 1); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+	barplot!(ax, toplot.fidx, -1 .* getindex.(toplot.n_sig, 2); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+	Label(bars[0, i], v; tellwidth=false)
+
+	push!(axs, ax)
 end
 
-save("/home/kevin/Downloads/bars-fsea.png", current_figure())
+Legend(bars[1, length(tps)+1], [MarkerElement(; marker=:rect, color = colors_gstypes[t]) for t in keys(geneset_types)],
+					   [String(t) for t in keys(geneset_types)]
+)
+
+linkyaxes!(axs...)
+save("/home/kevin/Downloads/bars-fsea-posneg.png", current_figure())
