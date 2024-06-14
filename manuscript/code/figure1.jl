@@ -13,12 +13,6 @@ using CairoMakie
 using AlgebraOfGraphics
 using SparseArrays
 
-concurrent_3m = load_cohort("concurrent_3m")
-concurrent_6m = load_cohort("concurrent_6m")
-concurrent_12m = load_cohort("concurrent_12m")
-future_3m6m = load_cohort("future_3m6m")
-future_3m12m = load_cohort("future_3m12m")
-future_6m12m = load_cohort("future_6m12m")
 timeseries = mapreduce(vcat, ("3m", "6m", "12m")) do tp
     df = DataFrame(XLSX.readtable("data/alltimepoints_timeseries_figure.xlsx", "$tp Timeseries Calculation"; infer_eltypes=true))[:, 1:6]
     rename!(df, ["ms", "mean", "se", "lower", "upper", "std"])
@@ -31,6 +25,25 @@ end
 
 ## 
 
+datmean = data(timeseries) * mapping(:ms, :mean, color=:timepoint)
+datlower = data(timeseries) * mapping(:ms, :lower, color=:timepoint)
+datupper = data(timeseries) * mapping(:ms, :upper, color=:timepoint)
+
+cs = [tp=> c for (tp, c) in zip(("3m", "6m", "12m"), cgrad(:batlow, 3; categorical=true))]
+
+fig = Figure()
+sub = Axis(fig[1,1]; xlabel="time (ms) relative to stimulus onset",
+		     ylabel="voltage (μV)")
+
+mpl = draw!(sub, datmean * visual(Lines); palettes=(; color=cs))
+dpl = draw!(sub, datlower * visual(Lines; linestyle=:dash); palettes=(; color=cs))
+draw!(sub, datupper * visual(Lines; linestyle=:dash); palettes=(; color=cs))
+
+Legend(fig[1,2], [[LineElement(; color=cs[i][2]) for i in 1:3], [LineElement(; color=:gray), LineElement(; color=:gray, linestyle=:dash)]],
+		  [["visit 1", "visit 2", "visit 3"], ["mean", "+/- S.E."]], ["visit", "value"]
+) 
+
+save("data/figures/eeg_curves.svg", fig)
 
 figure = Figure(; size=(800,800))
 ax = Axis(figure[1,1])

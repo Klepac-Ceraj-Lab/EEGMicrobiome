@@ -123,9 +123,39 @@ allmeta = @chain allmeta begin
     end))
 end
 
-transform(groupby(allmeta, "subject_id"), AsTable(["age_vep_weeks", "stool_age"])=> (nt-> begin
+transform!(groupby(allmeta, "subject_id"), AsTable(["visit", "age_vep_weeks", "stool_age"])=> (
+    nt-> begin
+    sidx = findall(!ismissing, nt.stool_age)
+	vidx = findall(!ismissing, nt.age_vep_weeks)
 
-    
+	cohort_v1 = map(i-> nt.visit[i] == "3mo" && i in sidx && i in vidx, eachindex(nt.visit))
+	cohort_v2 = map(i-> nt.visit[i] == "6mo" && i in sidx && i in vidx, eachindex(nt.visit))
+	cohort_v3 = map(i-> nt.visit[i] == "12mo" && i in sidx && i in vidx, eachindex(nt.visit))
+
+	cohort_v1v2_stool = map(i-> nt.visit[i] == "3mo" && i in sidx && any(j -> nt.visit[j] == "6mo", vidx), eachindex(nt.visit))
+	cohort_v1v3_stool = map(i-> nt.visit[i] == "3mo" && i in sidx && any(j -> nt.visit[j] == "12mo", vidx), eachindex(nt.visit))
+	cohort_v2v3_stool = map(i-> nt.visit[i] == "6mo" && i in sidx && any(j -> nt.visit[j] == "12mo", vidx), eachindex(nt.visit))
+
+	cohort_v1v2_vep = map(i-> nt.visit[i] == "6mo" && i in vidx && any(j -> nt.visit[j] == "3mo", sidx), eachindex(nt.visit))
+	cohort_v1v3_vep = map(i-> nt.visit[i] == "12mo" && i in vidx && any(j -> nt.visit[j] == "3mo", sidx), eachindex(nt.visit))
+	cohort_v2v3_vep = map(i-> nt.visit[i] == "12mo" && i in vidx && any(j -> nt.visit[j] == "6mo", sidx), eachindex(nt.visit))
+
+	return (; cohort_v1, cohort_v2, cohort_v3,
+		  cohort_v1v2_stool, cohort_v1v3_stool, cohort_v2v3_stool,
+		  cohort_v1v2_vep, cohort_v1v3_vep, cohort_v2v3_vep)
+    end
+   ) => AsTable
+)
+subset!(allmeta, AsTable(r"cohort_")=> ByRow(nt-> any(!ismissing, nt)))
+transform!(allmeta,
+	AsTable(["peak_latency_P1", "peak_latency_N1"]) => (tab ->tab.peak_latency_P1 .- tab.peak_latency_N1) => "peak_latency_P1_corrected",
+	AsTable(["peak_amp_P1", "peak_amp_N1"]) => (tab ->tab.peak_amp_P1 .- tab.peak_amp_N1) => "peak_amp_P1_corrected",
+	AsTable(["peak_latency_N2", "peak_latency_P1"]) => (tab ->tab.peak_latency_N2 .- tab.peak_latency_P1) => "peak_latency_N2_corrected",
+	AsTable(["peak_amp_N2", "peak_amp_P1"]) => (tab ->tab.peak_amp_N2 .- tab.peak_amp_P1) => "peak_amp_N2_corrected",
+	"visit" => ByRow(v-> replace(v, "3mo" => "v1", "6mo" => "v2", "12mo" => "v3")) => "visit"
+)
+
+
 
 CSV.write("data/allmeta.csv", allmeta)
 

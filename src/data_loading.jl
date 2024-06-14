@@ -3,68 +3,31 @@ const _subject_excludes = Set([
     "191-34303377", # premature
 ])
 
-function load_taxonomic_profiles!(mbiome_tab)
-    seqs = mbiome_tab.seqprep
-
-    mgxdir = load_preference(VKCComputing, "mgx_analysis_dir")
-    files = filter(readdir(joinpath(mgxdir, "metaphlan"); join=true)) do file
-        m = match(r"^SEQ\d+", basename(file))
-        !isnothing(m) && endswith(basename(file), "_profile.tsv") && m.match ∈ seqs
-    end
-    taxa = mapreduce(vcat, files) do f
-        seqprep = replace(basename(f), r"_S\d+_profile\.tsv"=> "")
-        df = CSV.read(f, DataFrame; skipto = 5, header=["feature", "taxid", "abundance", "addtl_spec"])
-        df.seqprep .= seqprep
-        subset!(df, "feature"=> ByRow(f-> contains(f, "|s__")))
-        transform!(df, "feature"=> ByRow(f-> last(split(f, '|')))=>"feature")
-        select!(df, "seqprep", "feature", "abundance")
-    end
-    taxa_wide = unstack(taxa, "feature", "abundance")
-    foreach(names(taxa_wide)) do n
-        taxa_wide[!, n] = coalesce.(taxa_wide[!, n], 0.)
-    end
-    leftjoin!(mbiome_tab, taxa_wide; on=:seqprep)
-
+function load_cohorts(tab = "./data/allmeta.csv")
+    df = CSV.read(tab, DataFrame)
+    subset!(df, "subject_id"=> ByRow(s-> s ∉ _subject_excludes))
+    return df
 end
 
-function load_functional_profiles!(mbiome_tab)
-    seqs = mbiome_tab.seqprep
+function get_cohort(metadf, cohort)
+    m = match(r"^(v\d)(v\d)?$", cohort)
+    isnothing(m) && throw(ArgumentError("$cohort is not a valid cohort, use \"v1\", \"v2v3\" etc"))
+    if isnothing(m[2])
+        return subset(metadf, "cohort_$cohort"=> identity)
+    else
+        subdf = subset(metadf, AsTable(Regex("cohort_$(cohort)_")) => ByRow(any))
+        grp = groupby(subdf, "subject_id")
+        @assert all(==(2), combine(grp, "visit"=> length => "n").n)
+        @assert all(sub -> !ismissing(sub.stool_age[1]) && !ismissing(sub.age_vep_weeks[2]), grp)
+        @assert all(sub -> issorted(sub.visit), grp)
 
-    mgxdir = load_preference(VKCComputing, "mgx_analysis_dir")
-    files = filter(readdir(joinpath(mgxdir, "humann", "main"); join=true)) do file
-        m = match(r"^SEQ\d+", basename(file))
-        !isnothing(m) && endswith(basename(file), "_genefamilies.tsv") && m.match ∈ seqs
+        select(combine(grp,
+            AsTable(["subject_id", "stool_age", "biospecimen", "seqprep", "S_well", "filename", "taxprofile", "genefamilies"]) => 
+                (sub-> NamedTuple(Symbol(c) => first(sub[Symbol(c)]) for c in keys(sub))) => AsTable,
+            AsTable(r"peak|n_trial")=> (sub-> NamedTuple(Symbol(c) => last(sub[Symbol(c)]) for c in keys(sub))) => AsTable,
+            "age_vep_weeks" => (aw-> (last(aw) / 52) * 12) => "vep_age",
+            "visit" => (v-> cohort) => "visit"
+            ), "subject_id", "visit", "stool_age", "vep_age", "biospecimen", "seqprep", r"peak_", "S_well", "filename", "taxprofile", "genefamilies"
+        )
     end
-    gfs = mapreduce(vcat, files) do f
-        seqprep = replace(basename(f), r"_S\d+_genefamilies\.tsv"=> "")
-        df = CSV.read(f, DataFrame; skipto = 2, header=["feature", "abundance"])
-        df.seqprep .= seqprep
-        subset!(df, "feature"=> ByRow(f-> !contains(f, '|')))
-        select!(df, "seqprep", "feature", "abundance")
-    end
-    gfs_wide = unstack(gfs, "feature", "abundance")
-    foreach(names(gfs_wide)) do n
-        gfs_wide[!, n] = coalesce.(gfs_wide[!, n], 0.)
-    end
-    leftjoin!(mbiome_tab, gfs_wide; on=:seqprep)
-end
-
-function load_cohort(cohort)
-    tab = CSV.read("data/allmeta.csv", DataFrame)
-    subset!(tab, "visit"=> ByRow(==(cohort)))
-    tab.peak_latency_P1_corrected = tab.peak_latency_P1 .- tab.peak_latency_N1
-    tab.peak_latency_N2_corrected = tab.peak_latency_N2 .- tab.peak_latency_P1
-    tab.peak_amp_P1_corrected = tab.peak_amp_P1 .- tab.peak_amp_N1
-    tab.peak_amp_N2_corrected = tab.peak_amp_N2 .- tab.peak_amp_P1
- 
-
-    # length(files) == size(tab, 1) || throw(ArgumentError(
-    #     "Mismatch between eeg and microbiome data, missing: $(
-    #         setdiff(tab.seqprep, map(f-> replace(basename(f), r"_S\d+.+"=>""), files)))"
-    #    ))
-    comm = metaphlan_profiles(files)
-    comm = CommunityProfile(abundances(comm), features(comm), MicrobiomeSample.(replace.(samplenames(comm), r"_S\d+_profile"=>""))) 
-
-    set!(comm, select(tab, "seqprep"=>"sample", Cols(:)))
-    return comm
 end
