@@ -1,10 +1,7 @@
 module EEGMicrobiome
 
-export load_eeg,
-       load_microbiome,
-       load_taxonomic_profiles!,
-       load_functional_profiles!,
-       load_cohort
+export load_cohorts,
+       get_cohort
 
 export plot_pcoa!,
        topbugs,

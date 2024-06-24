@@ -125,7 +125,7 @@ end
 
 transform!(groupby(allmeta, "subject_id"), AsTable(["visit", "age_vep_weeks", "stool_age"])=> (
     nt-> begin
-    sidx = findall(!ismissing, nt.stool_age)
+	sidx = findall(!ismissing, nt.stool_age)
 	vidx = findall(!ismissing, nt.age_vep_weeks)
 
 	cohort_v1 = map(i-> nt.visit[i] == "3mo" && i in sidx && i in vidx, eachindex(nt.visit))
@@ -139,13 +139,38 @@ transform!(groupby(allmeta, "subject_id"), AsTable(["visit", "age_vep_weeks", "s
 	cohort_v1v2_vep = map(i-> nt.visit[i] == "6mo" && i in vidx && any(j -> nt.visit[j] == "3mo", sidx), eachindex(nt.visit))
 	cohort_v1v3_vep = map(i-> nt.visit[i] == "12mo" && i in vidx && any(j -> nt.visit[j] == "3mo", sidx), eachindex(nt.visit))
 	cohort_v2v3_vep = map(i-> nt.visit[i] == "12mo" && i in vidx && any(j -> nt.visit[j] == "6mo", sidx), eachindex(nt.visit))
+	
+	cohort_v1v1v2_stool = map(i-> nt.visit[i] == "3mo" && i in sidx &&
+					any(j -> nt.visit[j] == "3mo", vidx) &&
+				        any(j -> nt.visit[j] == "6mo", vidx), eachindex(nt.visit))
+	cohort_v1v1v3_stool = map(i-> nt.visit[i] == "3mo" && i in sidx &&
+					any(j -> nt.visit[j] == "3mo", vidx) &&
+				        any(j -> nt.visit[j] == "12mo", vidx), eachindex(nt.visit))
+	cohort_v2v2v3_stool = map(i-> nt.visit[i] == "6mo" && i in sidx &&
+					any(j -> nt.visit[j] == "6mo", vidx) &&
+				        any(j -> nt.visit[j] == "12mo", vidx), eachindex(nt.visit))
+
+	# cohorts that have prior stool AND prior vep
+	cohort_v1v1v2_vep = map(i-> nt.visit[i] == "3mo" && i in vidx &&
+					any(j -> nt.visit[j] == "3mo", sidx) &&
+				        any(j -> nt.visit[j] == "6mo", vidx), eachindex(nt.visit))
+	cohort_v1v1v3_vep = map(i-> nt.visit[i] == "3mo" && i in vidx &&
+					any(j -> nt.visit[j] == "3mo", sidx) &&
+				        any(j -> nt.visit[j] == "12mo", vidx), eachindex(nt.visit))
+	cohort_v2v2v3_vep = map(i-> nt.visit[i] == "6mo" && i in vidx &&
+					any(j -> nt.visit[j] == "6mo", sidx) &&
+				        any(j -> nt.visit[j] == "12mo", vidx), eachindex(nt.visit))
 
 	return (; cohort_v1, cohort_v2, cohort_v3,
 		  cohort_v1v2_stool, cohort_v1v3_stool, cohort_v2v3_stool,
-		  cohort_v1v2_vep, cohort_v1v3_vep, cohort_v2v3_vep)
+		  cohort_v1v2_vep, cohort_v1v3_vep, cohort_v2v3_vep,
+		  cohort_v1v1v2_stool, cohort_v1v1v3_stool, cohort_v2v2v3_stool,
+		  cohort_v1v1v2_vep, cohort_v1v1v3_vep, cohort_v2v2v3_vep
+		)
     end
    ) => AsTable
 )
+
 subset!(allmeta, AsTable(r"cohort_")=> ByRow(nt-> any(!ismissing, nt)))
 transform!(allmeta,
 	AsTable(["peak_latency_P1", "peak_latency_N1"]) => (tab ->tab.peak_latency_P1 .- tab.peak_latency_N1) => "peak_latency_P1_corrected",

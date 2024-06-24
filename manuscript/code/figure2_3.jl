@@ -1,6 +1,7 @@
 using FeatureSetEnrichments
 using VKCComputing
 using EEGMicrobiome
+using Microbiome
 using DataFrames
 using Distances
 using CSV
@@ -9,34 +10,86 @@ using MultipleTesting
 using Clustering
 using GLM
 using Distributions
-using Caivikkie
+using CairoMakie
 using ColorSchemes
+using ThreadsX
+using SparseArrays
 
-# load data
-concurrent_3m = load_cohort("concurrent_3m")
-concurrent_6m = load_cohort("concurrent_6m")
-concurrent_12m = load_cohort("concurrent_12m")
-future_3m6m = load_cohort("future_3m6m")
-future_3m12m = load_cohort("future_3m12m")
-future_6m12m = load_cohort("future_6m12m")
+mdata = load_cohorts()
 
-concurrent_3m_func = DataFrame(get(concurrent_3m))
-load_functional_profiles!(concurrent_3m_func);
+v1 = get_cohort(mdata, "v1")
+v2 = get_cohort(mdata, "v2")
+v3 = get_cohort(mdata, "v3")
+v1v2 = get_cohort(mdata, "v1v2")
+v1v3 = get_cohort(mdata, "v1v3")
+v2v3 = get_cohort(mdata, "v2v3")
 
-concurrent_6m_func = DataFrame(get(concurrent_6m))
-load_functional_profiles!(concurrent_6m_func);
+unirefs_by_sample = let 
+	files = String.(skipmissing(mdata.genefamilies))
+	mapreduce(vcat, files) do f
+		df = CSV.read(f, DataFrame)
+		rename!(df, ["feature", "abundance"])
+		subset!(df, "feature"=> ByRow(f-> !contains(f, '|')))
+		sample = replace(basename(f), r"(SEQ\d+).+"=> s"\1")
+		df.sample .= sample
+		df
+    end
+end
 
-concurrent_12m_func = DataFrame(get(concurrent_12m))
-load_functional_profiles!(concurrent_12m_func);
+unirefs = let 
+    fs = unique(unirefs_by_sample.feature)
+    ss = unique(unirefs_by_sample.sample)
+    fsmap = Dict(f=> i for (i, f) in enumerate(fs))
+    ssmap = Dict(s=> i for (i, s) in enumerate(ss))
 
-future_3m6m_func = DataFrame(get(future_3m6m))
-load_functional_profiles!(future_3m6m_func);
+    mat = spzeros(length(fs), length(ss))
+    foreach(eachrow(unirefs_by_sample)) do row
+	mat[fsmap[row.feature], ssmap[row.sample]] = row.abundance
+    end
+    CommunityProfile(mat, GeneFunction.(fs), MicrobiomeSample.(ss))
+end
 
-future_3m12m_func = DataFrame(get(future_3m12m))
-load_functional_profiles!(future_3m12m_func);
 
-future_6m12m_func = DataFrame(get(future_6m12m))
-load_functional_profiles!(future_6m12m_func);
+set!(unirefs, select(mdata, "seqprep"=> "sample", Cols(:)))
+
+
+v1_func = let comm = unirefs[:, v1.seqprep]
+    mat = collect(abundances(comm)')
+    ixs = ThreadsX.map(col-> sum(col) > 0, eachcol(mat))
+    hcat(v1,  DataFrame(mat[:, ixs], featurenames(comm)[ixs]))
+end
+
+v2_func = let comm = unirefs[:, v2.seqprep]
+    mat = collect(abundances(comm)')
+    ixs = ThreadsX.map(col-> sum(col) > 0, eachcol(mat))
+    hcat(v2,  DataFrame(mat[:, ixs], featurenames(comm)[ixs]))
+end
+
+
+v3_func = let comm = unirefs[:, v3.seqprep]
+    mat = collect(abundances(comm)')
+    ixs = ThreadsX.map(col-> sum(col) > 0, eachcol(mat))
+    hcat(v3,  DataFrame(mat[:, ixs], featurenames(comm)[ixs]))
+end
+
+v1v2_func = let comm = unirefs[:, v1v2.seqprep]
+    mat = collect(abundances(comm)')
+    ixs = ThreadsX.map(col-> sum(col) > 0, eachcol(mat))
+    hcat(v1v2, DataFrame(mat[:, ixs], featurenames(comm)[ixs]))
+end
+
+v1v3_func = let comm = unirefs[:, v1v3.seqprep]
+    mat = collect(abundances(comm)')
+    ixs = ThreadsX.map(col-> sum(col) > 0, eachcol(mat))
+    hcat(v1v3, DataFrame(mat[:, ixs], featurenames(comm)[ixs]))
+end
+
+v2v3_func = let comm = unirefs[:, v2v3.seqprep]
+    mat = collect(abundances(comm)')
+    ixs = ThreadsX.map(col-> sum(col) > 0, eachcol(mat))
+    hcat(v2v3, DataFrame(mat[:, ixs], featurenames(comm)[ixs]))
+end
+
 
 ##
 
@@ -49,79 +102,79 @@ na_map_full = FeatureSetEnrichments.get_neuroactive_unirefs(; consolidate=false)
 
 for feature in eeg_features
     @info feature
-    EEGMicrobiome.runlms(concurrent_3m_func, "./data/outputs/lms/$(feature)_nodiff_3m_lms.csv",
-                         feature, names(concurrent_3m_func, r"^UniRef")
+    EEGMicrobiome.runlms(v1_func, "./data/outputs/lms/$(feature)_nodiff_v1_lms.csv",
+                         feature, names(v1_func, r"^UniRef"); age_col="stool_age"
     )
 end
 
 for feature in eeg_features
     @info feature
-    EEGMicrobiome.runlms(concurrent_6m_func, "./data/outputs/lms/$(feature)_nodiff_6m_lms.csv",
-                         feature, names(concurrent_6m_func, r"^UniRef")
+    EEGMicrobiome.runlms(v2_func, "./data/outputs/lms/$(feature)_nodiff_v2_lms.csv",
+                         feature, names(v2_func, r"^UniRef"); age_col="stool_age"
     )
 end
 
 for feature in eeg_features
     @info feature
-    EEGMicrobiome.runlms(concurrent_12m_func, "./data/outputs/lms/$(feature)_nodiff_12m_lms.csv",
-                         feature, names(concurrent_12m_func, r"^UniRef")
+    EEGMicrobiome.runlms(v3_func, "./data/outputs/lms/$(feature)_nodiff_v3_lms.csv",
+                         feature, names(v3_func, r"^UniRef"); age_col="stool_age"
     )
 end
 
 for feature in eeg_features
     @info feature
-    EEGMicrobiome.runlms(concurrent_3m_func, "./data/outputs/lms/$(feature)_3m_lms.csv",
-                         feature, names(concurrent_3m_func, r"^UniRef")
-        additional_cols = [:age_diff],
-        formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
+    EEGMicrobiome.runlms(v1_func, "./data/outputs/lms/$(feature)_v1_lms.csv",
+        feature, names(v1_func, r"^UniRef"),
+        additional_cols = [:age_diff], age_col = "stool_age",
+        formula = term(:func) ~ term(feature) + term(:stool_age) + term(:age_diff) + term(:n_trials)
     )
 end
 
 for feature in eeg_features
     @info feature
-    EEGMicrobiome.runlms(concurrent_6m_func, "./data/outputs/lms/$(feature)_6m_lms.csv",
-                         feature, names(concurrent_6m_func, r"^UniRef")
-        additional_cols = [:age_diff],
-        formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
+    EEGMicrobiome.runlms(v2_func, "./data/outputs/lms/$(feature)_v2_lms.csv",
+        feature, names(v2_func, r"^UniRef"),
+        additional_cols = [:age_diff], age_col = "stool_age",
+        formula = term(:func) ~ term(feature) + term(:stool_age) + term(:age_diff) + term(:n_trials)
     )
 end
 
 for feature in eeg_features
     @info feature
-    EEGMicrobiome.runlms(concurrent_12m_func, "./data/outputs/lms/$(feature)_12m_lms.csv",
-                         feature, names(concurrent_12m_func, r"^UniRef")
-        additional_cols = [:age_diff],
-        formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
+    EEGMicrobiome.runlms(v3_func, "./data/outputs/lms/$(feature)_v3_lms.csv",
+        feature, names(v3_func, r"^UniRef"),
+        additional_cols = [:age_diff], age_col = "stool_age",
+        formula = term(:func) ~ term(feature) + term(:stool_age) + term(:age_diff) + term(:n_trials)
     )
 end
 
 for feature in eeg_features
     @info feature
-    EEGMicrobiome.runlms(future_3m6m_func, "./data/outputs/lms/$(feature)_3m_future6m_lms.csv", feature, names(future_3m6m_func, r"^UniRef");
-        additional_cols = [:age_diff],
-        formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
+    EEGMicrobiome.runlms(v1v2_func, "./data/outputs/lms/$(feature)_v1v2_lms.csv", feature, names(v1v2_func, r"^UniRef");
+        additional_cols = [:age_diff], age_col = "stool_age",
+        formula = term(:func) ~ term(feature) + term(:stool_age) + term(:age_diff) + term(:n_trials)
     )
 end
 
 for feature in eeg_features
     @info feature
-    EEGMicrobiome.runlms(future_3m12m_func, "./data/outputs/lms/$(feature)_3m_future12m_lms.csv", feature, names(future_3m12m_func, r"^UniRef");
-        additional_cols = [:age_diff],
-        formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
+    EEGMicrobiome.runlms(v1v3_func, "./data/outputs/lms/$(feature)_v1v3_lms.csv", feature, names(v1v3_func, r"^UniRef");
+        additional_cols = [:age_diff], age_col = "stool_age",
+        formula = term(:func) ~ term(feature) + term(:stool_age) + term(:age_diff) + term(:n_trials)
     )
 end
 
 for feature in eeg_features
     @info feature
-    EEGMicrobiome.runlms(future_6m12m_func, "./data/outputs/lms/$(feature)_6m_future12m_lms.csv", feature, names(future_6m12m_func, r"^UniRef");
-        additional_cols = [:age_diff],
-        formula = term(:func) ~ term(feature) + term(:age) + term(:age_diff) + term(:n_segments)
+    EEGMicrobiome.runlms(v2v3_func, "./data/outputs/lms/$(feature)_v2v3_lms.csv", feature, names(v2v3_func, r"^UniRef");
+        additional_cols = [:age_diff], age_col = "stool_age",
+        formula = term(:func) ~ term(feature) + term(:stool_age) + term(:age_diff) + term(:n_trials)
     )
 end
 
 ## Run FSEA
 
-tps = ("3m", "6m", "12m")
+tps = ("v1", "v2", "v3")
 
 #-
 fsea_df = let fsea_df = DataFrame()

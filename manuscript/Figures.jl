@@ -37,17 +37,18 @@ using Clustering
 using Distances
 
 # Next, we'll load the data.
-# The `load_cohort()` fucntion is written in `src/data_loading.jl`.
 
 tps = ("3m", "6m", "12m")
 ftps = ("3m_future6m", "3m_future12m", "6m_future12m")
 
-concurrent_3m = load_cohort("concurrent_3m")
-concurrent_6m = load_cohort("concurrent_6m")
-concurrent_12m = load_cohort("concurrent_12m")
-future_3m6m = load_cohort("future_3m6m")
-future_3m12m = load_cohort("future_3m12m")
-future_6m12m = load_cohort("future_6m12m")
+mdata = load_cohorts()
+
+v1 = get_cohort(mdata, "v1")
+v2 = get_cohort(mdata, "v2")
+v3 = get_cohort(mdata, "v3")
+v1v2 = get_cohort(mdata, "v1v2")
+v1v3 = get_cohort(mdata, "v1v3")
+v1v3 = get_cohort(mdata, "v2v3")
 
 ##
 
@@ -55,57 +56,6 @@ eeg_features = "peak_latency_" .* ["N1", "P1_corrected", "N2_corrected"]
 eeg_features = [eeg_features; replace.(eeg_features, "latency"=>"amp")]
 
 na_map = FeatureSetEnrichments.get_neuroactive_unirefs()
-
-
-eegmbo = let 
-	eeg = load_eeg()
-	rename!(eeg, "age"=> "eeg_age")
-	mbo = load_microbiome(eeg.subject)
-	dropmissing!(mbo, "visit")
-	transform!(mbo, "visit"=>ByRow(v-> replace(v, "mo"=>"m"))=> "visit")
-
-	@chain eeg begin
-		select("subject", "timepoint"=>"visit", Cols(:))
-		unique!(["subject", "timepoint"])
-		outerjoin(mbo; on = ["subject", "visit"])
-		groupby("subject")
-		subset(AsTable(["visit", "seqprep", "eeg_age"])=> (nt-> begin
-			# skip subjects without at least 1 eeg and at least 1 seqprep
-			(all(ismissing, nt.seqprep) || all(ismissing(nt.eeg_age))) && return false
-			# keep subjects with at least 1 concurrent eeg/seqprep
-			any(.!ismissing.(nt.seqprep) .& .!ismissing.(nt.eeg_age)) && return true
-			# Keep any remaining subjects that have a seqprep *prior* to an EEG
-			srt = sortperm([parse(Int, replace(v, "m"=>"")) for v in nt.visit])
-			any(findfirst(!ismissing, nt.seqprep[srt]) .<= findfirst(!ismissing, nt.eeg_age[srt]))
-		end))
-	end
-end
-
-long_sub = let
-	wide_sub = select(
-		leftjoin(
-			select(unstack(eegmbo, "subject", "visit", "eeg_age"; combine=first),
-				   "subject", "3m"=>"eeg_3m", "6m"=> "eeg_6m", "12m"=>"eeg_12m"),
-			select(unstack(eegmbo, "subject", "visit", "age"; combine=first),
-				   "subject", "3m"=>"seqprep_3m", "6m"=> "seqprep_6m", "12m"=>"seqprep_12m"),
-		on="subject"),
-		"subject", r"3m", r"6m", r"12m"
-	)
-
-	long_sub = DataFrame()
-	for row in eachrow(wide_sub), tp in tps
-		stool_age = row["seqprep_$tp"]
-		eeg_age = row["eeg_$tp"]
-		push!(long_sub, (; subject=row.subject, timepoint=tp, stool_age, eeg_age); cols=:union)
-	end
-
-	@chain long_sub begin
-		subset!(AsTable(["stool_age", "eeg_age"])=> ByRow(nt-> !all(ismissing, nt)))
-		transform!(AsTable(["stool_age", "eeg_age"])=> ByRow(nt-> minimum(skipmissing(values(nt))))=> "minage") 
-		sort!("minage")
-	end
-end
-
 
 # Data for the EEG timeseries panel in Figure 1
 # comes from separate analysis by Emma Margolis.
@@ -120,22 +70,25 @@ end
 
 # Load gene functions files for samples that we have microbiomes for:
 
+taxprofiles = let mpa = metaphlan_profiles(String.(skipmissing(mdata.taxprofile)), :species)
+	CommunityProfile(abundances(mpa), features(mpa), MicrobiomeSample.(replace.(samplenames(mpa), r"_S\d++_profile"=> "")))
+end
 
-unirefs_by_sample = let ss = mapreduce(samplenames, vcat, (concurrent_3m, concurrent_6m, concurrent_12m))
-    files = filter(f-> contains(basename(f), "genefamilies.tsv") && replace(basename(f), r"(SEQ\d+).+"=> s"\1") ∈ ss,
-		readdir("/grace/sequencing/processed/mgx/humann/main/"; join=true)
-    )
-    mapreduce(vcat, files) do f
-	df = CSV.read(f, DataFrame)
-	rename!(df, ["feature", "abundance"])
-	subset!(df, "feature"=> ByRow(f-> !contains(f, '|')))
-	sample = replace(basename(f), r"(SEQ\d+).+"=> s"\1")
-	df.sample .= sample
-	df
+set!(taxprofiles, select(mdata, "seqprep"=> "sample", Cols(:)))
+
+unirefs_by_sample = let 
+	files = String.(skipmissing(mdata.genefamilies))
+	mapreduce(vcat, files) do f
+		df = CSV.read(f, DataFrame)
+		rename!(df, ["feature", "abundance"])
+		subset!(df, "feature"=> ByRow(f-> !contains(f, '|')))
+		sample = replace(basename(f), r"(SEQ\d+).+"=> s"\1")
+		df.sample .= sample
+		df
     end
 end
 
-concurrent_unirefs = let 
+unirefs = let 
     fs = unique(unirefs_by_sample.feature)
     ss = unique(unirefs_by_sample.sample)
     fsmap = Dict(f=> i for (i, f) in enumerate(fs))
@@ -149,11 +102,10 @@ concurrent_unirefs = let
 end
 
 
-set!(concurrent_unirefs, mapreduce(get, vcat, (concurrent_3m, concurrent_6m, concurrent_12m)))
-unirefs_pco = pcoa(concurrent_unirefs)
+set!(unirefs, select(mdata, "seqprep"=> "sample", Cols(:)))
 
-concurrent_species = commjoin(concurrent_3m, concurrent_6m, concurrent_12m)
-species_pco = pcoa(concurrent_species)
+unirefs_pco = pcoa(unirefs)
+species_pco = pcoa(taxprofiles)
 
 fsea_df = CSV.read("data/outputs/fsea/concurrent_consolidated_fsea.csv", DataFrame)
 future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_consolidated_fsea.csv", DataFrame)
