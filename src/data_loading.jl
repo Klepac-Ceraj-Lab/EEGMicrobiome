@@ -4,7 +4,7 @@ const _subject_excludes = Set([
 ])
 
 function load_cohorts(tab = "./data/allmeta.csv")
-    df = CSV.read(tab, DataFrame)
+    df = CSV.read(tab, DataFrame; stringtype=String)
     subset!(df, "subject_id"=> ByRow(s-> s ∉ _subject_excludes))
     return df
 end
@@ -30,7 +30,7 @@ function get_cohort(metadf, cohort)
             AsTable(r"peak|n_trial")=> (sub-> NamedTuple(Symbol(c) => last(sub[Symbol(c)]) for c in keys(sub))) => AsTable,
             "age_vep_weeks" => (aw-> (last(aw) / 52) * 12) => "vep_age",
             "visit" => (v-> cohort) => "visit"
-            ), "subject_id", "visit", "stool_age", "vep_age", "biospecimen", "seqprep", r"peak_", "S_well", "filename", "taxprofile", "genefamilies"
+            ), "subject_id", "visit", "stool_age", "vep_age", "biospecimen", "n_trials", "seqprep", r"peak_", "S_well", "filename", "taxprofile", "genefamilies"
         )
         subdf.age_diff = subdf.stool_age .- subdf.vep_age
         return subdf

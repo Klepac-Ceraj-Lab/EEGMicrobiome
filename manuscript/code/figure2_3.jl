@@ -53,20 +53,20 @@ end
 set!(unirefs, select(mdata, "seqprep"=> "sample", Cols(:)))
 
 
-v1_func = let comm = unirefs[:, v1.seqprep]
+v1_func = let comm = unirefs[:, String.(v1.seqprep)]
     mat = collect(abundances(comm)')
     ixs = ThreadsX.map(col-> sum(col) > 0, eachcol(mat))
     hcat(v1,  DataFrame(mat[:, ixs], featurenames(comm)[ixs]))
 end
 
-v2_func = let comm = unirefs[:, v2.seqprep]
+v2_func = let comm = unirefs[:, String.(v2.seqprep)]
     mat = collect(abundances(comm)')
     ixs = ThreadsX.map(col-> sum(col) > 0, eachcol(mat))
     hcat(v2,  DataFrame(mat[:, ixs], featurenames(comm)[ixs]))
 end
 
 
-v3_func = let comm = unirefs[:, v3.seqprep]
+v3_func = let comm = unirefs[:, String.(v3.seqprep)]
     mat = collect(abundances(comm)')
     ixs = ThreadsX.map(col-> sum(col) > 0, eachcol(mat))
     hcat(v3,  DataFrame(mat[:, ixs], featurenames(comm)[ixs]))
