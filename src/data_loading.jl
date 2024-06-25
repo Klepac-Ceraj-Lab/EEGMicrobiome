@@ -6,6 +6,7 @@ const _subject_excludes = Set([
 function load_cohorts(tab = "./data/allmeta.csv")
     df = CSV.read(tab, DataFrame; stringtype=String)
     subset!(df, "subject_id"=> ByRow(s-> s ∉ _subject_excludes))
+    transform!(df, "age_vep_weeks"=> ByRow(a-> a / 52 * 12) => "eeg_age")
     return df
 end
 
