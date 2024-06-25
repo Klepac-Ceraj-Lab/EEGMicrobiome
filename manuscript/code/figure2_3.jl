@@ -211,7 +211,7 @@ CSV.write("data/outputs/fsea/concurrent_consolidated_fsea.csv", fsea_df)
 # fsea_df = CSV.read("data/outputs/fsea/concurrent_consolidated_fsea.csv", DataFrame)
 let res = Dict()
     for tp in tps, feature in eeg_features
-        @info tp
+        @info tp feature
         filepath = "./data/outputs/lms/$(feature)_$(tp)_lms.csv"
         lms = CSV.read(filepath, DataFrame)
 
@@ -264,10 +264,12 @@ CSV.write("data/outputs/fsea/concurrent_consolidated_fsea_u.csv", fsea_df_u)
 
 ## Run FSEA
 
-future12m_fsea_df = let fsea_df = DataFrame()
-    for tp in ("3m", "6m"), feature in eeg_features
-        # contains(feature, "corrected") && continue
-        filepath = "./data/outputs/lms/$(feature)_$(tp)_future12m_lms.csv"
+ftps = ("v1v2", "v1v3", "v2v3")
+
+#-
+fsea_df = let fsea_df = DataFrame()
+    for tp in ftps, feature in eeg_features
+        filepath = "./data/outputs/lms/$(feature)_$(tp)_lms.csv"
         lms = CSV.read(filepath, DataFrame)
 
         for (key, unirefs) in pairs(na_map)
@@ -279,7 +281,7 @@ future12m_fsea_df = let fsea_df = DataFrame()
             idx = findall(lms[!, key])
             length(idx) > 5 || continue
             result = fsea(FeatureSetEnrichments.Permutation(5000), lms.z, idx)
-            push!(fsea_df, (; timepoint="$(tp)_future12m",
+            push!(fsea_df, (; timepoint=tp,
                               eeg_feature = feature,
                               geneset     = key,
                               pvalue      = pvalue(result),
@@ -291,20 +293,16 @@ future12m_fsea_df = let fsea_df = DataFrame()
     fsea_df
 end
 
-transform!(future12m_fsea_df, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "q₀")
-transform!(groupby(future12m_fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
-transform!(groupby(future12m_fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
-sort!(future12m_fsea_df, "q₀")
-CSV.write("data/outputs/fsea/future12m_consolidated_fsea.csv", future12m_fsea_df)
-# future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_consolidated_fsea.csv", DataFrame)
-
-#-
-
-future6m_fsea_df = let fsea_df = DataFrame()
-    for feature in eeg_features
-        # contains(feature, "corrected") && continue
-        tp = "3m"
-        filepath = "./data/outputs/lms/$(feature)_$(tp)_future6m_lms.csv"
+transform!(fsea_df, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "q₀")
+transform!(groupby(fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
+transform!(groupby(fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
+sort!(fsea_df, "q₀")
+CSV.write("data/outputs/fsea/future_consolidated_fsea.csv", fsea_df)
+# fsea_df = CSV.read("data/outputs/fsea/future_consolidated_fsea.csv", DataFrame)
+let res = Dict()
+    for tp in ftps, feature in eeg_features
+        @info tp feature
+        filepath = "./data/outputs/lms/$(feature)_$(tp)_lms.csv"
         lms = CSV.read(filepath, DataFrame)
 
         for (key, unirefs) in pairs(na_map)
@@ -313,109 +311,53 @@ future6m_fsea_df = let fsea_df = DataFrame()
         end
 
         for (key, unirefs) in pairs(na_map)
-            @warn key
+            idx = findall(lms[!, key])
+            res[key] = get(res, key, Dict())
+            res[key][tp] = length(idx)
+        end
+    end
+    res
+end
+
+fsea_df_u = let fsea_df = DataFrame()
+    for tp in ftps, feature in eeg_features
+        filepath = "./data/outputs/lms/$(feature)_$(tp)_lms.csv"
+        lms = CSV.read(filepath, DataFrame)
+
+        for (key, unirefs) in pairs(na_map)
+            s = Set("UniRef90_$uniref" for uniref in unirefs)
+            lms[!, key] = lms.feature .∈ Ref(s)
+        end
+
+        for (key, unirefs) in pairs(na_map)
             idx = findall(lms[!, key])
             length(idx) > 5 || continue
-            @info "keeping"
-            result = fsea(FeatureSetEnrichments.Permutation(5000), lms.z, idx)
-            push!(fsea_df, (; timepoint="$(tp)_future6m",
+            result = fsea(FeatureSetEnrichments.MWU(), lms.z, idx)
+            push!(fsea_df, (; timepoint=tp,
                               eeg_feature = feature,
                               geneset     = key,
                               pvalue      = pvalue(result),
                               es          = enrichment_score(result),
                               ranks       = idx,
                               nfeatures   = size(lms, 1)))
-
-         end
+        end
     end
     fsea_df
 end
 
-transform!(future6m_fsea_df, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "q₀")
-transform!(groupby(future6m_fsea_df, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
-transform!(groupby(future6m_fsea_df, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
-sort!(future6m_fsea_df, "q₀")
-CSV.write("data/outputs/fsea/future6m_consolidated_fsea_u.csv", future6m_fsea_df)
-# future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_consolidated_fsea_u.csv", DataFrame)
-#
-future12m_fsea_df_u = let fsea_df_u = DataFrame()
-    for tp in ("3m", "6m"), feature in eeg_features
-        # contains(feature, "corrected") && continue
-        filepath = "./data/outputs/lms/$(feature)_$(tp)_future12m_lms.csv"
-        lms = CSV.read(filepath, DataFrame)
+transform!(fsea_df_u, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "q₀")
+transform!(groupby(fsea_df_u, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
+transform!(groupby(fsea_df_u, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
+sort!(fsea_df_u, "q₀")
+CSV.write("data/outputs/fsea/future_consolidated_fsea_u.csv", fsea_df_u)
+#- 
 
-        for (key, unirefs) in pairs(na_map)
-            s = Set("UniRef90_$uniref" for uniref in unirefs)
-            lms[!, key] = lms.feature .∈ Ref(s)
-        end
-
-        for (key, unirefs) in pairs(na_map)
-            idx = findall(lms[!, key])
-            length(idx) > 5 || continue
-            result = fsea(FeatureSetEnrichments.MWU(), lms.z, idx)
-            push!(fsea_df_u, (; timepoint="$(tp)_future12m",
-                              eeg_feature = feature,
-                              geneset     = key,
-                              pvalue      = pvalue(result),
-                              es          = enrichment_score(result),
-                              ranks       = idx,
-                              nfeatures   = size(lms, 1)))
-        end
-    end
-    fsea_df_u
-end
-
-transform!(future12m_fsea_df_u, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "q₀")
-transform!(groupby(future12m_fsea_df_u, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
-transform!(groupby(future12m_fsea_df_u, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
-sort!(future12m_fsea_df_u, "q₀")
-CSV.write("data/outputs/fsea/future12m_consolidated_fsea_u.csv", future12m_fsea_df_u)
-# future12m_fsea_df_u = CSV.read("data/outputs/fsea/future12m_consolidated_fsea_u.csv", DataFrame)
-
-#-
-
-future6m_fsea_df_u = let fsea_df_u = DataFrame()
-    for feature in eeg_features
-        # contains(feature, "corrected") && continue
-        tp = "3m"
-        filepath = "./data/outputs/lms/$(feature)_$(tp)_future6m_lms.csv"
-        lms = CSV.read(filepath, DataFrame)
-
-        for (key, unirefs) in pairs(na_map)
-            s = Set("UniRef90_$uniref" for uniref in unirefs)
-            lms[!, key] = lms.feature .∈ Ref(s)
-        end
-
-        for (key, unirefs) in pairs(na_map)
-            idx = findall(lms[!, key])
-            length(idx) > 5 || continue
-            result = fsea(FeatureSetEnrichments.MWU(), lms.z, idx)
-            push!(fsea_df_u, (; timepoint="$(tp)_future6m",
-                              eeg_feature = feature,
-                              geneset     = key,
-                              pvalue      = pvalue(result),
-                              es          = enrichment_score(result),
-                              ranks       = idx,
-                              nfeatures   = size(lms, 1)))
-
-         end
-    end
-    fsea_df_u
-end
-
-transform!(future6m_fsea_df_u, "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "q₀")
-transform!(groupby(future6m_fsea_df_u, "timepoint"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
-transform!(groupby(future6m_fsea_df_u, "geneset"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
-sort!(future6m_fsea_df_u, "q₀")
-CSV.write("data/outputs/fsea/future6m_consolidated_fsea_u.csv", future6m_fsea_df_u)
-# future6m_fsea_df_u = CSV.read("data/outputs/fsea/future6m_consolidated_fsea_u.csv", DataFrame)
 ############
 # Plotting #
 ############
 
 fsea_df = CSV.read("data/outputs/fsea/concurrent_consolidated_fsea.csv", DataFrame)
-future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_consolidated_fsea.csv", DataFrame)
-future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_consolidated_fsea.csv", DataFrame)
+future_fsea_df = CSV.read("data/outputs/fsea/future_consolidated_fsea.csv", DataFrame)
 
 for row in eachrow(subset(fsea_df, "q₀" => ByRow(<(0.2))))
     res = fsea(1:row.nfeatures, row.ranks)
@@ -433,23 +375,7 @@ for row in eachrow(subset(fsea_df, "q₀" => ByRow(<(0.2))))
     save("data/figures/enrichments/concurrent_$(row.timepoint)_$(row.eeg_feature)_$(replace(row.geneset, " "=>"-")).png", fig)
 end
 
-for row in eachrow(subset(future12m_fsea_df, "q₀" => ByRow(<(0.2))))
-    res = fsea(1:row.nfeatures, row.ranks)
-    fig = Figure(; size=(800, 800))
-    gr = GridLayout(fig[1,1])
-    _, ax1, ax2 = plot!(gr, res)
-
-    text!(ax1, 0, 1;
-            text = "$(row.timepoint)\n$(row.eeg_feature)\n$(row.geneset)",
-            align = (:left, :top),
-            offset = (4, -2),
-            space = :relative,
-            fontsize = 12
-    )
-    save("data/figures/enrichments/future_$(row.timepoint)_$(row.eeg_feature)_$(replace(row.geneset, " "=>"-")).png", fig)
-end
-
-for row in eachrow(subset(future6m_fsea_df, "q₀" => ByRow(<(0.2))))
+for row in eachrow(subset(future_fsea_df, "q₀" => ByRow(<(0.2))))
     res = fsea(1:row.nfeatures, row.ranks)
     fig = Figure(; size=(800, 800))
     gr = GridLayout(fig[1,1])

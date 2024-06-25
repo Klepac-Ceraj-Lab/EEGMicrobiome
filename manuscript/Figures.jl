@@ -38,8 +38,8 @@ using Distances
 
 # Next, we'll load the data.
 
-tps = ("3m", "6m", "12m")
-ftps = ("3m_future6m", "3m_future12m", "6m_future12m")
+tps = ("v1","v2", "v3")
+ftps = ("v1v2", "v1v3", "v2v3")
 
 mdata = load_cohorts()
 
@@ -108,9 +108,7 @@ unirefs_pco = pcoa(unirefs)
 species_pco = pcoa(taxprofiles)
 
 fsea_df = CSV.read("data/outputs/fsea/concurrent_consolidated_fsea.csv", DataFrame)
-future6m_fsea_df = CSV.read("data/outputs/fsea/future6m_consolidated_fsea.csv", DataFrame)
-future12m_fsea_df = CSV.read("data/outputs/fsea/future12m_consolidated_fsea.csv", DataFrame)
-futfsea_df = vcat(future6m_fsea_df, future12m_fsea_df)
+futfsea_df = CSV.read("data/outputs/fsea/future_consolidated_fsea.csv", DataFrame)
 
 geneset_types = (;
 	neurotransmitters = [
@@ -157,7 +155,7 @@ gs_types_rev = Dict(gs=>t for t in keys(geneset_types) for gs in geneset_types[t
 
 geneset_order = vcat(geneset_types...)
 gssig = intersect(geneset_order,
-	unique(subset(vcat(fsea_df, future6m_fsea_df, future12m_fsea_df), "q₀" => ByRow(<(0.2))).geneset)
+	unique(subset(vcat(fsea_df, futfsea_df), "q₀" => ByRow(<(0.2))).geneset)
 )
 gsidx = geneset_index(gssig,geneset_order)
 
@@ -173,154 +171,6 @@ for gs in gssig
 	transform!(alllms, "feature"=> ByRow(u-> replace(u, "UniRef90_"=>"") ∈ na_map[gs])=> gs; ungroup=false)
 end
 ##
-
-topspecies = CSV.read("data/outputs/fsea_top_species.csv", DataFrame)
-
-humann_files = let
-	seqs = Set(mapreduce(samplenames, vcat,
-		(concurrent_3m, concurrent_6m, concurrent_12m,
-		 future_3m6m, future_3m12m, future_6m12m)))
-	na_unirefs = Set(reduce(union, values(na_map)))
-	humann_files = mapreduce(vcat, readdir(joinpath(load_preference(VKCComputing, "mgx_analysis_dir"), "humann", "main"); join=true)) do f
-		m = match(r"(SEQ\d+)", f)
-		isnothing(m) && return DataFrame()
-		sample = replace(basename(f), r"(SEQ\d+)_S\d+.+" => s"\1")
-		sample ∈ seqs || return DataFrame()
-		if contains(basename(f), "genefamilies.tsv") && m[1] ∈ seqs
-			@info basename(f)
-			df = CSV.read(f, DataFrame)
-			rename!(df, ["feature", "abundance"])
-			subset!(df, "feature" => ByRow(f -> contains(f, "|")))
-			transform!(df, "feature" => ByRow(f -> begin
-				(uniref, species) = split(f, "|")
-				uniref = replace(uniref, "UniRef90_" => "")
-				return (; uniref, species)
-			end) => ["uniref", "species"])
-			subset!(df, "uniref" => ByRow(u -> u ∈ na_unirefs))
-			df.sample .= sample
-			return df
-		else
-			return DataFrame()
-		end
-	end
-
-	transform!(humann_files, "species" => ByRow(s -> begin
-		s == "unclassified" && return (; genus="unclassified", species="unclassified")
-		(g, s) = split(s, ".")
-
-		contains(g, "_unclassified") && return (; genus=replace(g, "_unclassified"=>""), species=s)
-		(; genus=g, species=s)
-	end) => ["genus", "species"]
-	)
-	
-	for gs in gssig
-		@info gs
-		transform!(humann_files, "uniref"=> ByRow(u-> u ∈ na_map[gs])=> gs)
-	end
-	groupby(humann_files, "species")
-end
-
-topspec_idx = Dict(s=> i for (i, s) in enumerate(sort(unique(filter(!=("other"), topspecies.species)))))
-topspec_unirefs_idx = Dict(u=> i for (i, u) in enumerate(unique(select(humann_files, "uniref").uniref)))
-
-topspec_eeg_cormat_3m = zeros(length(keys(topspec_idx)), 6)
-topspec_eeg_cormat_6m = zeros(length(keys(topspec_idx)), 6)
-topspec_eeg_cormat_12m = zeros(length(keys(topspec_idx)), 6)
-
-for (i, feat) in enumerate(eeg_features), spc in keys(topspec_idx)
-	if haskey(concurrent_3m.fidx, spc)
-		topspec_eeg_cormat_3m[topspec_idx[spc], i] = cor(
-			vec(abundances(concurrent_3m[spc, :])),
-			get(concurrent_3m, Symbol(feat))
-		)
-	end
-	if haskey(concurrent_6m.fidx, spc)
-		topspec_eeg_cormat_6m[topspec_idx[spc], i] = cor(
-			vec(abundances(concurrent_6m[spc, :])),
-			get(concurrent_6m, Symbol(feat))
-		)
-	end
-	if haskey(concurrent_12m.fidx, spc)
-		topspec_eeg_cormat_12m[topspec_idx[spc], i] = cor(
-			vec(abundances(concurrent_12m[spc, :])),
-			get(concurrent_12m, Symbol(feat))
-		)
-	end
-end
-
-topspec_eeg_cormat_full = hcat(topspec_eeg_cormat_3m, topspec_eeg_cormat_6m, topspec_eeg_cormat_12m)
-
-topspec_eeg_hcl_3m_row = hclust(
-	pairwise(Euclidean(), topspec_eeg_cormat_3m; dims=1);
-	linkage=:complete,
-	branchorder=:optimal
-)
-topspec_eeg_hcl_3m_col = hclust(
-	pairwise(Euclidean(), topspec_eeg_cormat_3m; dims=2);
-	linkage=:complete,
-	branchorder=:optimal
-)
-
-topspec_eeg_hcl_6m_row = hclust(
-	pairwise(Euclidean(), topspec_eeg_cormat_6m; dims=1);
-	linkage=:complete,
-	branchorder=:optimal
-)
-topspec_eeg_hcl_6m_col = hclust(
-	pairwise(Euclidean(), topspec_eeg_cormat_6m; dims=2);
-	linkage=:complete,
-	branchorder=:optimal
-)
-
-topspec_eeg_hcl_12m_row = hclust(
-	pairwise(Euclidean(), topspec_eeg_cormat_12m; dims=1);
-	linkage=:complete,
-	branchorder=:optimal
-)
-topspec_eeg_hcl_12m_col = hclust(
-	pairwise(Euclidean(), topspec_eeg_cormat_12m; dims=2);
-	linkage=:complete,
-	branchorder=:optimal
-)
-
-topspec_eeg_hcl_full_row = hclust(
-    pairwise(Euclidean(), topspec_eeg_cormat_full; dims=2);
-	linkage=:complete,
-	branchorder=:optimal
-)
-topspec_eeg_hcl_full_col = hclust(
-    pairwise(Euclidean(), topspec_eeg_cormat_full; dims=1);
-	linkage=:complete,
-	branchorder=:optimal
-)
-
-##
-
-topspec_unirefs_abmat = spzeros(length(keys(topspec_unirefs_idx)), length(topspec_idx))
-
-for subdf in humann_files
-	spec = first(subdf.species)
-	haskey(topspec_idx, spec) || continue
-	abs = combine(groupby(subdf, "uniref"), "uniref" => first => "uniref", "abundance"=> mean => "abmean")
-	for row in eachrow(abs)
-		topspec_unirefs_abmat[topspec_unirefs_idx[row.uniref], topspec_idx[spec]] = row.abmean
-	end
-end
- 
-topspec_unirefs_hcl_row = hclust(
-    pairwise(Euclidean(), topspec_unirefs_abmat; dims=2);
-	linkage=:complete,
-	branchorder=:optimal
-)
-topspec_unirefs_hcl_col = hclust(
-    pairwise(Euclidean(), topspec_unirefs_abmat; dims=1);
-	linkage=:complete,
-	branchorder=:optimal
-)
-
-##
-
-
 
 # ## Plotting
 # 
