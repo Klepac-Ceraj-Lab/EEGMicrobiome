@@ -43,12 +43,38 @@ ftps = ("v1v2", "v1v3", "v2v3")
 
 mdata = load_cohorts()
 
+long_sub = let
+	wide_sub = select(
+		leftjoin(
+			select(unstack(mdata, "subject_id", "visit", "eeg_age"),
+				   "subject_id", "v1"=>"eeg_v1", "v2"=> "eeg_v2", "v3"=>"eeg_v3"),
+			select(unstack(mdata, "subject_id", "visit", "stool_age"),
+				   "subject_id", "v1"=>"seqprep_v1", "v2"=> "seqprep_v2", "v3"=>"seqprep_v3"),
+		on="subject_id"),
+		"subject_id", r"v1", r"v2", r"v3"
+	)
+
+	long_sub = DataFrame()
+	for row in eachrow(wide_sub), tp in tps
+		stool_age = row["seqprep_$tp"]
+		eeg_age = row["eeg_$tp"]
+		push!(long_sub, (; subject_id=row.subject_id, timepoint=tp, stool_age, eeg_age); cols=:union)
+	end
+
+	@chain long_sub begin
+		subset!(AsTable(["stool_age", "eeg_age"])=> ByRow(nt-> !all(ismissing, nt)))
+		transform!(AsTable(["stool_age", "eeg_age"])=> ByRow(nt-> minimum(skipmissing(values(nt))))=> "minage") 
+		sort!("minage")
+	end
+end
+
+
 v1 = get_cohort(mdata, "v1")
 v2 = get_cohort(mdata, "v2")
 v3 = get_cohort(mdata, "v3")
 v1v2 = get_cohort(mdata, "v1v2")
 v1v3 = get_cohort(mdata, "v1v3")
-v1v3 = get_cohort(mdata, "v2v3")
+v2v3 = get_cohort(mdata, "v2v3")
 
 ##
 
@@ -60,10 +86,11 @@ na_map = FeatureSetEnrichments.get_neuroactive_unirefs()
 # Data for the EEG timeseries panel in Figure 1
 # comes from separate analysis by Emma Margolis.
 
-timeseries = mapreduce(vcat, ("3m", "6m", "12m")) do tp
+vep_timeseries = mapreduce(vcat, enumerate(("3m", "6m", "12m"))) do (i, tp)
     df = DataFrame(XLSX.readtable("data/alltimepoints_timeseries_figure.xlsx", "$tp Timeseries Calculation"; infer_eltypes=true))[:, 1:6]
+    tpv = "v$i"
     rename!(df, ["ms", "mean", "se", "lower", "upper", "std"])
-    df.timepoint .= tp
+    df.timepoint .= tpv
     df[end, 1] = df[end-1, 1] + 1
     dropmissing!(df)
 end
@@ -211,7 +238,7 @@ transform!(table2, "eeg_feature" => ByRow(f-> begin
 			return (; feature=p, peak=n)
 	end) => ["feature", "peak"]
 )
-transform!(table2, "timepoint"=> ByRow(x-> Dict("3m"=> 1, "6m"=> 2, "12m"=> 3)[x]) => "visit")
+transform!(table2, "timepoint"=> ByRow(x-> Dict("v1"=> 1, "v2"=> 2, "v3"=> 3)[x]) => "visit")
 select!(table2, "visit", "geneset", "feature", "peak", "es"=> "E.S.", "q₀"=> "q value")
 sort!(table2, [
 	"visit",
@@ -229,7 +256,7 @@ end
 
 # #### Table 3
 
-table3 = subset(vcat(future6m_fsea_df, future12m_fsea_df),
+table3 = subset(futfsea_df,
 		    "timepoint"=> ByRow(t-> t ∈ ftps),
 		    "q₀"=> ByRow(<(0.2)),
 		    "geneset"=> ByRow(g-> g ∈ geneset_order)
@@ -241,9 +268,8 @@ transform!(table3, "eeg_feature" => ByRow(f-> begin
 	end) => ["feature", "peak"]
 )
 transform!(table3, "timepoint"=> ByRow(x-> begin
-		(st, vep) = match(r"^(\d+m)_future(\d+m)$", x).captures
-		vd = Dict("3m"=> 1, "6m"=> 2, "12m"=> 3)
-		return (; stool = vd[st], VEP = vd[vep])
+		(st, vep) = match(r"^v(\d+)v(\d+)$", x).captures
+		return (; stool = parse(Int, st), VEP = parse(Int, vep))
 	end) => ["stool", "VEP"]
 )
 select!(table3, "stool", "VEP", "geneset", "feature", "peak", "es"=> "E.S.", "q₀"=> "q value")
@@ -311,15 +337,15 @@ hidespines!(ax_cohort)
 # ##### EEG longitudinal curves
 
 
-datmean = data(timeseries) * mapping(:ms, :mean, color=:timepoint)
-datlower = data(timeseries) * mapping(:ms, :lower, color=:timepoint)
-datupper = data(timeseries) * mapping(:ms, :upper, color=:timepoint)
+datmean = data(vep_timeseries) * mapping(:ms, :mean, color=:timepoint)
+datlower = data(vep_timeseries) * mapping(:ms, :lower, color=:timepoint)
+datupper = data(vep_timeseries) * mapping(:ms, :upper, color=:timepoint)
 
-let datage = data(subset(eegmbo, "eeg_age"=>ByRow(!ismissing))) * mapping(:eeg_age=> "age (months)", color="visit")
+let datage = data(subset(mdata, "eeg_age"=>ByRow(!ismissing))) * mapping(:eeg_age=> "age (months)", color="visit")
 	draw!(ax_eeg_hist, datage * AlgebraOfGraphics.density(); palettes=(; color=colors_timepoints))
 end
 
-let datage = data(subset(eegmbo, "age"=>ByRow(!ismissing))) * mapping(:age=> "age (months)", color="visit")
+let datage = data(subset(mdata, "stool_age"=>ByRow(!ismissing))) * mapping(:stool_age=> "age (months)", color="visit")
 	draw!(ax_stool_hist, datage * AlgebraOfGraphics.density(); palettes=(; color=colors_timepoints))
 end
 
@@ -341,29 +367,29 @@ Legend(grid_eeg_curves[1,1],
 # ##### PCoAs
 
 
-plt_pcoa_spec = plot_pcoa!(ax_pcoa_spec, species_pco; color=get(concurrent_species, :age), colormap=colormap_age)
-plt_pcoa_func = plot_pcoa!(ax_pcoa_func, unirefs_pco; color=get(concurrent_unirefs, :age), colormap=colormap_age)
+plt_pcoa_spec = plot_pcoa!(ax_pcoa_spec, species_pco; color=get(taxprofiles, :stool_age), colormap=colormap_age)
+plt_pcoa_func = plot_pcoa!(ax_pcoa_func, unirefs_pco; color=get(unirefs, :stool_age), colormap=colormap_age)
 
 Colorbar(grid_pcoas[1,3];
-	limits=extrema(skipmissing(eegmbo.age)), label = "Age (months)", colormap=colormap_age,
+	limits=extrema(skipmissing(mdata.stool_age)), label = "Age (months)", colormap=colormap_age,
 )
 
 # ##### Longitudinal
 
 
-subind = Dict(s=> i for (i,s) in enumerate(unique(long_sub.subject)))
+subind = Dict(s=> i for (i,s) in enumerate(unique(long_sub.subject_id)))
 
 samples_colors = [s => c for (s, c) in zip(
 	("stool", "eeg", "both"),
 	(colorant"dodgerblue", colorant"firebrick", colorant"slateblue"))
 ]
 
-let gdf = groupby(long_sub, "subject")
+let gdf = groupby(long_sub, "subject_id")
 	for k in keys(gdf)
 		stools = gdf[k].stool_age
 		eegs = gdf[k].eeg_age
 
-		y = subind[k.subject]
+		y = subind[k.subject_id]
 		xs = map(zip(stools, eegs)) do (s,e)
 			ismissing(s) && return e
 			ismissing(e) && return s
@@ -393,7 +419,7 @@ end
 # 	tellwidth=false, valign=:top, halign=:left, margin=(10,10,10,10)
 # )
 
-ylims!(ax_longsamples, -2, length(unique(long_sub.subject)) + 2)
+ylims!(ax_longsamples, -2, length(unique(long_sub.subject_id)) + 2)
 
 
 # tweak some visuals
@@ -577,7 +603,7 @@ figure3 = Figure(; size = (1050, 750))
 
 grid_future_violins = GridLayout(figure3[1,1])
 grid_futfsea_dots = GridLayout(figure3[1,2])
-ax_future_violins = map(enumerate((future_3m6m, future_3m12m, future_6m12m))) do (i, comm)
+ax_future_violins = map(enumerate(ftps)) do (i, tp)
 	ax = Axis(grid_future_violins[i,1]; ylabel = "age (months)", xticks = ([1,2], ["stool", "eeg"]),
 		 xlabel=i == 3 ? "collection type" : "", title = "visit $(i == 3 ? "2" : "1") → visit $(i == 1 ? "2" : "3")")
 	hidedecorations!(ax; label=false, ticks=false, ticklabels=false)
@@ -662,21 +688,19 @@ Legend(grid_future_violins[4,1],
 
 #-
 
-for (i, comm) in enumerate((future_3m6m, future_3m12m, future_6m12m))
+for (i, df) in enumerate((v1v2, v1v3, v2v3))
 	ax = ax_future_violins[i]
 	clrs = [colors_timepoints[i == 3 ? 2 : 1][2], colors_timepoints[i == 1 ? 2 : 3][2]]
 		    
-	df = DataFrame(get(comm))
-	violin!(ax, repeat([1,2]; inner=size(df,1)), [df.age; df.eeg_age];
+	violin!(ax, repeat([1,2]; inner=size(df,1)), [df.stool_age; df.vep_age];
 			color=repeat([(c, 0.3) for c in clrs]; inner=size(df, 1)))
 	for row in eachrow(df)
 		xs = [1,2] .+ rand(Normal(0,0.03))
-		ys = [row.age, row.eeg_age]
+		ys = [row.stool_age, row.vep_age]
 		lines!(ax, xs, ys; color=:gray60, linestyle=:dash, linewidth=0.5)
 		scatter!(ax, xs, ys; color=[(c, 0.3) for c in clrs], strokewidth=0.5, markersize=fsea_marker_size)
 	end
 end
-	
 
 #-
 

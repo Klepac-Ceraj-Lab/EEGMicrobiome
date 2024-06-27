@@ -400,7 +400,7 @@ end
 
 
 fsea_df = let fsea_df = DataFrame()
-    for i in 1:1
+    for i in 1:n_trials
         @warn "Shuffle $i"
         istr = lpad(i, 2, '0')
         for tp in ftps, feature in eeg_features
