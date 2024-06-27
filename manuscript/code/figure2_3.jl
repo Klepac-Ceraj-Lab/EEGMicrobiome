@@ -351,6 +351,92 @@ transform!(groupby(fsea_df_u, "geneset"), "pvalue"=> (p-> adjust(collect(p), Ben
 sort!(fsea_df_u, "q₀")
 CSV.write("data/outputs/fsea/future_consolidated_fsea_u.csv", fsea_df_u)
 #- 
+## Sanity check FSEA
+
+ftps = ("v1v2", "v1v3", "v2v3")
+
+using StableRNGs
+using Random
+
+rng = StableRNG(1984)
+n_trials = 10
+
+for i in 1:n_trials
+    @warn "Shuffle $i"
+    istr = lpad(i, 2, '0')
+    @info "v1v2"
+    shfl = randperm(rng, size(v1v2_func, 1))
+    for feature in eeg_features
+        @info feature
+        v1v2_func[!, feature] = v1v2_func[shfl, feature]        
+        EEGMicrobiome.runlms(v1v2_func, "./data/outputs/lms/shuffle$(istr)_$(feature)_v1v2_lms.csv", feature, names(v1v2_func, r"^UniRef");
+            additional_cols = [:age_diff], age_col = "stool_age",
+            formula = term(:func) ~ term(feature) + term(:stool_age) + term(:age_diff) + term(:n_trials)
+        )
+    end
+
+    @info "v1v3"
+    shfl = randperm(rng, size(v1v3_func, 1))
+    for feature in eeg_features
+        @info feature
+        v1v3_func[!, feature] = v1v3_func[shfl, feature]        
+        EEGMicrobiome.runlms(v1v3_func, "./data/outputs/lms/shuffle$(istr)_$(feature)_v1v3_lms.csv", feature, names(v1v3_func, r"^UniRef");
+            additional_cols = [:age_diff], age_col = "stool_age",
+            formula = term(:func) ~ term(feature) + term(:stool_age) + term(:age_diff) + term(:n_trials)
+        )
+    end
+
+    @info "v2v3"
+    shfl = randperm(rng, size(v2v3_func, 1))
+    for feature in eeg_features
+        @info feature
+        v2v3_func[!, feature] = v2v3_func[shfl, feature]        
+        EEGMicrobiome.runlms(v2v3_func, "./data/outputs/lms/shuffle$(istr)_$(feature)_v2v3_lms.csv", feature, names(v2v3_func, r"^UniRef");
+            additional_cols = [:age_diff], age_col = "stool_age",
+            formula = term(:func) ~ term(feature) + term(:stool_age) + term(:age_diff) + term(:n_trials)
+        )
+    end
+end
+
+
+fsea_df = let fsea_df = DataFrame()
+    for i in 1:1
+        @warn "Shuffle $i"
+        istr = lpad(i, 2, '0')
+        for tp in ftps, feature in eeg_features
+            @info tp feature
+            filepath = "./data/outputs/lms/shuffle$(istr)_$(feature)_$(tp)_lms.csv"
+            lms = CSV.read(filepath, DataFrame)
+
+            for (key, unirefs) in pairs(na_map)
+                s = Set("UniRef90_$uniref" for uniref in unirefs)
+                lms[!, key] = lms.feature .∈ Ref(s)
+            end
+
+            for (key, unirefs) in pairs(na_map)
+                idx = findall(lms[!, key])
+                length(idx) > 5 || continue
+                result = fsea(FeatureSetEnrichments.MWU(), lms.z, idx)
+                push!(fsea_df, (; timepoint=tp,
+                                  eeg_feature = feature,
+                                  geneset     = key,
+                                  pvalue      = pvalue(result),
+                                  es          = enrichment_score(result),
+                                  ranks       = idx,
+                                  nfeatures   = size(lms, 1),
+                                  iteration   = i),
+                                  )
+            end
+        end
+    end
+    fsea_df
+end
+
+transform!(groupby(fsea_df, "iteration"), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "q₀")
+transform!(groupby(fsea_df, ["iteration", "timepoint"]), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qₜ")
+transform!(groupby(fsea_df, ["iteration", "geneset"]), "pvalue"=> (p-> adjust(collect(p), BenjaminiHochberg()))=> "qᵧ")
+sort!(fsea_df, "q₀")
+CSV.write("data/outputs/fsea/shuffled_future_consolidated_fsea.csv", fsea_df)
 
 ############
 # Plotting #
