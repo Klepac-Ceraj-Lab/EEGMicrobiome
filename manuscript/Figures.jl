@@ -222,7 +222,7 @@ colormap_sig = :PuOr
 colors_sig = cgrad(colormap_sig, 11; rev = true, categorical=true)[[1,3,4,8,9,11]]
 insert!(colors_sig, 4, colorant"white")
 
-colors_gstypes = Dict(gst => c for (gst, c) in zip(keys(geneset_types), cgrad(:tab10; categorical=true)[[10,3,2,9]]))
+colors_gstypes = NamedTuple(gst => c for (gst, c) in zip(keys(geneset_types), cgrad(:tab10; categorical=true)[[10,3,2,9]]))
 
 # ### Tables
 #
@@ -447,6 +447,7 @@ save("manuscript/mainfigures/figure1.svg", figure1)
 figure2 = Figure(; size = (1100,600))
 
 grid_fsea_dots = GridLayout(figure2[1,1])
+legend_block = GridLayout(figure2[2,1])
 # grid_fsea_heatmaps = GridLayout(figure2[1,2])
 # grid_bug_heatmaps = GridLayout(figure2[2, 1])
 
@@ -519,13 +520,21 @@ for axs in (ax_lat, ax_amp)
 end
 hideydecorations!(ax_amp[1][1], ticks=false)
 
-Legend(grid_fsea_dots[2,1:2], 
-	   [[MarkerElement(; marker=:rect, color=colors_sig[i]) for i in 1:3],
-		[MarkerElement(; marker=:rect, color=colors_sig[i]) for i in 5:7]],
+Legend(legend_block[1,1],
+	   [MarkerElement(; marker=:rect, color = colors_gstypes[g]) for g in keys(geneset_types)][[1,3,2,4]],
+	   ["Neurotransmitters", "Amino acid metabolism", "SCFAs", "other"][[1,3,2,4]];
+	   tellheight=true, tellwidth=false, nbanks=2
+)
+
+
+Legend(legend_block[1,2], 
+	   [[MarkerElement(; marker=:circle, color=colors_sig[i]) for i in 1:3],
+		[MarkerElement(; marker=:circle, color=colors_sig[i]) for i in 5:7]],
 	   [["q < 0.01", "q < 0.1", "q < 0.2"], 
 		["q < 0.2", "q < 0.1", "q < 0.01"]],
 	   ["(-)", "(+)"];
-	   orientation=:horizontal, tellheight=true, tellwidth=false)
+	   orientation=:horizontal, tellheight=true, tellwidth=false
+)
 
 #-
 
@@ -591,6 +600,8 @@ for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
     end
 end
 
+colsize!(legend_block, 1, Relative(1/8))
+
 save("/home/kevin/Downloads/figure2-inprogress.png", figure2)
 save("manuscript/mainfigures/figure2.svg", figure2)
 
@@ -603,6 +614,8 @@ figure3 = Figure(; size = (1050, 750))
 
 grid_future_violins = GridLayout(figure3[1,1])
 grid_futfsea_dots = GridLayout(figure3[1,2])
+legend_block = GridLayout(figure3[2,1:2])
+
 ax_future_violins = map(enumerate(ftps)) do (i, tp)
 	ax = Axis(grid_future_violins[i,1]; ylabel = "age (months)", xticks = ([1,2], ["stool", "eeg"]),
 		 xlabel=i == 3 ? "collection type" : "", title = "visit $(i == 3 ? "2" : "1") → visit $(i == 1 ? "2" : "3")")
@@ -678,13 +691,6 @@ for axs in (ax_futlat, ax_futamp)
 end
 hideydecorations!(ax_futamp[1][1], ticks=false)
 
-Legend(grid_future_violins[4,1], 
-	   [[MarkerElement(; marker=:rect, color=colors_sig[i]) for i in 1:3],
-		[MarkerElement(; marker=:rect, color=colors_sig[i]) for i in reverse(5:7)]],
-	   [["q < 0.01", "q < 0.1", "q < 0.2"], 
-		reverse(["q < 0.2", "q < 0.1", "q < 0.01"])],
-	   ["(-)", "(+)"];
-	   orientation=:horizontal, tellheight=true, tellwidth=false, nbanks=3)
 
 #-
 
@@ -767,6 +773,22 @@ for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
 end
 
 #-
+Legend(legend_block[1,1],
+	   [MarkerElement(; marker=:rect, color = colors_gstypes[g]) for g in keys(geneset_types)][[1,3,2,4]],
+	   ["Neurotransmitters", "Amino acid metabolism", "SCFAs", "other"][[1,3,2,4]];
+	   tellheight=true, tellwidth=false, nbanks=2
+)
+
+
+Legend(legend_block[1,2], 
+	   [[MarkerElement(; marker=:circle, color=colors_sig[i]) for i in 1:3],
+		[MarkerElement(; marker=:circle, color=colors_sig[i]) for i in 5:7]],
+	   [["q < 0.01", "q < 0.1", "q < 0.2"], 
+		["q < 0.2", "q < 0.1", "q < 0.01"]],
+	   ["(-)", "(+)"];
+	   orientation=:horizontal, tellheight=true, tellwidth=false
+)
+
 colsize!(figure3.layout, 2, Relative(4/5))
 linkyaxes!(ax_future_violins...)
 
