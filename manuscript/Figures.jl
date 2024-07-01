@@ -461,7 +461,7 @@ ax_lat = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
 		l = Axis(grid_fsea_latency[1,i];
 				 xlabel = "z",
 				 title = lab,
-				 yticks = (tickrange, [rich(g;color=colors_gstypes[gs_types_rev[g]]) for g in reverse(gssig)]),
+				 yticks = (tickrange, [rich("$g ", rich("■" ;color=colors_gstypes[gs_types_rev[g]])) for g in reverse(gssig)]),
 				 )
 		r = Axis(grid_fsea_latency[1,i];
 				 yaxisposition = :right,
@@ -481,7 +481,7 @@ ax_amp = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
 		l = Axis(grid_fsea_amplitude[1,i];
 				 xlabel = "z",
 				 title = lab,
-				 yticks = (tickrange, [rich(g;color=colors_gstypes[gs_types_rev[g]]) for g in reverse(gssig)]),
+				 yticks = (tickrange, [rich("$g ", rich("■" ;color=colors_gstypes[gs_types_rev[g]])) for g in reverse(gssig)]),
 				 )
 		r = Axis(grid_fsea_amplitude[1,i];
 				 yaxisposition = :right,
@@ -509,9 +509,9 @@ for axs in (ax_lat, ax_amp)
 			isodd(gsidx[gs]) || continue
 			span = gs_interval / 2
 			poly!(axl, Point2f.([(-dotsxlim, mid - span),
-								 (dotsxlim, mid - span),
-								 (dotsxlim, mid + span),
-								 (-dotsxlim, mid + span)]);
+					             (dotsxlim, mid - span),
+					             (dotsxlim, mid + span),
+					             (-dotsxlim, mid + span)]);
 				  color=("gray80", 0.4))
 		end
 
@@ -617,7 +617,7 @@ ax_futlat = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
 				 xlabel = "z",
 				 xticklabelsize= 10,
 				 title = lab,
-				 yticks = (tickrange, [rich(g;color=colors_gstypes[gs_types_rev[g]]) for g in reverse(gssig)]),
+				 yticks = (tickrange, [rich("$g ", rich("■" ;color=colors_gstypes[gs_types_rev[g]])) for g in reverse(gssig)]),
 				 yticklabelsize=10,
 				 )
 		r = Axis(grid_futfsea_latency[1,i];
