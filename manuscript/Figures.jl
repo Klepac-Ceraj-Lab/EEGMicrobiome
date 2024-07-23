@@ -45,28 +45,28 @@ ftps = ("v1v2", "v1v3", "v2v3")
 mdata = load_cohorts()
 
 long_sub = let
-    wide_sub = select(
-        leftjoin(
-            select(unstack(mdata, "subject_id", "visit", "eeg_age"),
-                "subject_id", "v1" => "eeg_v1", "v2" => "eeg_v2", "v3" => "eeg_v3"),
-            select(unstack(mdata, "subject_id", "visit", "stool_age"),
-                "subject_id", "v1" => "seqprep_v1", "v2" => "seqprep_v2", "v3" => "seqprep_v3"),
-            on="subject_id"),
-        "subject_id", r"v1", r"v2", r"v3"
-    )
+  wide_sub = select(
+    leftjoin(
+      select(unstack(mdata, "subject_id", "visit", "eeg_age"),
+        "subject_id", "v1" => "eeg_v1", "v2" => "eeg_v2", "v3" => "eeg_v3"),
+      select(unstack(mdata, "subject_id", "visit", "stool_age"),
+        "subject_id", "v1" => "seqprep_v1", "v2" => "seqprep_v2", "v3" => "seqprep_v3"),
+      on="subject_id"),
+    "subject_id", r"v1", r"v2", r"v3"
+  )
 
-    long_sub = DataFrame()
-    for row in eachrow(wide_sub), tp in tps
-        stool_age = row["seqprep_$tp"]
-        eeg_age = row["eeg_$tp"]
-        push!(long_sub, (; subject_id=row.subject_id, timepoint=tp, stool_age, eeg_age); cols=:union)
-    end
+  long_sub = DataFrame()
+  for row in eachrow(wide_sub), tp in tps
+    stool_age = row["seqprep_$tp"]
+    eeg_age = row["eeg_$tp"]
+    push!(long_sub, (; subject_id=row.subject_id, timepoint=tp, stool_age, eeg_age); cols=:union)
+  end
 
-    @chain long_sub begin
-        subset!(AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> !all(ismissing, nt)))
-        transform!(AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> minimum(skipmissing(values(nt)))) => "minage")
-        sort!("minage")
-    end
+  @chain long_sub begin
+    subset!(AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> !all(ismissing, nt)))
+    transform!(AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> minimum(skipmissing(values(nt)))) => "minage")
+    sort!("minage")
+  end
 end
 
 
@@ -76,6 +76,44 @@ v3 = get_cohort(mdata, "v3")
 v1v2 = get_cohort(mdata, "v1v2")
 v1v3 = get_cohort(mdata, "v1v3")
 v2v3 = get_cohort(mdata, "v2v3")
+tps = ("v1", "v2", "v3")
+ftps = ("v1v2", "v1v3", "v2v3")
+
+mdata = load_cohorts()
+
+long_sub = let
+  wide_sub = select(
+    leftjoin(
+      select(unstack(mdata, "subject_id", "visit", "eeg_age"),
+        "subject_id", "v1" => "eeg_v1", "v2" => "eeg_v2", "v3" => "eeg_v3"),
+      select(unstack(mdata, "subject_id", "visit", "stool_age"),
+        "subject_id", "v1" => "seqprep_v1", "v2" => "seqprep_v2", "v3" => "seqprep_v3"),
+      on="subject_id"),
+    "subject_id", r"v1", r"v2", r"v3"
+  )
+
+  long_sub = DataFrame()
+  for row in eachrow(wide_sub), tp in tps
+    stool_age = row["seqprep_$tp"]
+    eeg_age = row["eeg_$tp"]
+    push!(long_sub, (; subject_id=row.subject_id, timepoint=tp, stool_age, eeg_age); cols=:union)
+  end
+
+  @chain long_sub begin
+    subset!(AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> !all(ismissing, nt)))
+    transform!(AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> minimum(skipmissing(values(nt)))) => "minage")
+    sort!("minage")
+  end
+end
+
+
+v1 = get_cohort(mdata, "v1")
+v2 = get_cohort(mdata, "v2")
+v3 = get_cohort(mdata, "v3")
+v1v2 = get_cohort(mdata, "v1v2")
+v1v3 = get_cohort(mdata, "v1v3")
+v2v3 = get_cohort(mdata, "v2v3")
+
 
 ##
 
@@ -88,45 +126,45 @@ na_map = FeatureSetEnrichments.get_neuroactive_unirefs()
 # comes from separate analysis by Emma Margolis.
 
 vep_timeseries = mapreduce(vcat, enumerate(("3m", "6m", "12m"))) do (i, tp)
-    df = DataFrame(XLSX.readtable("data/alltimepoints_timeseries_figure.xlsx", "$tp Timeseries Calculation"; infer_eltypes=true))[:, 1:6]
-    tpv = "v$i"
-    rename!(df, ["ms", "mean", "se", "lower", "upper", "std"])
-    df.timepoint .= tpv
-    df[end, 1] = df[end-1, 1] + 1
-    dropmissing!(df)
+  df = DataFrame(XLSX.readtable("data/alltimepoints_timeseries_figure.xlsx", "$tp Timeseries Calculation"; infer_eltypes=true))[:, 1:6]
+  tpv = "v$i"
+  rename!(df, ["ms", "mean", "se", "lower", "upper", "std"])
+  df.timepoint .= tpv
+  df[end, 1] = df[end-1, 1] + 1
+  dropmissing!(df)
 end
 
 # Load gene functions files for samples that we have microbiomes for:
 
 taxprofiles = let mpa = metaphlan_profiles(String.(skipmissing(mdata.taxprofile)), :species)
-    CommunityProfile(abundances(mpa), features(mpa), MicrobiomeSample.(replace.(samplenames(mpa), r"_S\d++_profile" => "")))
+  CommunityProfile(abundances(mpa), features(mpa), MicrobiomeSample.(replace.(samplenames(mpa), r"_S\d++_profile" => "")))
 end
 
 set!(taxprofiles, select(mdata, "seqprep" => "sample", Cols(:)))
 
 unirefs_by_sample = let
-    files = String.(skipmissing(mdata.genefamilies))
-    mapreduce(vcat, files) do f
-        df = CSV.read(f, DataFrame)
-        rename!(df, ["feature", "abundance"])
-        subset!(df, "feature" => ByRow(f -> !contains(f, '|')))
-        sample = replace(basename(f), r"(SEQ\d+).+" => s"\1")
-        df.sample .= sample
-        df
-    end
+  files = String.(skipmissing(mdata.genefamilies))
+  mapreduce(vcat, files) do f
+    df = CSV.read(f, DataFrame)
+    rename!(df, ["feature", "abundance"])
+    subset!(df, "feature" => ByRow(f -> !contains(f, '|')))
+    sample = replace(basename(f), r"(SEQ\d+).+" => s"\1")
+    df.sample .= sample
+    df
+  end
 end
 
 unirefs = let
-    fs = unique(unirefs_by_sample.feature)
-    ss = unique(unirefs_by_sample.sample)
-    fsmap = Dict(f => i for (i, f) in enumerate(fs))
-    ssmap = Dict(s => i for (i, s) in enumerate(ss))
+  fs = unique(unirefs_by_sample.feature)
+  ss = unique(unirefs_by_sample.sample)
+  fsmap = Dict(f => i for (i, f) in enumerate(fs))
+  ssmap = Dict(s => i for (i, s) in enumerate(ss))
 
-    mat = spzeros(length(fs), length(ss))
-    foreach(eachrow(unirefs_by_sample)) do row
-        mat[fsmap[row.feature], ssmap[row.sample]] = row.abundance
-    end
-    CommunityProfile(mat, GeneFunction.(fs), MicrobiomeSample.(ss))
+  mat = spzeros(length(fs), length(ss))
+  foreach(eachrow(unirefs_by_sample)) do row
+    mat[fsmap[row.feature], ssmap[row.sample]] = row.abundance
+  end
+  CommunityProfile(mat, GeneFunction.(fs), MicrobiomeSample.(ss))
 end
 
 
@@ -139,68 +177,68 @@ fsea_df = CSV.read("data/outputs/fsea/concurrent_consolidated_fsea.csv", DataFra
 futfsea_df = CSV.read("data/outputs/fsea/future_consolidated_fsea.csv", DataFrame)
 
 geneset_types = (;
-    neurotransmitters=[
-        "GABA synthesis",
-        "GABA degradation",
-        "Glutamate synthesis",
-        "Glutamate degradation",
-    ],
-    nt_metabolism=[
-        # tryptophan/serotonin stuff
-        "Tryptophan synthesis",
-        "Tryptophan degradation",
-        "Quinolinic acid synthesis",
-        "Quinolinic acid degradation",
-        # dopamine stuff
-        "DOPAC synthesis",
-        "DOPAC degradation",
-    ],
-    scfa=[
-        "Acetate synthesis",
-        "Acetate degradation",
-        "Propionate synthesis",
-        "Propionate degradation",
-        "Butyrate synthesis",
-        "Butyrate degradation",
-        "Isovaleric acid synthesis",
-        "Isovaleric acid degradation",
-    ],
-    other=[
-        "Menaquinone synthesis",
-        "Menaquinone degradation",
-        "Inositol synthesis",
-        "Inositol degradation",
-        "p-Cresol synthesis",
-        "p-Cresol degradation",
-        "S-Adenosylmethionine synthesis",
-        "S-Adenosylmethionine degradation",
-        "17-beta-Estradiol synthesis",
-        "17-beta-Estradiol degradation",
-        "ClpB"
-    ]
+  neurotransmitters=[
+    "GABA synthesis",
+    "GABA degradation",
+    "Glutamate synthesis",
+    "Glutamate degradation",
+  ],
+  nt_metabolism=[
+    # tryptophan/serotonin stuff
+    "Tryptophan synthesis",
+    "Tryptophan degradation",
+    "Quinolinic acid synthesis",
+    "Quinolinic acid degradation",
+    # dopamine stuff
+    "DOPAC synthesis",
+    "DOPAC degradation",
+  ],
+  scfa=[
+    "Acetate synthesis",
+    "Acetate degradation",
+    "Propionate synthesis",
+    "Propionate degradation",
+    "Butyrate synthesis",
+    "Butyrate degradation",
+    "Isovaleric acid synthesis",
+    "Isovaleric acid degradation",
+  ],
+  other=[
+    "Menaquinone synthesis",
+    "Menaquinone degradation",
+    "Inositol synthesis",
+    "Inositol degradation",
+    "p-Cresol synthesis",
+    "p-Cresol degradation",
+    "S-Adenosylmethionine synthesis",
+    "S-Adenosylmethionine degradation",
+    "17-beta-Estradiol synthesis",
+    "17-beta-Estradiol degradation",
+    "ClpB"
+  ]
 )
 gs_types_rev = Dict(gs => t for t in keys(geneset_types) for gs in geneset_types[t])
 
 geneset_order = vcat(geneset_types...)
 gssig = intersect(geneset_order,
-    unique(subset(vcat(fsea_df, futfsea_df), "q₀" => ByRow(<(0.2))).geneset)
+  unique(subset(vcat(fsea_df, futfsea_df), "q₀" => ByRow(<(0.2))).geneset)
 )
 gsidx = geneset_index(gssig, geneset_order)
 
 alllms = groupby(mapreduce(vcat, Iterators.product(eeg_features, [tps..., ftps...])) do (feat, tp)
-        df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
-        rename!(df, "Name" => "eeg_feature")
-        df.timepoint .= tp
-        df
-    end, ["eeg_feature", "timepoint"])
+    df = CSV.read("data/outputs/lms/$(feat)_$(tp)_lms.csv", DataFrame)
+    rename!(df, "Name" => "eeg_feature")
+    df.timepoint .= tp
+    df
+  end, ["eeg_feature", "timepoint"])
 
 for gs in gssig
-    @info gs
-    transform!(alllms, "feature" => ByRow(u -> replace(u, "UniRef90_" => "") ∈ na_map[gs]) => gs; ungroup=false)
+  @info gs
+  transform!(alllms, "feature" => ByRow(u -> replace(u, "UniRef90_" => "") ∈ na_map[gs]) => gs; ungroup=false)
 end
 ##
 
-# ## Plotting
+## Plotting
 # 
 # Each figure plot has a common structure.
 #
@@ -230,61 +268,61 @@ colors_gstypes = NamedTuple(gst => c for (gst, c) in zip(keys(geneset_types), cg
 # #### Table 2
 
 table2 = subset(fsea_df, "timepoint" => ByRow(t -> t ∈ tps),
-    "q₀" => ByRow(<(0.2)),
-    "geneset" => ByRow(g -> g ∈ geneset_order)
+  "q₀" => ByRow(<(0.2)),
+  "geneset" => ByRow(g -> g ∈ geneset_order)
 )
 transform!(table2, "eeg_feature" => ByRow(f -> begin
-    (_, p, n...) = split(f, "_")
-    n = first(n)
-    return (; feature=p, peak=n)
+  (_, p, n...) = split(f, "_")
+  n = first(n)
+  return (; feature=p, peak=n)
 end) => ["feature", "peak"]
 )
 transform!(table2, "timepoint" => ByRow(x -> Dict("v1" => 1, "v2" => 2, "v3" => 3)[x]) => "visit")
 select!(table2, "visit", "geneset", "feature", "peak", "es" => "E.S.", "q₀" => "q value")
 sort!(table2, [
-    "visit",
-    order("geneset"; by=x -> findfirst(==(x), geneset_order)),
-    "feature",
-    # order("peak"; by = x-> findfirst(==(x), ("N1", "P1", "N2")))
-    "E.S."
+  "visit",
+  order("geneset"; by=x -> findfirst(==(x), geneset_order)),
+  "feature",
+  # order("peak"; by = x-> findfirst(==(x), ("N1", "P1", "N2")))
+  "E.S."
 ]
 )
 
 for v in 1:3
-    CSV.write("/home/kevin/Downloads/Table2_v$v.csv", subset(table2, "visit" => ByRow(==(v))))
+  CSV.write("/home/kevin/Downloads/Table2_v$v.csv", subset(table2, "visit" => ByRow(==(v))))
 end
 
 
 # #### Table 3
 
 table3 = subset(futfsea_df,
-    "timepoint" => ByRow(t -> t ∈ ftps),
-    "q₀" => ByRow(<(0.2)),
-    "geneset" => ByRow(g -> g ∈ geneset_order)
+  "timepoint" => ByRow(t -> t ∈ ftps),
+  "q₀" => ByRow(<(0.2)),
+  "geneset" => ByRow(g -> g ∈ geneset_order)
 )
 transform!(table3, "eeg_feature" => ByRow(f -> begin
-    (_, p, n...) = split(f, "_")
-    n = first(n)
-    return (; feature=p, peak=n)
+  (_, p, n...) = split(f, "_")
+  n = first(n)
+  return (; feature=p, peak=n)
 end) => ["feature", "peak"]
 )
 transform!(table3, "timepoint" => ByRow(x -> begin
-    (st, vep) = match(r"^v(\d+)v(\d+)$", x).captures
-    return (; stool=parse(Int, st), VEP=parse(Int, vep))
+  (st, vep) = match(r"^v(\d+)v(\d+)$", x).captures
+  return (; stool=parse(Int, st), VEP=parse(Int, vep))
 end) => ["stool", "VEP"]
 )
 select!(table3, "stool", "VEP", "geneset", "feature", "peak", "es" => "E.S.", "q₀" => "q value")
 sort!(table3, [
-    "stool",
-    "VEP",
-    order("geneset"; by=x -> findfirst(==(x), geneset_order)),
-    "feature",
-    # order("peak"; by = x-> findfirst(==(x), ("N1", "P1", "N2")))
-    "E.S."
+  "stool",
+  "VEP",
+  order("geneset"; by=x -> findfirst(==(x), geneset_order)),
+  "feature",
+  # order("peak"; by = x-> findfirst(==(x), ("N1", "P1", "N2")))
+  "E.S."
 ]
 )
 for (s, v) in zip((1, 1, 2), (2, 3, 3))
-    CSV.write("/home/kevin/Downloads/Table3_$(s)_$(v).csv", subset(table3, "stool" => ByRow(==(s)), "VEP" => ByRow(==(v))))
+  CSV.write("/home/kevin/Downloads/Table3_$(s)_$(v).csv", subset(table3, "stool" => ByRow(==(s)), "VEP" => ByRow(==(v))))
 end
 
 # ### Main figures
@@ -307,18 +345,18 @@ ax_cohort = Axis(grid_cohort[1, 1]; aspect=DataAspect(), alignmode=Outside())
 # )
 
 ax_eeg_curves = Axis(grid_eeg_curves[1, 1]; xlabel="time (ms) relative to stimulus onset",
-    ylabel="voltage (μV)",
-    yminorticksvisible=true,
-    yminorticks=IntervalsBetween(5)
+  ylabel="voltage (μV)",
+  yminorticksvisible=true,
+  yminorticks=IntervalsBetween(5)
 )
 ax_pcoa_spec = Axis(grid_pcoas[1, 1])
 ax_pcoa_func = Axis(grid_pcoas[1, 2])
 
 ax_longsamples = Axis(grid_longsamples[3, 1];
-    xlabel="age (months)",
-    xticks=0:3:18,
-    limits=((0.0, 19.0), nothing),
-    ylabel="subject"
+  xlabel="age (months)",
+  xticks=0:3:18,
+  limits=((0.0, 19.0), nothing),
+  ylabel="subject"
 )
 ax_eeg_hist = Axis(grid_longsamples[1, 1]; ylabel="density", title="eeg")
 ax_stool_hist = Axis(grid_longsamples[2, 1]; ylabel="density", title="stool")
@@ -343,11 +381,11 @@ datlower = data(vep_timeseries) * mapping(:ms, :lower, color=:timepoint)
 datupper = data(vep_timeseries) * mapping(:ms, :upper, color=:timepoint)
 
 let datage = data(subset(mdata, "eeg_age" => ByRow(!ismissing))) * mapping(:eeg_age => "age (months)", color="visit")
-    draw!(ax_eeg_hist, datage * AlgebraOfGraphics.density(); palettes=(; color=colors_timepoints))
+  draw!(ax_eeg_hist, datage * AlgebraOfGraphics.density(); palettes=(; color=colors_timepoints))
 end
 
 let datage = data(subset(mdata, "stool_age" => ByRow(!ismissing))) * mapping(:stool_age => "age (months)", color="visit")
-    draw!(ax_stool_hist, datage * AlgebraOfGraphics.density(); palettes=(; color=colors_timepoints))
+  draw!(ax_stool_hist, datage * AlgebraOfGraphics.density(); palettes=(; color=colors_timepoints))
 end
 
 mpl = draw!(ax_eeg_curves, datmean * visual(Lines); palettes=(; color=colors_timepoints))
@@ -355,15 +393,15 @@ dpl = draw!(ax_eeg_curves, datlower * visual(Lines; linestyle=:dash); palettes=(
 draw!(ax_eeg_curves, datupper * visual(Lines; linestyle=:dash); palettes=(; color=colors_timepoints))
 
 Legend(grid_eeg_curves[1, 1],
-    [LineElement(; color=:gray), LineElement(; color=:gray, linestyle=:dash)],
-    ["mean", "+/- S.E."];
-    tellwidth=false, halign=:right, valign=:bottom, margin=(10, 10, 10, 10)
+  [LineElement(; color=:gray), LineElement(; color=:gray, linestyle=:dash)],
+  ["mean", "+/- S.E."];
+  tellwidth=false, halign=:right, valign=:bottom, margin=(10, 10, 10, 10)
 )
 
 Legend(grid_eeg_curves[1, 1],
-    [LineElement(; color=c[2]) for c in colors_timepoints],
-    ["Visit $i" for i in 1:3];
-    tellwidth=false, halign=:right, valign=:top, margin=(10, 10, 10, 10)
+  [LineElement(; color=c[2]) for c in colors_timepoints],
+  ["Visit $i" for i in 1:3];
+  tellwidth=false, halign=:right, valign=:top, margin=(10, 10, 10, 10)
 )
 # ##### PCoAs
 
@@ -372,7 +410,7 @@ plt_pcoa_spec = plot_pcoa!(ax_pcoa_spec, species_pco; color=get(taxprofiles, :st
 plt_pcoa_func = plot_pcoa!(ax_pcoa_func, unirefs_pco; color=get(unirefs, :stool_age), colormap=colormap_age)
 
 Colorbar(grid_pcoas[1, 3];
-    limits=extrema(skipmissing(mdata.stool_age)), label="Age (months)", colormap=colormap_age,
+  limits=extrema(skipmissing(mdata.stool_age)), label="Age (months)", colormap=colormap_age,
 )
 
 # ##### Longitudinal
@@ -381,37 +419,37 @@ Colorbar(grid_pcoas[1, 3];
 subind = Dict(s => i for (i, s) in enumerate(unique(long_sub.subject_id)))
 
 samples_colors = [s => c for (s, c) in zip(
-    ("stool", "eeg", "both"),
-    (colorant"dodgerblue", colorant"firebrick", colorant"slateblue"))
+  ("stool", "eeg", "both"),
+  (colorant"dodgerblue", colorant"firebrick", colorant"slateblue"))
 ]
 
 let gdf = groupby(long_sub, "subject_id")
-    for k in keys(gdf)
-        stools = gdf[k].stool_age
-        eegs = gdf[k].eeg_age
+  for k in keys(gdf)
+    stools = gdf[k].stool_age
+    eegs = gdf[k].eeg_age
 
-        y = subind[k.subject_id]
-        xs = map(zip(stools, eegs)) do (s, e)
-            ismissing(s) && return e
-            ismissing(e) && return s
-            return mean([e, s])
-        end
-        cs = map(zip(stools, eegs)) do (s, e)
-            ismissing(s) && return colors_sampletype[2][2]
-            ismissing(e) && return colors_sampletype[1][2]
-            return colors_sampletype[3][2]
-        end
-        scatter!(ax_longsamples, xs, fill(y, length(xs)); color=cs)
-
-
-        lines!(ax_longsamples, [extrema(skipmissing([stools; eegs]))...], [y, y]; linestyle=:dash, color=:gray)
-        for s in filter(!ismissing, stools)
-            lines!(ax_longsamples, [s, s], [y + 0.4, y - 0.4]; color=colors_sampletype[1][2])
-        end
-        for e in filter(!ismissing, eegs)
-            lines!(ax_longsamples, [e, e], [y + 0.4, y - 0.4]; color=colors_sampletype[2][2])
-        end
+    y = subind[k.subject_id]
+    xs = map(zip(stools, eegs)) do (s, e)
+      ismissing(s) && return e
+      ismissing(e) && return s
+      return mean([e, s])
     end
+    cs = map(zip(stools, eegs)) do (s, e)
+      ismissing(s) && return colors_sampletype[2][2]
+      ismissing(e) && return colors_sampletype[1][2]
+      return colors_sampletype[3][2]
+    end
+    scatter!(ax_longsamples, xs, fill(y, length(xs)); color=cs)
+
+
+    lines!(ax_longsamples, [extrema(skipmissing([stools; eegs]))...], [y, y]; linestyle=:dash, color=:gray)
+    for s in filter(!ismissing, stools)
+      lines!(ax_longsamples, [s, s], [y + 0.4, y - 0.4]; color=colors_sampletype[1][2])
+    end
+    for e in filter(!ismissing, eegs)
+      lines!(ax_longsamples, [e, e], [y + 0.4, y - 0.4]; color=colors_sampletype[2][2])
+    end
+  end
 end
 
 # Legend(grid_longsamples[3,1],
@@ -459,146 +497,146 @@ fsea_marker_size = 6
 
 grid_fsea_latency = GridLayout(grid_fsea_dots[1, 1])
 ax_lat = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
-    map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
-        l = Axis(grid_fsea_latency[1, i];
-            xlabel="z",
-            title=lab,
-            yticks=(tickrange, [rich("$g ", rich("■"; color=colors_gstypes[gs_types_rev[g]])) for g in reverse(gssig)]),
-        )
-        r = Axis(grid_fsea_latency[1, i];
-            yaxisposition=:right,
-            yticklabelsize=6,
-            yticks=(sort([collect(tickrange);
-                    collect(tickrange) .- tp_interval;
-                    collect(tickrange) .+ tp_interval]),
-                repeat(string.(3:-1:1); outer=length(tickrange)))
-        )
-        (l, r)
-    end
+  map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
+    l = Axis(grid_fsea_latency[1, i];
+      xlabel="z",
+      title=lab,
+      yticks=(tickrange, [rich("$g ", rich("■"; color=colors_gstypes[gs_types_rev[g]])) for g in reverse(gssig)]),
+    )
+    r = Axis(grid_fsea_latency[1, i];
+      yaxisposition=:right,
+      yticklabelsize=6,
+      yticks=(sort([collect(tickrange);
+          collect(tickrange) .- tp_interval;
+          collect(tickrange) .+ tp_interval]),
+        repeat(string.(3:-1:1); outer=length(tickrange)))
+    )
+    (l, r)
+  end
 end
 
 grid_fsea_amplitude = GridLayout(grid_fsea_dots[1, 2])
 ax_amp = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
-    map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
-        l = Axis(grid_fsea_amplitude[1, i];
-            xlabel="z",
-            title=lab,
-            yticks=(tickrange, [rich("$g ", rich("■"; color=colors_gstypes[gs_types_rev[g]])) for g in reverse(gssig)]),
-        )
-        r = Axis(grid_fsea_amplitude[1, i];
-            yaxisposition=:right,
-            yticklabelsize=6,
-            yticks=(sort([collect(tickrange);
-                    collect(tickrange) .- tp_interval;
-                    collect(tickrange) .+ tp_interval]),
-                repeat(string.(3:-1:1); outer=length(tickrange)))
-        )
-        (l, r)
-    end
+  map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
+    l = Axis(grid_fsea_amplitude[1, i];
+      xlabel="z",
+      title=lab,
+      yticks=(tickrange, [rich("$g ", rich("■"; color=colors_gstypes[gs_types_rev[g]])) for g in reverse(gssig)]),
+    )
+    r = Axis(grid_fsea_amplitude[1, i];
+      yaxisposition=:right,
+      yticklabelsize=6,
+      yticks=(sort([collect(tickrange);
+          collect(tickrange) .- tp_interval;
+          collect(tickrange) .+ tp_interval]),
+        repeat(string.(3:-1:1); outer=length(tickrange)))
+    )
+    (l, r)
+  end
 end
 
 for axs in (ax_lat, ax_amp)
-    for (i, (axl, axr)) in enumerate(axs)
-        ylims!.((axl, axr), gs_interval - 2 * tp_interval, gs_interval * length(gssig) + 2 * tp_interval)
-        xlims!(axl, -dotsxlim, dotsxlim)
-        hidexdecorations!(axl; ticks=false, ticklabels=false, label=false)
-        hideydecorations!(axl, ticks=i != 1, ticklabels=i != 1)
-        hideydecorations!(axr, ticks=i != 3, ticklabels=i != 3)
-        hidexdecorations!(axr)
+  for (i, (axl, axr)) in enumerate(axs)
+    ylims!.((axl, axr), gs_interval - 2 * tp_interval, gs_interval * length(gssig) + 2 * tp_interval)
+    xlims!(axl, -dotsxlim, dotsxlim)
+    hidexdecorations!(axl; ticks=false, ticklabels=false, label=false)
+    hideydecorations!(axl, ticks=i != 1, ticklabels=i != 1)
+    hideydecorations!(axr, ticks=i != 3, ticklabels=i != 3)
+    hidexdecorations!(axr)
 
-        for gs in gssig
-            mid = gsidx[gs] * gs_interval
-            isodd(gsidx[gs]) || continue
-            span = gs_interval / 2
-            poly!(axl, Point2f.([(-dotsxlim, mid - span),
-                    (dotsxlim, mid - span),
-                    (dotsxlim, mid + span),
-                    (-dotsxlim, mid + span)]);
-                color=("gray80", 0.4))
-        end
-
+    for gs in gssig
+      mid = gsidx[gs] * gs_interval
+      isodd(gsidx[gs]) || continue
+      span = gs_interval / 2
+      poly!(axl, Point2f.([(-dotsxlim, mid - span),
+          (dotsxlim, mid - span),
+          (dotsxlim, mid + span),
+          (-dotsxlim, mid + span)]);
+        color=("gray80", 0.4))
     end
+
+  end
 end
 hideydecorations!(ax_amp[1][1], ticks=false)
 
 Legend(legend_block[1, 1],
-    [MarkerElement(; marker=:rect, color=colors_gstypes[g]) for g in keys(geneset_types)][[1, 3, 2, 4]],
-    ["Neurotransmitters", "Amino acid metabolism", "SCFAs", "other"][[1, 3, 2, 4]];
-    tellheight=true, tellwidth=false, nbanks=2
+  [MarkerElement(; marker=:rect, color=colors_gstypes[g]) for g in keys(geneset_types)][[1, 3, 2, 4]],
+  ["Neurotransmitters", "Amino acid metabolism", "SCFAs", "other"][[1, 3, 2, 4]];
+  tellheight=true, tellwidth=false, nbanks=2
 )
 
 
 Legend(legend_block[1, 2],
-    [[MarkerElement(; marker=:circle, color=colors_sig[i]) for i in 1:3],
-        [MarkerElement(; marker=:circle, color=colors_sig[i]) for i in 5:7]],
-    [["q < 0.01", "q < 0.1", "q < 0.2"],
-        ["q < 0.2", "q < 0.1", "q < 0.01"]],
-    ["(-)", "(+)"];
-    orientation=:horizontal, tellheight=true, tellwidth=false
+  [[MarkerElement(; marker=:circle, color=colors_sig[i]) for i in 1:3],
+    [MarkerElement(; marker=:circle, color=colors_sig[i]) for i in 5:7]],
+  [["q < 0.01", "q < 0.1", "q < 0.2"],
+    ["q < 0.2", "q < 0.1", "q < 0.01"]],
+  ["(-)", "(+)"];
+  orientation=:horizontal, tellheight=true, tellwidth=false
 )
 
 #-
 
 
 for (j, feat) in enumerate(filter(contains("latency"), eeg_features))
-    gdf = groupby(fsea_df, "eeg_feature")
-    featstr = replace(feat, "peak_latency_" => "", "_corrected" => "c")
-    @warn "$featstr"
-    for (i, tp) in enumerate(tps)
-        @info "$tp"
+  gdf = groupby(fsea_df, "eeg_feature")
+  featstr = replace(feat, "peak_latency_" => "", "_corrected" => "c")
+  @warn "$featstr"
+  for (i, tp) in enumerate(tps)
+    @info "$tp"
 
-        df = alllms[(; eeg_feature=feat, timepoint=tp)]
-        allymed = median(df.z)
+    df = alllms[(; eeg_feature=feat, timepoint=tp)]
+    allymed = median(df.z)
 
-        subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
-        for row in eachrow(subdf)
-            yidx = df[!, row.geneset]
-            xpos = gsidx[row.geneset] * gs_interval + (2 - i) * tp_interval
-            ys = df.z[yidx]
-            xs = rand(Normal(0.0, tp_interval / 8), length(ys)) .+ xpos
-            ymed = median(ys)
+    subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
+    for row in eachrow(subdf)
+      yidx = df[!, row.geneset]
+      xpos = gsidx[row.geneset] * gs_interval + (2 - i) * tp_interval
+      ys = df.z[yidx]
+      xs = rand(Normal(0.0, tp_interval / 8), length(ys)) .+ xpos
+      ymed = median(ys)
 
-            cidx = row.q₀ > 0.2 ? 4 :       # not significant
-                   row.q₀ < 0.01 ? 1 :       # quite significant
-                   row.q₀ < 0.1 ? 2 : 3 # somewhat significant / not very significant
-            c = ymed < allymed ? colors_sig[cidx] : colors_sig[8-cidx]
-            violin!(ax_lat[j][1], fill(xpos, length(ys)), ys; width=tp_interval * 1.5, color=(c, 0.4), orientation=:horizontal)
-            scatter!(ax_lat[j][1], ys, xs; color=c, strokewidth=0.5, markersize=fsea_marker_size)
-            lines!(ax_lat[j][1], [ymed, ymed], [xpos - tp_interval / 2, xpos + tp_interval / 2]; color=c)
-        end
+      cidx = row.q₀ > 0.2 ? 4 :       # not significant
+             row.q₀ < 0.01 ? 1 :       # quite significant
+             row.q₀ < 0.1 ? 2 : 3 # somewhat significant / not very significant
+      c = ymed < allymed ? colors_sig[cidx] : colors_sig[8-cidx]
+      violin!(ax_lat[j][1], fill(xpos, length(ys)), ys; width=tp_interval * 1.5, color=(c, 0.4), orientation=:horizontal)
+      scatter!(ax_lat[j][1], ys, xs; color=c, strokewidth=0.5, markersize=fsea_marker_size)
+      lines!(ax_lat[j][1], [ymed, ymed], [xpos - tp_interval / 2, xpos + tp_interval / 2]; color=c)
     end
+  end
 end
 
 
 for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
-    gdf = groupby(fsea_df, "eeg_feature")
-    featstr = replace(feat, "peak_amp" => "", "_corrected" => "c")
-    @warn "$featstr"
-    for (i, tp) in enumerate(tps)
-        @info "$tp"
+  gdf = groupby(fsea_df, "eeg_feature")
+  featstr = replace(feat, "peak_amp" => "", "_corrected" => "c")
+  @warn "$featstr"
+  for (i, tp) in enumerate(tps)
+    @info "$tp"
 
-        df = alllms[(; eeg_feature=feat, timepoint=tp)]
-        allymed = median(df.z)
+    df = alllms[(; eeg_feature=feat, timepoint=tp)]
+    allymed = median(df.z)
 
-        subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
-        # lines!(ax_lat, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
-        for row in eachrow(subdf)
-            # haskey(gsidx, row.geneset) || continue
-            yidx = df[!, row.geneset]
-            xpos = gsidx[row.geneset] * gs_interval + (2 - i) * tp_interval
-            ys = df.z[yidx]
-            xs = rand(Normal(0.0, tp_interval / 8), length(ys)) .+ xpos
-            ymed = median(ys)
+    subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
+    # lines!(ax_lat, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
+    for row in eachrow(subdf)
+      # haskey(gsidx, row.geneset) || continue
+      yidx = df[!, row.geneset]
+      xpos = gsidx[row.geneset] * gs_interval + (2 - i) * tp_interval
+      ys = df.z[yidx]
+      xs = rand(Normal(0.0, tp_interval / 8), length(ys)) .+ xpos
+      ymed = median(ys)
 
-            cidx = row.q₀ > 0.2 ? 4 :       # not significant
-                   row.q₀ < 0.01 ? 1 :       # quite significant
-                   row.q₀ < 0.1 ? 2 : 3 # somewhat significant / not very significant
-            c = ymed < allymed ? colors_sig[cidx] : colors_sig[8-cidx]
-            violin!(ax_amp[j][1], fill(xpos, length(ys)), ys; width=tp_interval * 1.5, color=(c, 0.4), orientation=:horizontal)
-            scatter!(ax_amp[j][1], ys, xs; color=c, strokewidth=0.5, markersize=fsea_marker_size)
-            lines!(ax_amp[j][1], [ymed, ymed], [xpos - tp_interval / 2, xpos + tp_interval / 2]; color=c)
-        end
+      cidx = row.q₀ > 0.2 ? 4 :       # not significant
+             row.q₀ < 0.01 ? 1 :       # quite significant
+             row.q₀ < 0.1 ? 2 : 3 # somewhat significant / not very significant
+      c = ymed < allymed ? colors_sig[cidx] : colors_sig[8-cidx]
+      violin!(ax_amp[j][1], fill(xpos, length(ys)), ys; width=tp_interval * 1.5, color=(c, 0.4), orientation=:horizontal)
+      scatter!(ax_amp[j][1], ys, xs; color=c, strokewidth=0.5, markersize=fsea_marker_size)
+      lines!(ax_amp[j][1], [ymed, ymed], [xpos - tp_interval / 2, xpos + tp_interval / 2]; color=c)
     end
+  end
 end
 
 colsize!(legend_block, 1, Relative(1 / 8))
@@ -618,77 +656,77 @@ grid_futfsea_dots = GridLayout(figure3[1, 2])
 legend_block = GridLayout(figure3[2, 1:2])
 
 ax_future_violins = map(enumerate(ftps)) do (i, tp)
-    ax = Axis(grid_future_violins[i, 1]; ylabel="age (months)", xticks=([1, 2], ["stool", "eeg"]),
-        xlabel=i == 3 ? "collection type" : "", title="visit $(i == 3 ? "2" : "1") → visit $(i == 1 ? "2" : "3")")
-    hidedecorations!(ax; label=false, ticks=false, ticklabels=false)
-    ax
+  ax = Axis(grid_future_violins[i, 1]; ylabel="age (months)", xticks=([1, 2], ["stool", "eeg"]),
+    xlabel=i == 3 ? "collection type" : "", title="visit $(i == 3 ? "2" : "1") → visit $(i == 1 ? "2" : "3")")
+  hidedecorations!(ax; label=false, ticks=false, ticklabels=false)
+  ax
 end
 
 grid_futfsea_latency = GridLayout(grid_futfsea_dots[1, 1])
 ax_futlat = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
-    map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
-        l = Axis(grid_futfsea_latency[1, i];
-            xlabel="z",
-            xticklabelsize=10,
-            title=lab,
-            yticks=(tickrange, [rich("$g ", rich("■"; color=colors_gstypes[gs_types_rev[g]])) for g in reverse(gssig)]),
-            yticklabelsize=10,
-        )
-        r = Axis(grid_futfsea_latency[1, i];
-            yaxisposition=:right,
-            yticklabelsize=6,
-            yticks=(sort([collect(tickrange);
-                    collect(tickrange) .- tp_interval;
-                    collect(tickrange) .+ tp_interval]),
-                repeat(["v2→v3", "v1→v3", "v1→v2"]; outer=length(tickrange)))
-        )
-        (l, r)
-    end
+  map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
+    l = Axis(grid_futfsea_latency[1, i];
+      xlabel="z",
+      xticklabelsize=10,
+      title=lab,
+      yticks=(tickrange, [rich("$g ", rich("■"; color=colors_gstypes[gs_types_rev[g]])) for g in reverse(gssig)]),
+      yticklabelsize=10,
+    )
+    r = Axis(grid_futfsea_latency[1, i];
+      yaxisposition=:right,
+      yticklabelsize=6,
+      yticks=(sort([collect(tickrange);
+          collect(tickrange) .- tp_interval;
+          collect(tickrange) .+ tp_interval]),
+        repeat(["v2→v3", "v1→v3", "v1→v2"]; outer=length(tickrange)))
+    )
+    (l, r)
+  end
 end
 
 grid_futfsea_amplitude = GridLayout(grid_futfsea_dots[1, 2])
 ax_futamp = let tickrange = gs_interval:gs_interval:length(gssig)*gs_interval
-    map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
-        l = Axis(grid_futfsea_amplitude[1, i];
-            xlabel="z",
-            xticklabelsize=10,
-            title=lab,
-            yticks=(tickrange, [rich(g; color=colors_gstypes[gs_types_rev[g]]) for g in reverse(gssig)]),
-            yticklabelsize=10,
-        )
-        r = Axis(grid_futfsea_amplitude[1, i];
-            yaxisposition=:right,
-            yticklabelsize=6,
-            yticks=(sort([collect(tickrange);
-                    collect(tickrange) .- tp_interval;
-                    collect(tickrange) .+ tp_interval]),
-                repeat(["v2→v3", "v1→v3", "v1→v2"]; outer=length(tickrange)))
-        )
-        (l, r)
-    end
+  map(enumerate(["N1", "P1c", "N2c"])) do (i, lab)
+    l = Axis(grid_futfsea_amplitude[1, i];
+      xlabel="z",
+      xticklabelsize=10,
+      title=lab,
+      yticks=(tickrange, [rich(g; color=colors_gstypes[gs_types_rev[g]]) for g in reverse(gssig)]),
+      yticklabelsize=10,
+    )
+    r = Axis(grid_futfsea_amplitude[1, i];
+      yaxisposition=:right,
+      yticklabelsize=6,
+      yticks=(sort([collect(tickrange);
+          collect(tickrange) .- tp_interval;
+          collect(tickrange) .+ tp_interval]),
+        repeat(["v2→v3", "v1→v3", "v1→v2"]; outer=length(tickrange)))
+    )
+    (l, r)
+  end
 end
 
 for axs in (ax_futlat, ax_futamp)
-    for (i, (axl, axr)) in enumerate(axs)
-        ylims!.((axl, axr), gs_interval - 2 * tp_interval, gs_interval * length(gssig) + 2 * tp_interval)
-        xlims!(axl, -dotsxlim, dotsxlim)
-        hidexdecorations!(axl; ticks=false, ticklabels=false, label=false)
-        hideydecorations!(axl, ticks=i != 1, ticklabels=i != 1)
-        hideydecorations!(axr, ticks=i != 3, ticklabels=i != 3)
-        hidexdecorations!(axr)
+  for (i, (axl, axr)) in enumerate(axs)
+    ylims!.((axl, axr), gs_interval - 2 * tp_interval, gs_interval * length(gssig) + 2 * tp_interval)
+    xlims!(axl, -dotsxlim, dotsxlim)
+    hidexdecorations!(axl; ticks=false, ticklabels=false, label=false)
+    hideydecorations!(axl, ticks=i != 1, ticklabels=i != 1)
+    hideydecorations!(axr, ticks=i != 3, ticklabels=i != 3)
+    hidexdecorations!(axr)
 
-        for gs in gssig
-            mid = gsidx[gs] * gs_interval
-            isodd(gsidx[gs]) || continue
-            span = gs_interval / 2
-            poly!(axl, Point2f.([(-dotsxlim, mid - span),
-                    (dotsxlim, mid - span),
-                    (dotsxlim, mid + span),
-                    (-dotsxlim, mid + span)]);
-                color=("gray80", 0.4))
-        end
-
+    for gs in gssig
+      mid = gsidx[gs] * gs_interval
+      isodd(gsidx[gs]) || continue
+      span = gs_interval / 2
+      poly!(axl, Point2f.([(-dotsxlim, mid - span),
+          (dotsxlim, mid - span),
+          (dotsxlim, mid + span),
+          (-dotsxlim, mid + span)]);
+        color=("gray80", 0.4))
     end
+
+  end
 end
 hideydecorations!(ax_futamp[1][1], ticks=false)
 
@@ -696,98 +734,98 @@ hideydecorations!(ax_futamp[1][1], ticks=false)
 #-
 
 for (i, df) in enumerate((v1v2, v1v3, v2v3))
-    ax = ax_future_violins[i]
-    clrs = [colors_timepoints[i == 3 ? 2 : 1][2], colors_timepoints[i == 1 ? 2 : 3][2]]
+  ax = ax_future_violins[i]
+  clrs = [colors_timepoints[i == 3 ? 2 : 1][2], colors_timepoints[i == 1 ? 2 : 3][2]]
 
-    violin!(ax, repeat([1, 2]; inner=size(df, 1)), [df.stool_age; df.vep_age];
-        color=repeat([(c, 0.3) for c in clrs]; inner=size(df, 1)))
-    for row in eachrow(df)
-        xs = [1, 2] .+ rand(Normal(0, 0.03))
-        ys = [row.stool_age, row.vep_age]
-        lines!(ax, xs, ys; color=:gray60, linestyle=:dash, linewidth=0.5)
-        scatter!(ax, xs, ys; color=[(c, 0.3) for c in clrs], strokewidth=0.5, markersize=fsea_marker_size)
-    end
+  violin!(ax, repeat([1, 2]; inner=size(df, 1)), [df.stool_age; df.vep_age];
+    color=repeat([(c, 0.3) for c in clrs]; inner=size(df, 1)))
+  for row in eachrow(df)
+    xs = [1, 2] .+ rand(Normal(0, 0.03))
+    ys = [row.stool_age, row.vep_age]
+    lines!(ax, xs, ys; color=:gray60, linestyle=:dash, linewidth=0.5)
+    scatter!(ax, xs, ys; color=[(c, 0.3) for c in clrs], strokewidth=0.5, markersize=fsea_marker_size)
+  end
 end
 
 #-
 
 
 for (j, feat) in enumerate(filter(contains("latency"), eeg_features))
-    gdf = groupby(futfsea_df, "eeg_feature")
-    featstr = replace(feat, "peak_latency_" => "", "_corrected" => "c")
-    @warn "$featstr"
-    for (i, tp) in enumerate(ftps)
-        @info "$tp"
+  gdf = groupby(futfsea_df, "eeg_feature")
+  featstr = replace(feat, "peak_latency_" => "", "_corrected" => "c")
+  @warn "$featstr"
+  for (i, tp) in enumerate(ftps)
+    @info "$tp"
 
-        df = alllms[(; eeg_feature=feat, timepoint=tp)]
-        allymed = median(df.z)
+    df = alllms[(; eeg_feature=feat, timepoint=tp)]
+    allymed = median(df.z)
 
-        subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
-        for row in eachrow(subdf)
-            yidx = df[!, row.geneset]
-            xpos = gsidx[row.geneset] * gs_interval + (2 - i) * tp_interval
-            ys = df.z[yidx]
-            xs = rand(Normal(0.0, tp_interval / 8), length(ys)) .+ xpos
-            ymed = median(ys)
+    subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
+    for row in eachrow(subdf)
+      yidx = df[!, row.geneset]
+      xpos = gsidx[row.geneset] * gs_interval + (2 - i) * tp_interval
+      ys = df.z[yidx]
+      xs = rand(Normal(0.0, tp_interval / 8), length(ys)) .+ xpos
+      ymed = median(ys)
 
-            cidx = row.q₀ > 0.2 ? 4 :       # not significant
-                   row.q₀ < 0.01 ? 1 :       # quite significant
-                   row.q₀ < 0.1 ? 2 : 3 # somewhat significant / not very significant
-            c = ymed < allymed ? colors_sig[cidx] : colors_sig[8-cidx]
-            violin!(ax_futlat[j][1], fill(xpos, length(ys)), ys; width=tp_interval * 1.5, color=(c, 0.4), orientation=:horizontal)
-            scatter!(ax_futlat[j][1], ys, xs; color=c, strokewidth=0.5, markersize=fsea_marker_size)
-            lines!(ax_futlat[j][1], [ymed, ymed], [xpos - tp_interval / 2, xpos + tp_interval / 2]; color=c)
-        end
+      cidx = row.q₀ > 0.2 ? 4 :       # not significant
+             row.q₀ < 0.01 ? 1 :       # quite significant
+             row.q₀ < 0.1 ? 2 : 3 # somewhat significant / not very significant
+      c = ymed < allymed ? colors_sig[cidx] : colors_sig[8-cidx]
+      violin!(ax_futlat[j][1], fill(xpos, length(ys)), ys; width=tp_interval * 1.5, color=(c, 0.4), orientation=:horizontal)
+      scatter!(ax_futlat[j][1], ys, xs; color=c, strokewidth=0.5, markersize=fsea_marker_size)
+      lines!(ax_futlat[j][1], [ymed, ymed], [xpos - tp_interval / 2, xpos + tp_interval / 2]; color=c)
     end
+  end
 end
 
 
 for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
-    gdf = groupby(futfsea_df, "eeg_feature")
-    featstr = replace(feat, "peak_amp" => "", "_corrected" => "c")
-    @warn "$featstr"
-    for (i, tp) in enumerate(ftps)
-        @info "$tp"
+  gdf = groupby(futfsea_df, "eeg_feature")
+  featstr = replace(feat, "peak_amp" => "", "_corrected" => "c")
+  @warn "$featstr"
+  for (i, tp) in enumerate(ftps)
+    @info "$tp"
 
-        df = alllms[(; eeg_feature=feat, timepoint=tp)]
-        allymed = median(df.z)
+    df = alllms[(; eeg_feature=feat, timepoint=tp)]
+    allymed = median(df.z)
 
-        subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
-        # lines!(ax_futlat, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
-        for row in eachrow(subdf)
-            # haskey(gsidx, row.geneset) || continue
-            yidx = df[!, row.geneset]
-            xpos = gsidx[row.geneset] * gs_interval + (2 - i) * tp_interval
-            ys = df.z[yidx]
-            xs = rand(Normal(0.0, tp_interval / 8), length(ys)) .+ xpos
-            ymed = median(ys)
+    subdf = subset(gdf[(; eeg_feature=feat)], "timepoint" => ByRow(==(tp)))
+    # lines!(ax_futlat, [allymed, allymed], [0.5, size(subdf, 1)+0.5]; color=:gray, linestyle=:dash) 
+    for row in eachrow(subdf)
+      # haskey(gsidx, row.geneset) || continue
+      yidx = df[!, row.geneset]
+      xpos = gsidx[row.geneset] * gs_interval + (2 - i) * tp_interval
+      ys = df.z[yidx]
+      xs = rand(Normal(0.0, tp_interval / 8), length(ys)) .+ xpos
+      ymed = median(ys)
 
-            cidx = row.q₀ > 0.2 ? 4 :       # not significant
-                   row.q₀ < 0.01 ? 1 :       # quite significant
-                   row.q₀ < 0.1 ? 2 : 3 # somewhat significant / not very significant
-            c = ymed < allymed ? colors_sig[cidx] : colors_sig[8-cidx]
-            violin!(ax_futamp[j][1], fill(xpos, length(ys)), ys; width=tp_interval * 1.5, color=(c, 0.4), orientation=:horizontal)
-            scatter!(ax_futamp[j][1], ys, xs; color=c, strokewidth=0.5, markersize=fsea_marker_size)
-            lines!(ax_futamp[j][1], [ymed, ymed], [xpos - tp_interval / 2, xpos + tp_interval / 2]; color=c)
-        end
+      cidx = row.q₀ > 0.2 ? 4 :       # not significant
+             row.q₀ < 0.01 ? 1 :       # quite significant
+             row.q₀ < 0.1 ? 2 : 3 # somewhat significant / not very significant
+      c = ymed < allymed ? colors_sig[cidx] : colors_sig[8-cidx]
+      violin!(ax_futamp[j][1], fill(xpos, length(ys)), ys; width=tp_interval * 1.5, color=(c, 0.4), orientation=:horizontal)
+      scatter!(ax_futamp[j][1], ys, xs; color=c, strokewidth=0.5, markersize=fsea_marker_size)
+      lines!(ax_futamp[j][1], [ymed, ymed], [xpos - tp_interval / 2, xpos + tp_interval / 2]; color=c)
     end
+  end
 end
 
 #-
 Legend(legend_block[1, 1],
-    [MarkerElement(; marker=:rect, color=colors_gstypes[g]) for g in keys(geneset_types)][[1, 3, 2, 4]],
-    ["Neurotransmitters", "Amino acid metabolism", "SCFAs", "other"][[1, 3, 2, 4]];
-    tellheight=true, tellwidth=false, nbanks=2
+  [MarkerElement(; marker=:rect, color=colors_gstypes[g]) for g in keys(geneset_types)][[1, 3, 2, 4]],
+  ["Neurotransmitters", "Amino acid metabolism", "SCFAs", "other"][[1, 3, 2, 4]];
+  tellheight=true, tellwidth=false, nbanks=2
 )
 
 
 Legend(legend_block[1, 2],
-    [[MarkerElement(; marker=:circle, color=colors_sig[i]) for i in 1:3],
-        [MarkerElement(; marker=:circle, color=colors_sig[i]) for i in 5:7]],
-    [["q < 0.01", "q < 0.1", "q < 0.2"],
-        ["q < 0.2", "q < 0.1", "q < 0.01"]],
-    ["(-)", "(+)"];
-    orientation=:horizontal, tellheight=true, tellwidth=false
+  [[MarkerElement(; marker=:circle, color=colors_sig[i]) for i in 1:3],
+    [MarkerElement(; marker=:circle, color=colors_sig[i]) for i in 5:7]],
+  [["q < 0.01", "q < 0.1", "q < 0.2"],
+    ["q < 0.2", "q < 0.1", "q < 0.01"]],
+  ["(-)", "(+)"];
+  orientation=:horizontal, tellheight=true, tellwidth=false
 )
 
 colsize!(figure3.layout, 2, Relative(4 / 5))
@@ -809,17 +847,17 @@ save("manuscript/mainfigures/figure3.svg", figure3)
 volcano = Figure(; size=(700, 900))
 
 for (i, v) in enumerate(tps)
-    df = subset(fsea_df, "timepoint" => ByRow(==(v)))
-    ax = Axis(volcano[i, 1]; xlabel="E.S.", ylabel="log(Q)")
-    scatter!(df.es, -1 .* log.(df.q₀ .+ 0.0005); color=map(eachrow(df)) do row
-        row.q₀ < 0.2 || return :gray
-        colors_gstypes[gs_types_rev[row.geneset]]
-    end)
-    Label(volcano[i, 0], v; tellheight=false)
+  df = subset(fsea_df, "timepoint" => ByRow(==(v)))
+  ax = Axis(volcano[i, 1]; xlabel="E.S.", ylabel="log(Q)")
+  scatter!(df.es, -1 .* log.(df.q₀ .+ 0.0005); color=map(eachrow(df)) do row
+    row.q₀ < 0.2 || return :gray
+    colors_gstypes[gs_types_rev[row.geneset]]
+  end)
+  Label(volcano[i, 0], v; tellheight=false)
 end
 
 Legend(volcano[1:3, 2], [MarkerElement(; marker=:circle, color=colors_gstypes[t]) for t in keys(geneset_types)],
-    [String(t) for t in keys(geneset_types)]
+  [String(t) for t in keys(geneset_types)]
 )
 
 save("/home/kevin/Downloads/volcano-fsea.png", current_figure())
@@ -829,20 +867,20 @@ save("/home/kevin/Downloads/volcano-fsea.png", current_figure())
 volcano = Figure(; size=(1500, 800))
 
 for (j, p) in enumerate(eeg_features)
-    for (i, v) in enumerate(tps)
-        df = subset(fsea_df, "timepoint" => ByRow(==(v)), "eeg_feature" => ByRow(==(p)))
-        ax = Axis(volcano[i, j]; xlabel="E.S.", ylabel="log(Q)")
-        scatter!(df.es, -1 .* log.(df.q₀ .+ 0.0005); color=map(eachrow(df)) do row
-            row.q₀ < 0.2 || return :gray
-            colors_gstypes[gs_types_rev[row.geneset]]
-        end)
-        Label(volcano[i, 0], v; tellheight=false)
-    end
-    Label(volcano[0, j], p; tellwidth=false)
+  for (i, v) in enumerate(tps)
+    df = subset(fsea_df, "timepoint" => ByRow(==(v)), "eeg_feature" => ByRow(==(p)))
+    ax = Axis(volcano[i, j]; xlabel="E.S.", ylabel="log(Q)")
+    scatter!(df.es, -1 .* log.(df.q₀ .+ 0.0005); color=map(eachrow(df)) do row
+      row.q₀ < 0.2 || return :gray
+      colors_gstypes[gs_types_rev[row.geneset]]
+    end)
+    Label(volcano[i, 0], v; tellheight=false)
+  end
+  Label(volcano[0, j], p; tellwidth=false)
 end
 
 Legend(volcano[1:3, length(eeg_features)+1], [MarkerElement(; marker=:circle, color=colors_gstypes[t]) for t in keys(geneset_types)],
-    [String(t) for t in keys(geneset_types)]
+  [String(t) for t in keys(geneset_types)]
 )
 
 save("/home/kevin/Downloads/volcano-fsea-peaks.png", current_figure())
@@ -855,24 +893,24 @@ bars = Figure(; size=(900, 600))
 axs = Axis[]
 
 for (i, v) in enumerate(tps)
-    df = subset(fsea_df, "timepoint" => ByRow(==(v)))
-    ax = Axis(bars[1, i]; ylabel="count", xticks=(1:length(eeg_features), eeg_features), xticklabelrotation=pi / 2)
-    toplot = mapreduce(vcat, enumerate(eeg_features)) do (j, f)
-        subdf = subset(df, "eeg_feature" => ByRow(==(f)))
-        map(enumerate(collect(keys(geneset_types)))) do (k, gs)
-            n = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs])).q₀)
-            (; feature=f, fidx=j, geneset=gs, gidx=k, n_sig=n)
-        end
-    end |> DataFrame
+  df = subset(fsea_df, "timepoint" => ByRow(==(v)))
+  ax = Axis(bars[1, i]; ylabel="count", xticks=(1:length(eeg_features), eeg_features), xticklabelrotation=pi / 2)
+  toplot = mapreduce(vcat, enumerate(eeg_features)) do (j, f)
+    subdf = subset(df, "eeg_feature" => ByRow(==(f)))
+    map(enumerate(collect(keys(geneset_types)))) do (k, gs)
+      n = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs])).q₀)
+      (; feature=f, fidx=j, geneset=gs, gidx=k, n_sig=n)
+    end
+  end |> DataFrame
 
-    barplot!(ax, toplot.fidx, toplot.n_sig; stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
-    Label(bars[0, i], v; tellwidth=false)
-    push!(axs, ax)
+  barplot!(ax, toplot.fidx, toplot.n_sig; stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+  Label(bars[0, i], v; tellwidth=false)
+  push!(axs, ax)
 
 end
 
 Legend(bars[1, length(tps)+1], [MarkerElement(; marker=:rect, color=colors_gstypes[t]) for t in keys(geneset_types)],
-    [String(t) for t in keys(geneset_types)]
+  [String(t) for t in keys(geneset_types)]
 )
 
 linkyaxes!(axs...)
@@ -886,27 +924,81 @@ bars = Figure(; size=(900, 600))
 axs = Axis[]
 
 for (i, v) in enumerate(tps)
-    df = subset(fsea_df, "timepoint" => ByRow(==(v)))
-    ax = Axis(bars[1, i]; ylabel="count", xticks=(1:length(eeg_features), eeg_features), xticklabelrotation=pi / 2)
-    toplot = mapreduce(vcat, enumerate(eeg_features)) do (j, f)
-        subdf = subset(df, "eeg_feature" => ByRow(==(f)))
-        map(enumerate(collect(keys(geneset_types)))) do (k, gs)
-            npos = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(>(0))).q₀)
-            nneg = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(<(0))).q₀)
-            (; feature=f, fidx=j, geneset=gs, gidx=k, n_sig=(npos, nneg))
-        end
-    end |> DataFrame
+  df = subset(fsea_df, "timepoint" => ByRow(==(v)))
+  ax = Axis(bars[1, i]; ylabel="count", xticks=(1:length(eeg_features), eeg_features), xticklabelrotation=pi / 2)
+  toplot = mapreduce(vcat, enumerate(eeg_features)) do (j, f)
+    subdf = subset(df, "eeg_feature" => ByRow(==(f)))
+    map(enumerate(collect(keys(geneset_types)))) do (k, gs)
+      npos = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(>(0))).q₀)
+      nneg = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(<(0))).q₀)
+      (; feature=f, fidx=j, geneset=gs, gidx=k, n_sig=(npos, nneg))
+    end
+  end |> DataFrame
 
-    barplot!(ax, toplot.fidx, getindex.(toplot.n_sig, 1); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
-    barplot!(ax, toplot.fidx, -1 .* getindex.(toplot.n_sig, 2); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
-    Label(bars[0, i], v; tellwidth=false)
+  barplot!(ax, toplot.fidx, getindex.(toplot.n_sig, 1); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+  barplot!(ax, toplot.fidx, -1 .* getindex.(toplot.n_sig, 2); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+  Label(bars[0, i], v; tellwidth=false)
 
-    push!(axs, ax)
+  push!(axs, ax)
 end
 
 Legend(bars[1, length(tps)+1], [MarkerElement(; marker=:rect, color=colors_gstypes[t]) for t in keys(geneset_types)],
-    [String(t) for t in keys(geneset_types)]
+  [String(t) for t in keys(geneset_types)]
 )
 
 linkyaxes!(axs...)
 save("/home/kevin/Downloads/bars-fsea-posneg.png", current_figure())
+
+######################
+# Manuscript numbers #
+######################
+
+
+let
+  lead = "Stool samples and EEG were collected at up to 3 visits in the first 18 months of life (Figure 1A, B, Table 1;"
+  v1all = subset(mdata, AsTable(["cohort_v1", "cohort_v1v2_stool", "cohort_v1v3_stool"]) => ByRow(any))
+  v2all = subset(mdata, AsTable(["cohort_v2", "cohort_v1v2_vep", "cohort_v2v3_stool"]) => ByRow(any))
+  v3all = subset(mdata, AsTable(["cohort_v3", "cohort_v1v3_vep", "cohort_v2v3_vep"]) => ByRow(any))
+
+  v1ages = transform(v1all, AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> mean(skipmissing(values(nt)))) => "mean_age").mean_age
+  v2ages = transform(v2all, AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> mean(skipmissing(values(nt)))) => "mean_age").mean_age
+  v3ages = transform(v3all, AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> mean(skipmissing(values(nt)))) => "mean_age").mean_age
+
+  println(lead, " visit 1, N = $(length(v1ages)), age $(round(mean(v1ages); digits=1)) ± $(round(std(v1ages); digits=1)) months,",
+    " visit 2, N = $(length(v2ages)), age $(round(mean(v2ages); digits=1)) ± $(round(std(v2ages); digits=1)) months,",
+    " visit 3, N = $(length(v3ages)), age $(round(mean(v3ages); digits=1)) ± $(round(std(v3ages); digits=1)) months)"
+  )
+end
+
+println("(A) Study design; participants (N=", length(unique(mdata.subject_id)), ")")
+
+println("Of the ", count(k -> length(na_map[k]) > 5, keys(na_map)), " genesets tested, ",
+  length(unique(fsea_df.geneset)), " had sufficient representation to test, and of those, ",
+  length(unique(subset(fsea_df, "q₀" => ByRow(<(0.2))).geneset)), " were significantly associated with at least one")
+
+println("To investigate this, we performed FSEA on stool samples collected at visit 1 with VEP measured at visit 2 ",
+  "(age at stool collection = ", round(mean(subset(mdata, "cohort_v1v2_stool").stool_age); digits=1), " ± ",
+  round(std(subset(mdata, "cohort_v1v2_stool").stool_age); digits=1), " months, ",
+  "age at VEP = ", round(mean(subset(mdata, "cohort_v1v2_vep").eeg_age); digits=1), " ± ",
+  round(std(subset(mdata, "cohort_v1v2_vep").eeg_age); digits=1), " months)"
+)
+
+println("or visit 3 ",
+  "(age at stool collection = ", round(mean(subset(mdata, "cohort_v1v3_stool").stool_age); digits=1), " ± ",
+  round(std(subset(mdata, "cohort_v1v3_stool").stool_age); digits=1), " months, ",
+  "age at VEP = ", round(mean(subset(mdata, "cohort_v1v3_vep").eeg_age); digits=1), " ± ",
+  round(std(subset(mdata, "cohort_v1v3_vep").eeg_age); digits=1), " months)"
+)
+
+
+println("as well as visit 2 stool samples with visit 3 VEP ",
+  "(age at stool collection = ", round(mean(subset(mdata, "cohort_v2v3_stool").stool_age); digits=1), " ± ",
+  round(std(subset(mdata, "cohort_v2v3_stool").stool_age); digits=1), " months, ",
+  "age at VEP = ", round(mean(subset(mdata, "cohort_v2v3_vep").eeg_age); digits=1), " ± ",
+  round(std(subset(mdata, "cohort_v2v3_vep").eeg_age); digits=1), " months)"
+)
+
+using MultivariateStats
+
+cor(EEGMicrobiome.loadings(species_pco, 1), mdata.stool_age)
+
