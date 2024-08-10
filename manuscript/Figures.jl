@@ -76,43 +76,7 @@ v3 = get_cohort(mdata, "v3")
 v1v2 = get_cohort(mdata, "v1v2")
 v1v3 = get_cohort(mdata, "v1v3")
 v2v3 = get_cohort(mdata, "v2v3")
-tps = ("v1", "v2", "v3")
-ftps = ("v1v2", "v1v3", "v2v3")
 
-mdata = load_cohorts()
-
-long_sub = let
-  wide_sub = select(
-    leftjoin(
-      select(unstack(mdata, "subject_id", "visit", "eeg_age"),
-        "subject_id", "v1" => "eeg_v1", "v2" => "eeg_v2", "v3" => "eeg_v3"),
-      select(unstack(mdata, "subject_id", "visit", "stool_age"),
-        "subject_id", "v1" => "seqprep_v1", "v2" => "seqprep_v2", "v3" => "seqprep_v3"),
-      on="subject_id"),
-    "subject_id", r"v1", r"v2", r"v3"
-  )
-
-  long_sub = DataFrame()
-  for row in eachrow(wide_sub), tp in tps
-    stool_age = row["seqprep_$tp"]
-    eeg_age = row["eeg_$tp"]
-    push!(long_sub, (; subject_id=row.subject_id, timepoint=tp, stool_age, eeg_age); cols=:union)
-  end
-
-  @chain long_sub begin
-    subset!(AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> !all(ismissing, nt)))
-    transform!(AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> minimum(skipmissing(values(nt)))) => "minage")
-    sort!("minage")
-  end
-end
-
-
-v1 = get_cohort(mdata, "v1")
-v2 = get_cohort(mdata, "v2")
-v3 = get_cohort(mdata, "v3")
-v1v2 = get_cohort(mdata, "v1v2")
-v1v3 = get_cohort(mdata, "v1v3")
-v2v3 = get_cohort(mdata, "v2v3")
 
 
 ##
@@ -238,7 +202,7 @@ for gs in gssig
 end
 ##
 
-## Plotting
+# ## Plotting
 # 
 # Each figure plot has a common structure.
 #
@@ -651,9 +615,9 @@ save("manuscript/mainfigures/figure2.svg", figure2)
 figure3 = Figure(; size=(1050, 750))
 
 
-grid_future_violins = GridLayout(figure3[1, 1])
-grid_futfsea_dots = GridLayout(figure3[1, 2])
-legend_block = GridLayout(figure3[2, 1:2])
+grid_future_violins = GridLayout(figure3[1:2, 1]; alignmode=Outside())
+grid_futfsea_dots = GridLayout(figure3[1, 2]; alignmode=Outside())
+legend_block = GridLayout(figure3[2, 2])
 
 ax_future_violins = map(enumerate(ftps)) do (i, tp)
   ax = Axis(grid_future_violins[i, 1]; ylabel="age (months)", xticks=([1, 2], ["stool", "eeg"]),
@@ -949,6 +913,13 @@ Legend(bars[1, length(tps)+1], [MarkerElement(; marker=:rect, color=colors_gstyp
 linkyaxes!(axs...)
 save("/home/kevin/Downloads/bars-fsea-posneg.png", current_figure())
 
+# ### Ordinations
+
+summary_ord = Figure(; size=(900, 699))
+ax = Axis(summary_ord[1, 1])
+
+
+
 ######################
 # Manuscript numbers #
 ######################
@@ -998,7 +969,11 @@ println("as well as visit 2 stool samples with visit 3 VEP ",
   round(std(subset(mdata, "cohort_v2v3_vep").eeg_age); digits=1), " months)"
 )
 
+println("primarily at the 3rd visit (mean age ", round(subset(mdata, "cohort_v3" => identity).stool_age |> mean, digits=1), " months)")
+println("also associated with the latency of the P1 peak at visit 1 (mean age ", round(subset(mdata, "cohort_v1" => identity).stool_age |> mean, digits=1), " months)")
+
 using MultivariateStats
 
 cor(EEGMicrobiome.loadings(species_pco, 1), mdata.stool_age)
+cor(EEGMicrobiome.loadings(unirefs_pco, 1), mdata.stool_age)
 
