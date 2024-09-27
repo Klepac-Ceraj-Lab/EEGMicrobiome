@@ -4,8 +4,6 @@
 #let project(title: "", abstract: [], authors: (), body) = {
   // Set the document's basic properties.
   set document(author: authors, title: title)
-  set page(paper: "us-letter", numbering: "1", number-align: center)
-  set text(font: "Source Sans Pro", lang: "en")
 
   // Title row.
   align(center)[
