@@ -151,18 +151,26 @@ and brain function in humans
 ),
 but the overwhelming majority of this research is conducted in cohorts of adult participants.
 Importantly, both the gut microbiome and the brain undergo dramatic and rapid development over the first postnatal years
-(Yassour et al. 2016; Bonham et al. 2023; Lippé et al. 2007; Dean et al. 2014).
+//TODO: Add Yassour 2016
+@bonhamGutresidentMicroorganismsTheir2023
+@lippeElectrophysiologicalMarkersVisuocortical2007
+@deanModelingHealthyMale2014
 However, very little is currently known about how gut-brain influences emerge
 or change during this critical window
 (Ahrens et al. 2024; Meyer et al. 2022; Callaghan et al. 2020).
+@ahrensInfantMicrobesMetabolites2024a
+//TODO: add Meyer
+@callaghanMindGutAssociations2020
 Interrogating this early co-development in humans is, therefore,
 key to both understanding adaptive gut-brain function and behavior and to informing strategies to support it.
 Specifically, the visual cortex has been shown to be sensitive to gut microbiome modulations in adults
-(Canipe, Sioda, and Cheatham 2021)
+@canipeDiversityGutmicrobiomeRelated2021a
 and in rodents
-(Lupori et al. 2022),
+@luporiGutMicrobiotaEnvironmentally2022a,
 yet the visual cortex undergoes its most rapid period of plasticity and maturation over infancy at the same time the microbiome changes most significantly
-(Deen et al. 2017; Ellis et al. 2021; Kiorpes 2015).
+@deenOrganizationHighlevelVisual2017
+@ellisRetinotopicOrganizationVisual2021
+@kiorpesVisualDevelopmentPrimates2015.
 Visual cortical functional maturation can be robustly indexed via electroencephalography (EEG)
 with the Visual-Evoked Potential (VEP) response to visual stimuli from birth.
 The VEP is especially useful for indexing visual neurodevelopment as its morphology
@@ -174,7 +182,7 @@ via genes encoding enzymes that metabolize neuroactive compounds and visual neur
 as indexed by the VEP in a longitudinal community sample of 194 infants from
 Gugulethu in Cape Town, South Africa,
 recruited as part of the prospective longitudinal “Khula” Study
-(Zieff et al. 2024).
+@zieffCharacterizingDevelopingExecutive2024.
 Stool samples and EEG were each collected at up to 3 visits in the first 18 months of life.
 Shotgun metagenomic sequencing was used to obtain microbial gene sequences from infant stool samples.
 To index visual cortical functional development,
@@ -199,6 +207,7 @@ visit 1, N = 119, age 3.6 ± 0.7 months,
 visit 2, N = 144, age 8.7 ± 1.4 months,
 visit 3, N = 130, age 14.2 ± 1.0 months).
 As expected for children at this age
+//TODO: add these cites
 (Koenig et al. 2011; Yassour et al. 2016; Bäckhed et al. 2015),
 microbial composition was developmentally dependent,
 with the first principal coordinate axis for both taxonomic profiles
@@ -209,6 +218,8 @@ driven strongly by the age of the participant at the time of collection.
 Similarly, both amplitude and latency VEP features were strongly correlated with age,
 as expected
 (Lippé et al. 2007; Yassour et al. 2016).
+@lippeElectrophysiologicalMarkersVisuocortical2007
+@yassourNaturalHistoryInfant2016
 That is, as infants got older, N1 amplitude became more negative
 (N1: b=-0.07, p<.05),
 corrected P1 amplitude became smaller
