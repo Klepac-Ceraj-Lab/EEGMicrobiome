@@ -207,8 +207,10 @@ visit 1, N = 119, age 3.6 ± 0.7 months,
 visit 2, N = 144, age 8.7 ± 1.4 months,
 visit 3, N = 130, age 14.2 ± 1.0 months).
 As expected for children at this age
-//TODO: add these cites
-(Koenig et al. 2011; Yassour et al. 2016; Bäckhed et al. 2015),
+//TODO: add these cite
+@koenigSuccessionMicrobialConsortia2011
+@yassourNaturalHistoryInfant2016
+@backhedDynamicsStabilizationHuman2015,
 microbial composition was developmentally dependent,
 with the first principal coordinate axis for both taxonomic profiles
 (Figure 1C; variance explained = 15.1%; R = -0.50)
@@ -217,7 +219,6 @@ and functional profiles
 driven strongly by the age of the participant at the time of collection.
 Similarly, both amplitude and latency VEP features were strongly correlated with age,
 as expected
-(Lippé et al. 2007; Yassour et al. 2016).
 @lippeElectrophysiologicalMarkersVisuocortical2007
 @yassourNaturalHistoryInfant2016
 That is, as infants got older, N1 amplitude became more negative
@@ -235,14 +236,15 @@ To test whether microbial metabolic potential was related to early life brain ac
 we performed feature set enrichment analysis (FSEA)
 using previously-defined groups of potentially neuroactive microbial genes
 and the concurrently measured VEP amplitude and latency features
-(Bonham et al. 2023; Valles-Colomer et al. 2019).
+@bonhamGutresidentMicroorganismsTheir2023
+@valles-colomerNeuroactivePotentialHuman2019.
 For each gene set that had at least 5 genes represented in a given comparison group,
 logistic regression was performed using VEP features as predictors
 and the presence or absence of each microbial gene in the metagenome
 as the response to determine concurrent associations (see Methods).
 Z statistics for in-set genes were compared to all genes
 using a permutation test to determine significance of the associations as described in
-(Subramanian et al. 2005).
+@subramanianGeneSetEnrichment2005.
 
 Of the 35 genesets assessed,
 19 had sufficient representation to test,
@@ -293,12 +295,12 @@ This is an expected relationship,
 as vitamin K2 specifically is posited to promote healthy vision,
 both outside of the brain through effects on the retina,
 and within the brain where it can protect neural circuits from oxidative stress
-(Li et al. 2003).
+@liNovelRoleVitamin2003.
 
 Notably, across significant gene set associations with VEP features,
 the P1 and N2 component amplitudes and latencies were consistently the most sensitive to these microbial gene sets.
 Both P1 and N2 components are known to show the most dramatic changes with development during the first year of life
-(Lippé et al. 2007)
+@lippeDifferentialMaturationBrain2009
 and may best reflect underlying visual learning and plasticity at this stage
 (Table S1).
 
@@ -310,8 +312,7 @@ we performed FSEA on stool samples collected at visit 1 with visit 2 VEP
 (age at stool collection = 3.6 ± 0.8 months, age at VEP = 8.6 ± 1.5 months)
 or visit 3 VEP
 (age at stool collection = 3.7 ± 0.7 months, age at VEP = 14.1 ± 1.1 months),
-as well as visit 2 stool samples with visit 3 VEP
-(age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; Table S3)
+as well as visit 2 stool samples with visit 3 VEP (age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; Table S3)
 (Figure 3A).
 
 All gene sets except those involved in the synthesis of 3,4-dihydroxyphenylacetic acid (DOPAC),
@@ -387,7 +388,6 @@ for VEP features at visit 3 (10/10 propionate and 7/8 butyrate associations).
 Moreover, acetate and butyrate metabolism genes
 were doubly associated with future VEP latencies compared to amplitude features.
 
-
 Finally, menaquinone (Vitamin K2) metabolism genes
 followed a similar pattern to the SCFAs
 in that genes from visit 1 and visit 2 were largely associated
@@ -441,7 +441,7 @@ in the co-development of these systems.
 This interpretation is also supported by prior research
 showing that associations of the microbiome with behavioral readouts of neurocognition
 are stronger prospectively than concurrently
-(Carlson et al. 2018).
+@carlsonInfantGutMicrobiome2018b.
 Moreover, specific associations between gene sets and VEP features
 showed temporal specificity within the 18-month developmental window assessed,
 suggesting that the impact of early microbial metabolism on the brain is developmentally dependent.
@@ -450,23 +450,29 @@ suggesting that the impact of early microbial metabolism on the brain is develop
 Notably, the gene sets most highly associated
 with visual functional neurodevelopment over infancy
 are for the metabolism of molecules with known links to developmental neuroplasticity
-(Fagiolini and Hensch 2000; Hensch et al. 1998; Takesian et al. 2018).
+@fagioliniInhibitoryThresholdCriticalperiod2000
+@henschLocalGABACircuit1998
+@takesianInhibitoryCircuitGating2018.
 Specifically, we observed associations for gene sets related to glutamate and GABA,
 neurotransmitters that are central to regulating excitatory/inhibitory (E/I) cortical balance.
 Developmental changes in E/I balance modulate the degree of neuroplasticity in the mammalian cortex,
 including regulating the start and progression
 of critical period neuroplasticity mechanisms in the visual cortex
-(Hensch et al. 1998).
+@henschLocalGABACircuit1998.
 Our observed pattern of results suggests early
 (within the first 6 postnatal months)
 microbiome GABA/glutamate dynamics, especially GABA,
 are most relevant for changes to visual cortex function over the following year.
 Gut production of GABA may influence cortical GABA levels
 via active transport from bloodstream to brain
-(Takanaga et al. 2001; Al-Sarraf 2002; Shyamaladevi et al. 2002).
+@takanagaGAT2BGT1System2001
+@al-sarrafTransport14CgaminobutyricAcid2002
+@shyamaladeviEvidenceThatNitric2002.
 Recent evidence suggests gut-derived glutamate
 may also influence brain levels and function
-(Matsumoto et al. 2013; Kawase et al. 2017; Filpa et al. 2016)
+@matsumotoCerebralLowmolecularMetabolites2013
+@kawaseGutMicrobiotaMice2017
+@filpaRoleGlutamatergicNeurotransmission2016
 and can operate via indirect mechanisms
 (either transformation into GABA
 or via regulating glutamate levels in the bloodstream
@@ -476,15 +482,17 @@ that impact glutamate transfer from brain to bloodstream).
 Tryptophan related pathway genes were also identified here
 that are responsible for generating serotonin
 as well as other neuroactive molecules such as kynurenic acid (an SMDAR antagonist)
-(Agus, Planchais, and Sokol 2018).
+@agusGutMicrobiotaRegulation2018.
 Both serotonin and kynurenic acid
 are implicated in early neuroplasticity and neurotransmitter regulation,
 and serotonin has potent effects for visual cortex plasticity in particular
-(Vetencourt et al. 2011; Gu and Singer 1995).
+@vetencourtSerotoninTriggersTransient2011
+@guInvolvementSerotoninDevelopmental1995.
 While quinolinic acid is part of the kynurenine pathway
 and is a neurotoxin that can cause neuronal dysfunction,
 it may also play a role in glutamate uptake in the brain
-(Lugo-Huitrón et al. 2013; Tavares et al. 2000).
+@lugo-huitronQuinolinicAcidEndogenous2013
+@tavaresQuinolinicAcidInhibits2000.
 Specifically, tryptophan metabolism genes
 were associated with VEP latencies just after each VEP component showed its greatest window of developmental change
 (components emerge sequentially as follows: P1, N1, N2),
@@ -494,11 +502,12 @@ This pathway may thus relate to processes stabilizing the neural circuitry
 underlying each VEP component,
 an account consistent with recently observed effects
 of serotonin within the visual cortex in rodents
-(Hong et al. 2022).
+@hongNorepinephrinePotentiatesSerotonin2022.
 Importantly, nearly all of the body’s serotonin
 is produced in the gut by enterochromaffin cells,
 and this biosynthesis is regulated by microbes
-(Yano et al. 2015; Jameson and Hsiao 2018),
+@yanoIndigenousBacteriaGut2015
+@jamesonLinkingGutMicrobiota2018,
 making this pathway an especially promising candidate intervention target
 for further research in development.
 
@@ -508,24 +517,26 @@ important in downregulating neuroinflammation and promoting myelination within t
 were robustly related to visual neurodevelopment.
 Myelination is important for down-regulating plasticity in neural circuitry over development
 by stabilizing and protecting circuits that have been shaped by early experience
-(Takesian and Hensch 2013).
+@takesianBalancingPlasticityStability2013.
 Specifically, we observed associations between
 acetate, butyrate, and proprionate genes with VEP development.
 Acetate is a critical component required for the increased lipid synthesis
 that happens during postnatal myelination in the brain
-(Madhavarao et al. 2005).
+@madhavaraoDefectiveNacetylaspartateCatabolism2005.
 Circulating butyrate also increases myelination
-(Chen et al. 2019),
+@chenButyrateSuppressesDemyelination2019,
 and though propionate’s relation to myelinating oligodendrocytes remains unclear,
 it is known to protect myelinating Schwann cells outside of the brain
 from oxidative stress
-(Grüter et al. 2023).
+@gruterPropionateExertsNeuroprotective2023.
 Acetate, butyrate, and propionate are all also widely regarded as neuroprotective
 by promoting healthy microglial development and downregulating neuroinflammation
 that interferes with myelination
-(Caetano-Silva et al. 2023).
+@caetano-silvaInhibitionInflammatoryMicroglia2023.
 VEP latency features reflect myelination
-(Margolis et al. 2024; Barnikol et al. 2006; You et al. 2011),
+@margolisLongitudinalEffectsPrenatal2024
+@barnikolPatternReversalVisual2006
+@youLatencyDelayVisual2011,
 and accordingly, these SCFAs showed more associations
 with VEP latency features prospectively,
 especially VEP latency features in vsit 3.
@@ -554,7 +565,7 @@ Moreover, while several studies in infancy have inferred gut-brain associations
 by linking microbiome measures to subsequent neurodevelopmental measures using behavioral assessments
 (e.g., Bayley Scales of Infant Development),
 noting associations with visually-mediated cognition
-(Carlson et al. 2018),
+@carlsonInfantGutMicrobiome2018b,
 this study assessed the development of the visual cortex directly using the VEP.
 The VEP is advantageous
 because features reflect largely neurotransmission-related (via amplitudes)
@@ -568,7 +579,7 @@ contributing dense longitudinal data,
 with up to three time points,
 all taken in the first 18 months of an infant’s life.
 While prior work focused on single time point measures of microbiome and neurodevelopment
-(Gao et al. 2019),
+@gaoGutMicrobiomeBrain2019,
 longitudinal associations allowed us to investigate the changing relation between gut microbial metabolism and the development of visual neurocircuitry over time.
 
 One limitation of this study is the fact that we are only able to observe the genomic composition of the microbiome,
@@ -594,7 +605,8 @@ is not necessarily reflected in the final concentration of those molecules in st
 Therefore, metabolites from blood plasma
 could provide more accurate systemic concentrations of molecules,
 but challenges remain on how to interpret them in humans
-(Deng et al. 2023; Dekkers et al. 2022).
+@dengComparisonFecalBlood2023
+@dekkersOnlineAtlasHuman2022.
 
 Given that the VEP is evolutionarily conserved in mammals
 and can be accurately measured during development,
@@ -622,7 +634,7 @@ Infants were recruited from local community clinics in Gugulethu,
 an informal settlement in Cape Town, South Africa,
 as part of a prospective longitudinal study
 (most enrollments happened prenatally with 16% of infants enrolled shortly after birth,
-(Zieff et al. 2024)).
+@zieffCharacterizingDevelopingExecutive2024).
 The first language for the majority of residents in this area is Xhosa.
 Study procedures were offered in English or Xhosa depending on the language preference of the mother.
 This study was approved by the relevant university Health Research Ethics Committees
@@ -681,11 +693,11 @@ Impedances were kept below 100KΩ
 in accordance with the impedance capabilities of the high-impedance amplifiers.
 Geodesic Sensor Nets with modified tall pedestals
 designed for improving inclusion of infants with thick/curly/tall hair were used as needed across participants
-(Mlandu et al. 2024).
+@mlanduEvaluatingNovelHighdensity2024.
 Shea moisture leave-in castor oil conditioner
 was applied to hair across the scalp prior to net placement
 to improve both impedances and participant comfort
-(Mlandu et al. 2024).
+@mlanduEvaluatingNovelHighdensity2024.
 This leave-in conditioner contains insulating ingredients,
 so there is no risk of electrical bridging,
 and has not been found to disrupt the EEG signal during testing (unpublished data).
@@ -716,7 +728,7 @@ to .raw format and then pre-processed
 using the HAPPE+ER pipeline within the HAPPE v3.3 software,
 an automated open-source EEG processing software
 validated for infant data
-(Monachino et al. 2022).
+@monachinoHAPPEEventRelatedHAPPE2022.
 A subset of the 128 channels
 were selected for pre-processing that excluded the rim electrodes
 as these are typically artifact-laden
@@ -731,7 +743,7 @@ at least 15 trials were retained following bad trial rejection,
 and at least one good channel was kept within the visual ROI.
 Note that channels marked bad during pre-processing
 had their data interpolated as part of standard preprocessing pipelines for ERPs
-(Monachino et al. 2022).
+@monachinoHAPPEEventRelatedHAPPE2022.
 Interpolated channels were included in analyses here
 as is typically done in developmental samples,
 and given the low overall rates of interpolation present
@@ -741,7 +753,7 @@ and given the low overall rates of interpolation present
 ==== Visual-Evoked Potentials (VEPs)
 VEP waveforms were extracted and quantified
 using the HAPPE+ER v3.3 GenerateERPs script
-(Monachino et al. 2022).
+@monachinoHAPPEEventRelatedHAPPE2022.
 Electrodes in the occipital region were selected as a region of interest
 (i.e., E70, E71, E75, E76, E83).
 The VEP waveform has three main components to be quantified:
@@ -770,7 +782,6 @@ the N2 amplitude was corrected for the P1 amplitude
 (corrected N2 amplitude = N2 - P1 amplitude),
 and the N2 latency was corrected for the P1 latency
 (corrected N2 latency = N2 - P1 latency).
-
 
 All VEPs were visually inspected to ensure that the automatically extracted values
 were correct and were adjusted if observable peaks
@@ -836,7 +847,7 @@ Samples were then pooled onto a plate
 and sequenced on the Illumina NextSeq 2000 platform
 using 150+150 bp paired-end P3 cells,
 generating 24M million raw reads and 3.6 Gb of sequence per sample
-(Comeau and Filloramo 2023).
+@comeauPreparingMultiplexedWGS2023.
 
 === Statistics / computational analysis
 
@@ -846,7 +857,7 @@ To determine age-related changes in VEP features,
 six linear mixed models with each VEP feature as the outcome
 (i.e., N1 amplitude/latency, P1 amplitude/latency, N2 amplitude/latency)
 were run using the lme4 package
-(Bates et al. 2015)
+@batesFittingLinearMixedEffects2015
 in R with age in months as the predictor of interest
 and number of retained trials as a covariate.
 
@@ -854,7 +865,8 @@ and number of retained trials as a covariate.
 
 Raw metagenomic sequence reads (2.5 x 107 ± 1.4 x 107 reads/sample)
 were processed using tools from the bioBakery as previously described
-(Bonham et al. 2023; Beghini et al. 2021).
+@bonhamGutresidentMicroorganismsTheir2023
+@beghiniIntegratingTaxonomicFunctional2021.
 Briefly, KneadData v0.10.0 was used with default parameters
 to trim low-quality reads and remove human sequences (using reference database hg37).
 Next, MetaPhlAn v3.1.0 (using database mpa_v31_CHOCOPhlAn_201901)
@@ -866,9 +878,9 @@ to HUMAnN v3.7 to generate stratified functional profiles.
 
 Principal coordinates analysis
 was performed in the julia programming language
-(Bezanson et al. 2012)
+@bezansonJuliaFreshApproach2017
 using the Microbiome.jl package
-(Bonham et al. 2021).
+@bonhamMicrobiomeJlBiobakeryUtils2021.
 Bray-Curtis dissimilarity (Distances.jl)
 was calculated across all pairs of samples,
 filtering for species-level classification.
@@ -880,12 +892,13 @@ and axes with negative eigenvalues were discarded.
 
 Potentially neuroactive genesets
 were extracted from Supplementary Dataset 1 from
-(Valles-Colomer et al. 2019).
+@valles-colomerNeuroactivePotentialHuman2019.
 Gut-brain modules provide Kegg Orthologue IDs (KOs)
-(Suzek et al. 2007; Kanehisa et al. 2004),
+@suzekUniRefComprehensiveNonredundant2007
+@kanehisaKEGGResourceDeciphering2004,
 which were mapped to UniRef90 IDs
 using the utility mapping file provided with HUMAnN v3.1
-(Beghini et al. 2021).
+@beghiniIntegratingTaxonomicFunctional2021.
 For each stool/VEP pair,
 logistic regression (LR) was performed,
 linking the presence or absence of that UniRef in a sample
@@ -902,7 +915,7 @@ $ "UniRef" ~ "vep" + "age_months" + "n_trials" + "age_diff" $
 FSEA was performed on each geneset
 that had at least five members in each comparison group
 according to the procedure set out in
-(Subramanian et al. 2005).
+@subramanianGeneSetEnrichment2005.
 Briefly, enrichment scores (ES) are calculated
 based on the rank order of z-statistics from the LR for each UniRef.
 A permutation test was then performed
@@ -935,7 +948,8 @@ suggesting that FDR correction is correctly calibrating the false-positive rate.
 === Data and code availability
 
 Code for initial processing of data and for analyses performed in this manuscript
-are available on github and archived on Zenodo (Bonham 2024).
+are available on github and archived on Zenodo
+@bonhamKlepacCerajLabEEGMicrobiomeInitial2024.
 Input data will be archived on Dryad
 and downloadable via included scripts in analysis code upon publication.
 
