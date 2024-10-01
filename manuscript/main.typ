@@ -3,6 +3,8 @@
 #set text(8pt, font: "Liberation Sans", lang: "en")
 #set align(center)
 
+#set par.line(numbering: "1")
+
 = Co-development of gut microbial metabolism and visual neural circuitry over human infancy
 
 Kevin S. Bonham#super([1])\*,
@@ -135,7 +137,6 @@ particularly through the metabolism of dietary tryptophan
 Moreover, short-chain fatty acids (SCFAs) produced by the gut microbiome
 may impact the brain directly by modulating neurotrophic factors,
 glial and microglial maturation and myelination, and neuroinflammation
-(Dalile et al. 2019; Erny et al. 2021)
 @dalileRoleShortchainFatty2019
 @ernyMicrobiotaderivedAcetateEnables2021.
 Other indirect pathways for gut microbial influence on the brain include vagus nerve stimulation,
@@ -144,23 +145,20 @@ neuroendocrine modulation and immune system regulation
 
 Rapidly growing literature connects the metabolic potential of the gut microbiome
 and brain function in humans
-(reviewed in
+(reviewed in 
 @ahmedMicrobiotaderivedMetabolitesDrivers2022
 @parkerGutMicrobesMetabolites2019
-@aburtoGastrointestinalBrainBarriers2024
-),
+@aburtoGastrointestinalBrainBarriers2024),
 but the overwhelming majority of this research is conducted in cohorts of adult participants.
 Importantly, both the gut microbiome and the brain undergo dramatic and rapid development over the first postnatal years
-//TODO: Add Yassour 2016
 @bonhamGutresidentMicroorganismsTheir2023
 @lippeElectrophysiologicalMarkersVisuocortical2007
 @deanModelingHealthyMale2014
 However, very little is currently known about how gut-brain influences emerge
 or change during this critical window
-(Ahrens et al. 2024; Meyer et al. 2022; Callaghan et al. 2020).
 @ahrensInfantMicrobesMetabolites2024a
-//TODO: add Meyer
-@callaghanMindGutAssociations2020
+@meyerAssociationGutMicrobiota2022
+@callaghanMindGutAssociations2020.
 Interrogating this early co-development in humans is, therefore,
 key to both understanding adaptive gut-brain function and behavior and to informing strategies to support it.
 Specifically, the visual cortex has been shown to be sensitive to gut microbiome modulations in adults
@@ -207,7 +205,6 @@ visit 1, N = 119, age 3.6 ± 0.7 months,
 visit 2, N = 144, age 8.7 ± 1.4 months,
 visit 3, N = 130, age 14.2 ± 1.0 months).
 As expected for children at this age
-//TODO: add these cite
 @koenigSuccessionMicrobialConsortia2011
 @yassourNaturalHistoryInfant2016
 @backhedDynamicsStabilizationHuman2015,
@@ -258,7 +255,7 @@ were associated with both VEP amplitudes and latencies at each visit,
 demonstrating widespread associations between early life gut microbiome and visual cortex neurodevelopment.
 The number of these associations increased over time
 (visit 1 had 6 associations, visit 2 had 24, and visit 3 had 37).
-To differentiate whether this cross-sectional finding indicated the early microbiome (~4 months)
+To differentiate whether this cross-sectional finding indicated the early microbiome (\~4 months)
 was sparsely related to visual cortical development at 4 months only or more broadly at all subsequent time points,
 longitudinal analyses were performed (results below).
 
@@ -377,7 +374,7 @@ with VEP features at the visit immediately following gene set measurement
 indicating dynamic co-development over the first 18 months of life.
 Across neurotransmitter-related gene set associations
 (GABA, glutamate, tryptophan/serotonin),
-there was thus a clear pattern whereby early (~4 months old)
+there was thus a clear pattern whereby early (\~4 months old)
 microbiome gene sets showed the largest number of associations with subsequent VEP feature development.
 
 SCFAs showed a different developmental pattern of associations with future VEP features.
@@ -978,3 +975,4 @@ This research was supported by the Wellcome LEAP 1kD program.
 
 
 #bibliography("refs.bib", style: "biological-psychiatry.csl")
+
