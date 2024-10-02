@@ -1,14 +1,19 @@
+#import "@preview/oxifmt:0.2.1": strfmt
 
 #set page(paper: "us-letter")
 #set text(8pt, font: "Liberation Sans", lang: "en")
 #set align(center)
 
 #set par.line(numbering: "1")
+#let no-paren-cite(label) = {
+  show regex("\(|\)"): none
+  cite(label, form: "normal") 
+}
 
 = Co-development of gut microbial metabolism and visual neural circuitry over human infancy
 
 Kevin S. Bonham#super([1])\*,
-Emma T. Margolis#super( [ 2 ] )\*,
+Emma T. Margolis#super([2])\*,
 Guilherme Fahur Bottino#super([1]),
 Ana Sobrino#super([2]),
 Fadheela Patel#super([3]),
@@ -19,14 +24,15 @@ Donna Herr#super([4]),
 Lauren Davel#super([4]),
 Cara Bosco#super([2]),
 Khula South Africa Data Collection Team#super([4]),
-Nicolò Pini#super([5,6]),
-Daniel C. Alexander#super([7]),
-Derek K. Jones#super([8]),
-Steve C. R. Williams#super([9]),
-Dima Amso#super([10]),
-Melissa Gladstone#super([11]),
-William P. Fifer#super([5,6]),
-Kirsten A. Donald#super([3,12]),
+Curtis Huttenhower#super([5])
+Nicolò Pini#super([6,7]),
+Daniel C. Alexander#super([8]),
+Derek K. Jones#super([9]),
+Steve C. R. Williams#super([10]),
+Dima Amso#super([11]),
+Melissa Gladstone#super([12]),
+William P. Fifer#super([6,7]),
+Kirsten A. Donald#super([3,13]),
 Laurel J. Gabard-Durnam#super([2])†,
 Vanja Klepac-Ceraj#super([1])†,
 
@@ -39,14 +45,15 @@ Vanja Klepac-Ceraj#super([1])†,
 #super([2])Department of Phychology, Northeastern University, Boston, MA, USA#linebreak()
 #super([3])Division of Medical Microbiology, University of Cape Town, Cape Town, Western Cape, ZAF#linebreak()
 #super([4])Department of Paediatrics and Child Health, University of Cape Town, Cape Town, Western Cape, ZAF#linebreak()
-#super([5])Department of Psychiatry, Columbia University, Irving Medical Center, New York City, NY, USA#linebreak()
-#super([6])Division of Developmental Neuroscience, New York State Psychiatric Institute, New York City, NY, USA#linebreak()
-#super([7])Centre for Medical Image Computing, Department of Computer Science, University College London, London, United Kingdom#linebreak()
-#super([8])Cardiff University Brain Research Imaging Centre, Cardiff University, Cardiff, Wales, United Kingdom#linebreak()
-#super([9])Department of Neuroimaging, King’s College London, United Kingdom#linebreak()
-#super([10])Department of Psychology, Columbia University, New York City, NY, USA#linebreak()
-#super([11])Department of Women and Children’s Health, Institute of Life Course and Medical Science, Alder Hey Children’s NHS Foundation Trust, University of Liverpool, Liverpool, United Kingdom#linebreak()
-#super([12])Neuroscience Institute, University of Cape Town, Cape Town, Western Cape, ZAF
+#super([5])Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA, USA#linebreak()
+#super([6])Department of Psychiatry, Columbia University, Irving Medical Center, New York City, NY, USA#linebreak()
+#super([7])Division of Developmental Neuroscience, New York State Psychiatric Institute, New York City, NY, USA#linebreak()
+#super([8])Centre for Medical Image Computing, Department of Computer Science, University College London, London, United Kingdom#linebreak()
+#super([9])Cardiff University Brain Research Imaging Centre, Cardiff University, Cardiff, Wales, United Kingdom#linebreak()
+#super([10])Department of Neuroimaging, King’s College London, United Kingdom#linebreak()
+#super([11])Department of Psychology, Columbia University, New York City, NY, USA#linebreak()
+#super([12])Department of Women and Children’s Health, Institute of Life Course and Medical Science, Alder Hey Children’s NHS Foundation Trust, University of Liverpool, Liverpool, United Kingdom#linebreak()
+#super([13])Neuroscience Institute, University of Cape Town, Cape Town, Western Cape, ZAF
 
 === ORCID numbers:
 #table(columns: (1fr, 1fr, 1fr, 1fr),
@@ -58,6 +65,7 @@ Vanja Klepac-Ceraj#super([1])†,
     [Michal Zieff], [0000-0001-9352-9947],
     [Lauren Davel], [],
     [Cara Bosco], [],
+    [Curtis Huttenhower], [0000-0002-1110-0096],
     [Nicolo Pini], [0000-0002-0839-6033],
     [Daniel C. Alexander], [0000-0003-2439-350X],
     [Derek K. Jones], [0000-0003-4409-8049],
@@ -146,9 +154,9 @@ neuroendocrine modulation and immune system regulation
 Rapidly growing literature connects the metabolic potential of the gut microbiome
 and brain function in humans
 (reviewed in 
-@ahmedMicrobiotaderivedMetabolitesDrivers2022
-@parkerGutMicrobesMetabolites2019
-@aburtoGastrointestinalBrainBarriers2024),
+#no-paren-cite(<ahmedMicrobiotaderivedMetabolitesDrivers2022>)
+#no-paren-cite(<parkerGutMicrobesMetabolites2019>)
+#no-paren-cite(<aburtoGastrointestinalBrainBarriers2024>)),
 but the overwhelming majority of this research is conducted in cohorts of adult participants.
 Importantly, both the gut microbiome and the brain undergo dramatic and rapid development over the first postnatal years
 @bonhamGutresidentMicroorganismsTheir2023
@@ -197,7 +205,8 @@ within individuals during this most critical window of plasticity in both system
 
 == Results
 
-The brain and microbiome develop rapidly in the first months of life
+=== The brain and microbiome develop rapidly in the first months of life
+
 To investigate the co-development of the gut microbiome and visual neurodevelopment,
 we collected stool and the VEP in a longitudinal cohort of 194 children in South Africa during the first 18 months of life
 (Figure 1A, B, Table 1;
@@ -228,7 +237,8 @@ and all latencies became shorter
 (N1: b=-0.79, p<.05; P1: b=-1.21, p<.05; N2: b=-4.10, p<.05)
 (Figure 1E).
 
-Microbial genes with neuroactive potential are associated with concurrently measured visual development
+=== Microbial genes with neuroactive potential are associated with concurrently measured visual development
+
 To test whether microbial metabolic potential was related to early life brain activity,
 we performed feature set enrichment analysis (FSEA)
 using previously-defined groups of potentially neuroactive microbial genes
@@ -241,6 +251,7 @@ and the presence or absence of each microbial gene in the metagenome
 as the response to determine concurrent associations (see Methods).
 Z statistics for in-set genes were compared to all genes
 using a permutation test to determine significance of the associations as described in
+Subramanian et. al., (2005)
 @subramanianGeneSetEnrichment2005.
 
 Of the 35 genesets assessed,
@@ -455,7 +466,10 @@ neurotransmitters that are central to regulating excitatory/inhibitory (E/I) cor
 Developmental changes in E/I balance modulate the degree of neuroplasticity in the mammalian cortex,
 including regulating the start and progression
 of critical period neuroplasticity mechanisms in the visual cortex
-@henschLocalGABACircuit1998.
+@henschLocalGABACircuit1998
+@fagioliniInhibitoryThresholdCriticalperiod2000
+@gabard-durnamSensitivePeriodsHuman2020
+@margolisLongitudinalEffectsPrenatal2024.
 Our observed pattern of results suggests early
 (within the first 6 postnatal months)
 microbiome GABA/glutamate dynamics, especially GABA,
@@ -630,8 +644,8 @@ of the link between the human gut microbiome and brain development.
 Infants were recruited from local community clinics in Gugulethu,
 an informal settlement in Cape Town, South Africa,
 as part of a prospective longitudinal study
-(most enrollments happened prenatally with 16% of infants enrolled shortly after birth,
-@zieffCharacterizingDevelopingExecutive2024).
+(most enrollments happened prenatally with 16% of infants enrolled shortly after birth;
+#no-paren-cite(<zieffCharacterizingDevelopingExecutive2024>)).
 The first language for the majority of residents in this area is Xhosa.
 Study procedures were offered in English or Xhosa depending on the language preference of the mother.
 This study was approved by the relevant university Health Research Ethics Committees
@@ -748,6 +762,7 @@ and given the low overall rates of interpolation present
 
 
 ==== Visual-Evoked Potentials (VEPs)
+
 VEP waveforms were extracted and quantified
 using the HAPPE+ER v3.3 GenerateERPs script
 @monachinoHAPPEEventRelatedHAPPE2022.
@@ -976,3 +991,398 @@ This research was supported by the Wellcome LEAP 1kD program.
 
 #bibliography("refs.bib", style: "biological-psychiatry.csl")
 
+#show figure.where(
+  kind: table
+): set figure.caption(position: top)
+
+#show figure: set align(left)
+
+#show figure.caption: it => [
+    *#it.supplement #it.counter.display():* #it.body
+]
+
+
+== Tables
+
+#set text(8pt)
+#show table.cell: it => {
+  if it.x == 1 {
+    set align(center)
+    it
+  } else {
+    it
+  }
+}
+#figure(
+    table(columns: (4fr, 1fr),
+          stroke: none,
+            table.hline(stroke: 2pt),
+            [], [*Overall\
+                (N=194)*],
+
+            table.hline(),
+            [*Mean (SD) Age at EEG Data Collection (months)*], [],
+            [#h(2em)Visit 1 (N=97)],     [3.7 (0.85)],
+            [#h(2em)Visit 2 (N=129)],           [8.6 (1.46)],
+            [#h(2em)Visit 3 (N=130)],           [14.1 (1.03)],
+
+            [*Mean (SD) Age at Stool Data Collection (months)*], [],
+            [#h(2em)Visit 1 (N=119)],           [3.6 (0.76)],
+            [#h(2em)Visit 2 (N=105)],           [8.8 (1.43)],
+            [#h(2em)Visit 3 (N=91)],            [14.0 (1.24)],
+
+            [*Maternal Place of Birth*], [],
+            [#h(2em)South Africa],              [191 (98.5%)],
+            [#h(2em)In the African Continent (not South Africa)],  [3 (1.5%)],
+
+            [*Primary Spoken Language*], [],
+            [#h(2em)Xhosa Language],            [187 (96.4%)],
+            [#h(2em)Sotho Language],            [2 (1.0%)],
+            [#h(2em)Zulu Language],             [1 (0.5%)],
+            [#h(2em)English Language],          [2 (1.0%)],
+            [#h(2em)Ndebele Language],          [1 (0.5%)],
+            [#h(2em)Afrikaans Language],        [1 (0.5%)],
+
+            [*Maternal Age at Infant Birth (years)*], [],
+            [#h(2em)Mean (SD)],                 [29.2 (5.63)],
+            [#h(2em)Median [Min, Max]],         [29.0 [18.0, 41.0]],
+            [#h(2em)Missing],                   [1 (0.5%)],
+
+            [*Maternal Educational Attainmentᵃ*], [],
+            [#h(2em)Completed Grade 6 (Standard 4)
+             to Grade 7 (Standard 5)],           [4 (2.1%)],
+            [#h(2em)Completed Grade 8 (Standard 6)
+             to Grade 11 (Standard 9) i.e.,
+             high school without matriculating], [78 (40.2%)],
+            [#h(2em)Completed Grade 12 (Standard 10)
+             i.e., high school]       ,          [88 (45.4%)],
+            [#h(2em)Part of university/ college/
+             post-matric education],             [13 (6.7%)],
+            [#h(2em)Completed university/ college/
+             post-matric education],             [11 (5.7%)],
+
+            [*Maternal Monthly Incomeᵇ (South African Rand/ZAR)*], [],
+            [#h(2em)Less than R1000 per month],          [97 (50.0%)],
+            [#h(2em)R1000 - R5000 per month],            [76 (39.2%)],
+            [#h(2em)R5000 - R10,000 per month],          [16 (8.2%)],
+            [#h(2em)More than R10,000 per month],        [0 (0%)],
+            [#h(2em)Unknown],                            [5 (2.6%)],
+
+            [*Infant Biological Sex*], [],
+            [#h(2em)Female],            [91 (46.9%)],
+            [#h(2em)Male],              [103 (53.1%)],
+            table.hline(stroke: 2pt),
+
+            table.cell(colspan:2)[ᵃThe South African Educational System was formerly divided into years called standards,
+                    similarly to the way the United States Educational System is divided into grades.
+                    The equivalent in terms of standards is provided in parentheses next to each mentioned grade.
+                    “University/College/Post-Matric Education” refers to tertiary
+                    or post-secondary education as defined by the World Bank.],
+            table.cell(colspan:2)[ᵇAt the time of writing (1/16/24), 1 US Dollar = 18.87 South African Rand (ZAR).]
+            ),
+    caption: [*Overall Demographic Information*]
+)
+
+
+#set table.cell(align: center+horizon)
+
+
+#figure(
+    caption:[*Longitudinal FSEA, visit 1 stool -> visit 2 VEP*],
+    table(
+        columns: 5,
+        stroke: 0.5pt,
+        table.hline(stroke: 2pt),
+    [Gene set], [Feature], [Component], [Enrichment], [Q value],
+            table.hline(),
+    table.cell(rowspan:2, fill: rgb("#89CDD8"))[GABA synthesis],
+        table.cell(rowspan:2)[amplitude],
+            [P1], [-0.398729884], [0.080789189],
+            [N2], [0.366103605],  [0.112944828],
+    table.cell(rowspan:3, fill: rgb("#89CDD8"))[Glutamate synthesis],
+        table.cell(rowspan:2)[latency],
+            [N1], [-0.282915658], [0.04452],
+            [P1], [0.262506611], [0.080789189],
+        [amplitude],
+            [P1], [0.231653804], [0.102313043],
+    table.cell(rowspan:3, fill: rgb("#89CDD8"))[Glutamate degradation],
+        table.cell(rowspan:2)[latency],
+            [P1], [0.336966501], [0.159815385],
+            [N2], [0.325268237], [0.180080899],
+        [amplitude],
+            [P1], [0.3256632], [0.176009302],
+    table.cell(rowspan:4, fill: rgb("#82B574"))[Tryptophan synthesis],
+        table.cell(rowspan:3)[latency],
+            [N1], [-0.221130346], [0.027257143],
+            [P1], [0.167147007], [0.080789189],
+            [N2], [0.19001832], [0.048457143],
+        [amplitude],
+            [N2], [-0.163072333], [0.102313043],
+    table.cell(fill: rgb("#82B574"))[Quinolinic acid synthesis],
+        [amplitude],
+            [N1], [-0.273526842], [0.160915663],
+    table.cell(rowspan:2, fill: rgb("#82B574"))[Quinolinic acid degradation],
+        table.cell(rowspan:2)[latency],
+            [P1], [0.197973559], [0.102313043],
+            [N2], [0.195068231], [0.111888889],
+    table.cell(rowspan:5, fill: rgb("#F29972"))[Acetate synthesis],
+        table.cell(rowspan:3)[latency],
+            [N1], [-0.219089592], [0.029353846],
+            [P1], [0.192652389], [0.061153846],
+            [N2], [0.215744459], [0.0318],
+        table.cell(rowspan:2)[amplitude],
+            [P1], [0.186013239], [0.0742],
+            [N2], [-0.196033217], [0.054927273],
+    table.cell(fill: rgb("#F29972"))[Butyrate synthesis],
+        [amplitude],
+            [N1], [-0.31934762], [0.169849412],
+    table.cell(rowspan:3, fill: rgb("#F29972"))[Isovaleric acid synthesis],
+        [latency],
+            [N1], [0.271100718], [0.122307692],
+        table.cell(rowspan:2)[amplitude],
+            [N1], [0.241218831], [0.180080899],
+            [P1], [-0.240952289], [0.160915663],
+    table.cell(fill: rgb("#D0D17D"))[Menaquinone synthesis],
+        [latency],
+            [N1], [-0.139349027], [0.159815385],
+    table.cell(rowspan:2, fill: rgb("#D0D17D"))[Inositol synthesis],
+        [amplitude],
+            [N1], [-0.429526827], [0.180430435],
+        [latency],
+            [N1], [-0.421912686], [0.183435789],
+    table.cell(rowspan:3, fill: rgb("#D0D17D"))[p-Cresol synthesis],
+        table.cell(rowspan:3)[amplitude],
+            [N1], [-0.366578927], [0.182593548],
+            [P1], [0.452086746], [0.101457143],
+            [N2], [-0.516450705], [0.04452],
+    table.cell(fill: rgb("#D0D17D"))[17-beta-Estradiol degradation],
+        [latency],
+            [N2], [0.355044972], [0.180080899],
+    table.hline(stroke: 2pt),
+    )
+)
+
+#figure(
+    caption:[*Longitudinal FSEA, visit 1 stool -> visit 3 VEP*],
+    table(
+        columns: 5,
+        stroke: 0.5pt,
+        table.hline(stroke: 2pt),
+    [Gene set], [Feature], [Component], [Enrichment], [Q value],
+        table.hline(),
+
+    table.cell(rowspan:3, fill: rgb("#89CDD8"))[GABA synthesis],
+        [latency],
+            [P1], [0.434338693], [0.04452],
+        table.cell(rowspan:2)[amplitude],
+            [P1], [0.409900164], [0.0742],
+            [N2], [-0.506575916], [0.02544],
+    table.cell(rowspan:2, fill: rgb("#89CDD8"))[Glutamate synthesis],
+        [latency],
+            [N1], [-0.303501108], [0.029353846],
+        [amplitude],
+            [N1], [-0.234405478], [0.111888889],
+    table.cell(rowspan:2, fill: rgb("#82B574"))[Tryptophan synthesis],
+        [latency],
+            [N1], [-0.187530614], [0.04452],
+        [amplitude],
+            [P1], [-0.217612428], [0.0159],
+    table.cell(rowspan:3, fill: rgb("#82B574"))[Quinolinic acid degradation],
+        table.cell(rowspan: 2)[latency],
+            [P1], [-0.186280973], [0.109392],
+            [N2], [-0.262447851], [0.183435789],
+        [amplitude],
+            [P1], [-0.168943012], [0.160915663],
+    table.cell(fill: rgb("#F29972"))[Acetate synthesis],
+        [latency],
+            [N1], [-0.172876999], [0.080789189],
+    table.cell(fill: rgb("#F29972"))[Propionate synthesis],
+        [amplitude],
+            [P1], [0.358659876], [0.080789189],
+    table.cell(rowspan: 4, fill: rgb("#F29972"))[Propionate degradation],
+        table.cell(rowspan: 2)[latency],
+            [N1], [-0.509754961], [0.109392],
+            [P1], [0.534551664], [0.088061538],
+        table.cell(rowspan: 2)[amplitude],
+            [P1], [0.738806805], [0],
+            [N2], [-0.666912201], [0.027257143],
+    table.cell(rowspan: 3, fill: rgb("#F29972"))[Butyrate synthesis],
+        table.cell(rowspan: 2)[latency],
+            [N1], [0.337326194], [0.122307692],
+            [N2], [-0.323276487], [0.149852055],
+        [amplitude],
+            [P1], [0.368868764], [0.101457143],
+    table.cell(rowspan:4, fill: rgb("#D0D17D"))[Menaquinone synthesis],
+        [latency],
+            [P1], [0.15826763], [0.087031579],
+        table.cell(rowspan: 3)[amplitude],
+            [N1], [-0.141748648], [0.139740845],
+            [P1], [0.148803868], [0.113186441],
+            [N2], [-0.156702017], [0.102313043],
+    table.cell(fill: rgb("#D0D17D"))[Inositol synthesis],
+        [amplitude],
+            [N2], [-0.453803843], [0.121045161],
+    table.cell(rowspan: 3, fill: rgb("#D0D17D"))[ClpB],
+        [latency],
+            [N1], [-0.283505043], [0.180430435],
+        table.cell(rowspan: 2)[amplitude],
+            [P1], [-0.328420633], [0.112944828],
+            [N2], [0.35858587], [0.080012903],
+    table.hline(stroke: 2pt),
+    )
+)
+
+#figure(
+    caption:[*Longitudinal FSEA, visit 2 stool -> visit 3 VEP*],
+    table(
+        columns: 5,
+        stroke: 0.5pt,
+        table.hline(stroke: 2pt),
+    [Gene set], [Feature], [Component], [Enrichment], [Q value],
+    table.cell(fill: rgb("#89CDD8"))[GABA synthesis],
+        [latency],
+            [N1], [-0.376215897], [0.107325],
+    table.cell(rowspan:3, fill: rgb("#89CDD8"))[Glutamate synthesis],
+        table.cell(rowspan:2)[latency],
+            [N1], [-0.16762197], [0.160915663],
+            [P1], [0.297968912], [0.0159],
+        [amplitude],
+            [P1], [0.23424529], [0.03816],
+    table.cell(rowspan:2, fill: rgb("#89CDD8"))[Glutamate degradation],
+        [latency],
+            [P1], [0.317418013], [0.14045],
+        [amplitude],
+            [N2], [0.282946442], [0.187555102],
+    table.cell(rowspan:2, fill: rgb("#82B574"))[Tryptophan synthesis],
+        table.cell(rowspan:2)[amplitude],
+            [N1], [-0.155489037], [0.060834783],
+            [P1], [0.186539112], [0.029353846],
+    table.cell(rowspan:3, fill: rgb("#82B574"))[Quinolinic acid synthesis],
+        table.cell(rowspan:2)[latency],
+            [N1], [-0.31863828], [0.061056],
+            [P1], [0.333137823], [0.043725],
+        [amplitude],
+            [P1], [0.257761121], [0.139182609],
+    table.cell(rowspan: 4, fill: rgb("#F29972"))[Acetate synthesis],
+         table.cell(rowspan:3)[latency],
+            [N1], [-0.16732426], [0.061056],
+            [P1], [0.257469673], [0],
+            [N2], [-0.137377692], [0.152983784],
+        [amplitude],
+            [P1], [0.146955492], [0.121045161],
+    table.cell(fill: rgb("#F29972"))[Propionate synthesis],
+        [amplitude],
+            [P1], [0.299415199], [0.126236364],
+    table.cell(rowspan: 4, fill: rgb("#F29972"))[Propionate degradation],
+        table.cell(rowspan:2)[latency],
+            [N1], [-0.550397358], [0.0742],
+            [N2], [0.449253743], [0.160915663],
+        table.cell(rowspan:2)[amplitude],
+            [P1], [0.50881464], [0.111888889],
+            [N2], [-0.422998998], [0.187555102],
+    table.cell(rowspan: 4, fill: rgb("#F29972"))[Butyrate synthesis],
+        table.cell(rowspan:3)[latency],
+            [N1], [-0.331642845], [0.080789189],
+            [P1], [0.333561852], [0.0742],
+            [N2], [-0.290812478], [0.122307692],
+        [amplitude],
+            [N2], [0.306668162], [0.111888889],
+    table.cell(rowspan: 2, fill: rgb("#F29972"))[Isovaleric acid synthesis],
+        [latency],
+            [P1], [0.231685269], [0.155652632],
+        [amplitude],
+            [P1], [0.246936789], [0.112944828],
+    table.cell(rowspan: 4, fill: rgb("#D0D17D"))[Menaquinone synthesis],
+        [latency],
+            [N1], [0.152879564], [0.121045161],
+        table.cell(rowspan:3)[amplitude],
+            [N1], [-0.164433164], [0.107325],
+            [P1], [0.201456836], [0.029353846],
+            [N2], [-0.163403497], [0.112167273],
+    table.cell(rowspan: 3, fill: rgb("#D0D17D"))[Inositol degradation],
+        table.cell(rowspan:2)[latency],
+            [N1], [-0.638125991], [0.029353846],
+            [P1], [0.532338179], [0.101457143],
+        [amplitude],
+            [P1], [0.641392999], [0.029353846],
+    table.cell(rowspan: 3, fill: rgb("#D0D17D"))[p-Cresol synthesis],
+        table.cell(rowspan:2)[latency],
+            [P1], [0.311879942], [0.139740845],
+            [N2], [-0.31528647], [0.139182609],
+        [amplitude],
+            [N1], [-0.303976467], [0.165814286],
+    table.cell(rowspan: 2, fill: rgb("#D0D17D"))[S-Adenosylmethionine synthesis],
+        table.cell(rowspan:2)[amplitude],
+            [N1], [-0.222889447], [0.155652632],
+            [P1], [0.229572468], [0.13479403],
+    table.cell(fill: rgb("#D0D17D"))[17-beta-Estradiol degradation],
+        [amplitude],
+            [P1], [0.281861389], [0.187555102],
+    table.cell(fill: rgb("#D0D17D"))[ClpB],
+        [latency],
+            [P1], [0.268785756], [0.180430435],
+    )
+)
+== Figures
+
+#show figure.caption: it=> [
+    #set align(left)
+    #it
+]
+
+//#rotate(-90deg, reflow: true)[
+#figure(
+  image("mainfigures/figure1_edit.svg"),
+  caption: [
+    *The gut microbiome and VEP both develop over the first 18 months of life.*#linebreak()
+    (A) Study design; participants (N=194) were seen up to 3 times over the first 18 months of life.
+        Stool samples and EEG data were collected, generating microbial functional profiles (stool)
+        and VEP waveforms (EEG) used in subsequent analyses.
+    (B) Longitudinal sampling of study participants;
+        Density plots (top) for stool and EEG collection show the ages represented in each visit.
+        The scatter plot (bottom) shows individual participant visits.
+        Dotted lines connect separate visits for the same participant.
+        When stool and EEG data were collected for the same visit (purple) but not on the same day,
+        dot represents the median age of collection,
+        and vertical bars in blue and red represent stool and EEG collections respectively.
+    (C) Principal coordinate analysis (PCoA) by multidimensional scaling (MDS)
+        on Bray-Curtis dissimilarity of taxonomic profiles;
+        percent variance explained (fraction of positive eigenvalues)
+        by each of the first two axes are indicated on the x and y axes respectively.
+    (D) PCoA of microbial functional profiles (UniRef90s).
+    (E) Average (solid lines) ± standard deviation (dotted lines) for VEP waveforms at each visit. 
+],
+) <figure1>
+//]
+
+#figure(
+  image("mainfigures/figure2_edit.svg"),
+  caption: [
+    *Concurrent feature set enrichment analysis of microbial neuroactive genes and VEP for three visits.*
+    FSEA results for all genesets where at least one visit had a significant hit (q < 0.2)
+    with at least one VEP latency (A) or amplitude (B).
+    Dots indicate the Z-statistic from logistic regression for each gene in a gene set.
+    Vertical bars indicate the median Z-statistic for the gene set as a whole.
+    Y-axis position for each gene set indicates visit number.
+    Visit 1 for inositol degradation and DOPAC synthesis were not tested,
+    since there were fewer than 5 genes from those genesets present in the sample (See Methods).
+],
+) <figure2>
+
+
+#figure(
+  image("mainfigures/figure3_edit.svg"),
+  caption: [
+    *Gut microbial genes predict future VEP latencies and amplitudes.*
+    (A) Age distributions for stool samples (left) and VEP (right)
+    for each longitudinal comparison (same individual) tested,
+    V1 stool →V2 VEP, V1 stool →V3 VEP, and V2 stool →V3 VEP.
+    As in Figure 2, (B) and (C) show FSEA results for all genesets
+    where at least one visit had a significant hit (q < 0.2)
+    with at least one VEP latency or amplitude respectively.
+    Dots indicate the Z-statistic from logistic regression for each gene in a gene set.
+    Vertical bars indicate the median Z-statistic for the gene set as a whole.
+    The Y-axis position for each gene set indicates longitudinal comparison.
+    V1 → V2 and V1 → 3 for inositol degradation and DOPAC synthesis were not tested,
+    since there were fewer than 5 genes from those genesets present in the sample (See Methods).
+]) <figure3>
