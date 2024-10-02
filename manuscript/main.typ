@@ -1088,7 +1088,7 @@ This research was supported by the Wellcome LEAP 1kD program.
 
 
 #figure(
-    caption:[*Longitudinal FSEA, visit 1 stool -> visit 2 VEP*],
+    caption:[*Longitudinal FSEA, visit 1 stool #sym.arrow.r.stroked visit 2 VEP*],
     table(
         columns: 5,
         stroke: 0.5pt,
@@ -1163,7 +1163,7 @@ This research was supported by the Wellcome LEAP 1kD program.
 )
 
 #figure(
-    caption:[*Longitudinal FSEA, visit 1 stool -> visit 3 VEP*],
+    caption:[*Longitudinal FSEA, visit 1 stool #sym.arrow.r.stroked visit 3 VEP*],
     table(
         columns: 5,
         stroke: 0.5pt,
@@ -1233,7 +1233,7 @@ This research was supported by the Wellcome LEAP 1kD program.
 )
 
 #figure(
-    caption:[*Longitudinal FSEA, visit 2 stool -> visit 3 VEP*],
+    caption:[*Longitudinal FSEA, visit 2 stool #sym.arrow.r.stroked visit 3 VEP*],
     table(
         columns: 5,
         stroke: 0.5pt,
