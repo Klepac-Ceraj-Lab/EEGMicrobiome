@@ -1,5 +1,3 @@
-#import "@preview/oxifmt:0.2.1": strfmt
-
 #set page(paper: "us-letter")
 #set text(8pt, font: "Liberation Sans", lang: "en")
 #set align(center)
@@ -210,9 +208,9 @@ within individuals during this most critical window of plasticity in both system
 To investigate the co-development of the gut microbiome and visual neurodevelopment,
 we collected stool and the VEP in a longitudinal cohort of 194 children in South Africa during the first 18 months of life
 (Figure 1A, B, Table 1;
-visit 1, N = 119, age 3.6 ± 0.7 months,
-visit 2, N = 144, age 8.7 ± 1.4 months,
-visit 3, N = 130, age 14.2 ± 1.0 months).
+visit-1, N = 119, age 3.6 ± 0.7 months,
+visit-2, N = 144, age 8.7 ± 1.4 months,
+visit-3, N = 130, age 14.2 ± 1.0 months).
 As expected for children at this age
 @koenigSuccessionMicrobialConsortia2011
 @yassourNaturalHistoryInfant2016
@@ -265,7 +263,7 @@ Microbial genes involved in synthesis or degradation of molecules with neuroacti
 were associated with both VEP amplitudes and latencies at each visit,
 demonstrating widespread associations between early life gut microbiome and visual cortex neurodevelopment.
 The number of these associations increased over time
-(visit 1 had 6 associations, visit 2 had 24, and visit 3 had 37).
+(visit-1 had 6 associations, visit-2 had 24, and visit-3 had 37).
 To differentiate whether this cross-sectional finding indicated the early microbiome (\~4 months)
 was sparsely related to visual cortical development at 4 months only or more broadly at all subsequent time points,
 longitudinal analyses were performed (results below).
@@ -279,9 +277,9 @@ Gene sets involved in tryptophan metabolism and associated pathways
 Specifically, tryptophan metabolism genes were associated with VEP latencies
 just after each VEP component showed its greatest window of developmental change
 (components emerge sequentially as follows: P1, N1, N2), that is,
-of P1 at visit 1,
-N1 and P1 at visit 2,
-and N2 at visit 3.
+of P1 at visit-1,
+N1 and P1 at visit-2,
+and N2 at visit-3.
 
 Several short-chain fatty acid (SCFA)-metabolizing gene sets were also found to have multiple associations with VEP features.
 Specifically, acetate synthesis was strongly associated with almost all VEP features
@@ -291,7 +289,7 @@ around the end of the first year of life (visits 2 and 3),
 when the visual cortex is most actively undergoing myelination.
 Lastly, propionate synthesis/degradation was significantly associated with VEP latencies
 at every visit over the 18-month window
-(N1 at visits 1 and 2, and both P1 and N2 at visit 3).
+(N1 at visits 1 and 2, and both P1 and N2 at visit-3).
 These SCFA metabolizing genes showed almost double the concurrent associations
 with VEP latencies than amplitudes
 (11 associations with latencies, 6 associations with amplitudes).
@@ -316,11 +314,11 @@ Microbial metabolic potential predicts future brain development in infancy
 Given that differences in metabolic potential of the early life microbiome may exert their effects over time,
 we sought to determine whether microbial genes at early time points were associated with subsequent VEP development.
 To investigate this,
-we performed FSEA on stool samples collected at visit 1 with visit 2 VEP
+we performed FSEA on stool samples collected at visit-1 with visit-2 VEP
 (age at stool collection = 3.6 ± 0.8 months, age at VEP = 8.6 ± 1.5 months)
-or visit 3 VEP
+or visit-3 VEP
 (age at stool collection = 3.7 ± 0.7 months, age at VEP = 14.1 ± 1.1 months),
-as well as visit 2 stool samples with visit 3 VEP (age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; Table S3)
+as well as visit-2 stool samples with visit-3 VEP (age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; Table S3)
 (Figure 3A).
 
 All gene sets except those involved in the synthesis of 3,4-dihydroxyphenylacetic acid (DOPAC),
@@ -330,27 +328,27 @@ were also significantly associated with at least one future VEP feature
 (Figure 3B, Tables 2-5).
 Notably, the quantity of those associations increased substantially
 for all longitudinal comparisons compared to concurrent comparisons.
-For example, only 6 visit 1 microbial gene sets were associated with visit 1 VEP,
+For example, only 6 visit-1 microbial gene sets were associated with visit-1 VEP,
 and each of those was only associated with a single concurrently measured VEP feature.
-By contrast, these longitudinal analyses revealed that visit 1 microbial gene sets
+By contrast, these longitudinal analyses revealed that visit-1 microbial gene sets
 show a much richer pattern of associations with future VEP feature development.
-Specifically, 13 visit 1 gene sets were associated with visit 2 VEP features,
-and 11 were associated with visit 3 VEP features,
+Specifically, 13 visit-1 gene sets were associated with visit-2 VEP features,
+and 11 were associated with visit-3 VEP features,
 the majority
-(9/13 for visit 2, 8/11 for visit 3)
+(9/13 for visit-2, 8/11 for visit-3)
 were associated with at least 2 VEP features,
 and nearly half
-(6/13 for visit 2, 5/11 for visit 3)
+(6/13 for visit-2, 5/11 for visit-3)
 were associated with more than 2 future VEP features.
 
-Longitudinally, the early microbiome (visit 1)
-was related to VEP features at visit 2 and visit 3 fairly evenly
-(12/28 visit 1 microbiome associations to visit 3 VEP latencies,
- 15/30 associations to visit 3 amplitudes),
+Longitudinally, the early microbiome (visit-1)
+was related to VEP features at visit-2 and visit-3 fairly evenly
+(12/28 visit-1 microbiome associations to visit-3 VEP latencies,
+ 15/30 associations to visit-3 amplitudes),
 suggesting early microbiome metabolism in the first 6 months of life is associated with visual neurodevelopment over the next year.
-Microbiome metabolism from visit 2 was associated with
-similar numbers of visit 3 VEP features as visit 1 microbiome
-(17 visit 3 latency features, 18 visit 3 amplitude features),
+Microbiome metabolism from visit-2 was associated with
+similar numbers of visit-3 VEP features as visit-1 microbiome
+(17 visit-3 latency features, 18 visit-3 amplitude features),
 suggesting continued co-development of these systems over the first postnatal year.
 Neurotransmitters GABA and glutamate,
 tryptophan metabolism (tryptophan and quinolinic acid),
@@ -363,19 +361,19 @@ varied over development for many gene sets,
 indicating temporal specificity to these associations.
 With respect to the neurotransmitter-related pathways,
 amongst the associations between GABA synthesis genes and future VEP features,
-GABA genes specifically from visit 1 showed the greatest number of associations
+GABA genes specifically from visit-1 showed the greatest number of associations
 with future VEP features (5/6 GABA associations) at visits 2 and 3 equally,
 and the majority of these associations were VEP amplitudes
 (reflecting development of neurotransmission including excitatory/inhibitory balance).
 To a lesser extent, glutamate metabolism genes followed a similar temporal pattern
-(8/13 glutamate associations involved visit 1 genes)
+(8/13 glutamate associations involved visit-1 genes)
 but did not relate to amplitudes or latencies differentially like GABA.
 This pattern of results suggests early (within the first 6 postnatal months)
 microbiome GABA/glutamate dynamics, especially GABA,
 are most relevant for changes to visual cortex function over the following year.
 
 Tryptophan-related pathway genes (responsible for generating serotonin,
-amongst other products) from visit 1 were also responsible
+amongst other products) from visit-1 were also responsible
 for the majority of associations with future VEP features
 (tryptophan: 6/8 associations; quinolinic acid: 6/9 associations).
 In contrast to GABA but similar to glutamate,
@@ -390,16 +388,16 @@ microbiome gene sets showed the largest number of associations with subsequent V
 
 SCFAs showed a different developmental pattern of associations with future VEP features.
 Specifically, propionate and butyrate metabolism genes
-from both visit 1 and visit 2 showed associations with future VEP features,
+from both visit-1 and visit-2 showed associations with future VEP features,
 but here the effects were almost entirely observed
-for VEP features at visit 3 (10/10 propionate and 7/8 butyrate associations).
+for VEP features at visit-3 (10/10 propionate and 7/8 butyrate associations).
 Moreover, acetate and butyrate metabolism genes
 were doubly associated with future VEP latencies compared to amplitude features.
 
 Finally, menaquinone (Vitamin K2) metabolism genes
 followed a similar pattern to the SCFAs
-in that genes from visit 1 and visit 2 were largely associated
-with future VEP features at visit 3 (8/9 menaquinone associations).
+in that genes from visit-1 and visit-2 were largely associated
+with future VEP features at visit-3 (8/9 menaquinone associations).
 This indicates persistent associations of this early microbiome gene set
 with individual differences in VEP features early in the second year of life.
 
@@ -507,7 +505,7 @@ it may also play a role in glutamate uptake in the brain
 Specifically, tryptophan metabolism genes
 were associated with VEP latencies just after each VEP component showed its greatest window of developmental change
 (components emerge sequentially as follows: P1, N1, N2),
-that is, of P1 at visit 1, N1 and P1 at visit 2, and N2 at visit 3.
+that is, of P1 at visit-1, N1 and P1 at visit-2, and N2 at visit-3.
 This pathway may thus relate to processes stabilizing the neural circuitry
 (i.e. downregulating neuroplasticity)
 underlying each VEP component,
@@ -659,17 +657,17 @@ were collected at enrollment
 
 Families were invited to participate in three in-lab study visits
 over their infant’s first two years of life.
-At the first in-lab study visit (hereafter visit 1),
+At the first in-lab study visit (hereafter visit-1),
 occurring when infants were between approximately 2 months and 6 months of age,
 the following data were collected:
 the infants' age (in months), sex,
 infant electroencephalography (EEG),
 and infant stool samples.
 
-At the second study visit (hereafter visit 2),
+At the second study visit (hereafter visit-2),
 occurring when infants were between approximately 6 months and 12 months of age
 (age in months: M=8.60, SD=1.48, range=5.41-12.00)
-and at the third study visit (hereafter visit 3),
+and at the third study visit (hereafter visit-3),
 occurring when infants were between approximately 12 months and 17 months of age
 (age in months: M=14.10, SD=1.04, range=12.10-17.00),
 infant EEG and stool samples were collected again.
@@ -774,12 +772,12 @@ a positive P1 peak,
 and a negative N2 peak.
 Due to normative maturation of the waveforms as infants age,
 one set of user-specified windows for calculating component features
-was used for visit 1 and 2 and another was used for visit 3.
+was used for visit-1 and 2 and another was used for visit-3.
 For visits 1 and 2,
 the window for calculating features for the N1 component was 40-100 ms,
 75-175 ms for the P1 component,
 and 100-325 ms for the N2 component.
-For visit 3, the window for calculating features for the N1 component was 35-80 ms,
+For visit-3, the window for calculating features for the N1 component was 35-80 ms,
 75-130 ms for the P1 component,
 and 100-275 ms for the N2 component.
 HAPPE+ER parameters used in extracting the ERPs are summarized in Table S5.
@@ -802,9 +800,9 @@ Participants were considered to have failed this visual inspection
 and were subsequently removed from the data set
 if their VEP did not produce three discernible peaks.
 VEP waveforms of included participants by time point are included in Figure 1E.
-97 infants provided usable VEP data at visit 1,
-130 infants provided usable VEP data at visit 2,
-and 131 infants provided usable VEP data at visit 3.
+97 infants provided usable VEP data at visit-1,
+130 infants provided usable VEP data at visit-2,
+and 131 infants provided usable VEP data at visit-3.
 For included participants,
 EEG data quality metrics are summarized in Table S6.
 T-tests for data quality metrics
@@ -813,7 +811,7 @@ number of channels retained in the ROI,
 Pearson’s r for data pre- vs. post-wavelet thresholding
 at 5, 8, 12, and 20 Hz)
 were run between each visit combination
-(i.e., visit 1 vs. visit 2, visit 1 vs. visit 3, visit 2 vs. visit 3).
+(i.e., visit-1 vs. visit-2, visit-1 vs. visit-3, visit-2 vs. visit-3).
 For visits that differed in data quality,
 follow-up post hoc correlations were run for the data quality measure
 with each VEP feature at each visit in the T-test.
@@ -926,7 +924,7 @@ $ "UniRef" ~ "vep" + "age_months" + "n_trials" + "age_diff" $
 
 FSEA was performed on each geneset
 that had at least five members in each comparison group
-according to the procedure set out in
+according to the procedure set out in Subramanian et. al. (2005)
 @subramanianGeneSetEnrichment2005.
 Briefly, enrichment scores (ES) are calculated
 based on the rank order of z-statistics from the LR for each UniRef.
@@ -945,7 +943,7 @@ were considered statistically significant.
 For longitudinal comparisons,
 all participants that had a stool sample collected
 at one visit and a VEP assessment at a subsequent visit were included
-(visit 1 stool → visit 2 VEP, N = 84;
+(visit-1 stool → visit-2 VEP, N = 84;
  v1 → v2, N = 76;
  v2 → v3, N = 69).
 A total of 95 geneset/VEP features
@@ -1001,7 +999,7 @@ This research was supported by the Wellcome LEAP 1kD program.
     *#it.supplement #it.counter.display():* #it.body
 ]
 
-
+#pagebreak()
 == Tables
 
 #set text(8pt)
@@ -1088,7 +1086,7 @@ This research was supported by the Wellcome LEAP 1kD program.
 
 
 #figure(
-    caption:[*Longitudinal FSEA, visit 1 stool #sym.arrow.r.stroked visit 2 VEP*],
+    caption:[*Longitudinal FSEA, visit-1 stool #sym.arrow.r.stroked visit-2 VEP*],
     table(
         columns: 5,
         stroke: 0.5pt,
@@ -1163,7 +1161,7 @@ This research was supported by the Wellcome LEAP 1kD program.
 )
 
 #figure(
-    caption:[*Longitudinal FSEA, visit 1 stool #sym.arrow.r.stroked visit 3 VEP*],
+    caption:[*Longitudinal FSEA, visit-1 stool #sym.arrow.r.stroked visit-3 VEP*],
     table(
         columns: 5,
         stroke: 0.5pt,
@@ -1233,7 +1231,7 @@ This research was supported by the Wellcome LEAP 1kD program.
 )
 
 #figure(
-    caption:[*Longitudinal FSEA, visit 2 stool #sym.arrow.r.stroked visit 3 VEP*],
+    caption:[*Longitudinal FSEA, visit-2 stool #sym.arrow.r.stroked visit-3 VEP*],
     table(
         columns: 5,
         stroke: 0.5pt,
@@ -1323,6 +1321,9 @@ This research was supported by the Wellcome LEAP 1kD program.
             [P1], [0.268785756], [0.180430435],
     )
 )
+
+#pagebreak()
+
 == Figures
 
 #show figure.caption: it=> [
