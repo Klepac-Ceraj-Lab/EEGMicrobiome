@@ -2,12 +2,14 @@
 #set text(8pt, font: "Liberation Sans", lang: "en")
 #set align(center)
 
+// Only in local using latest development version of typst
 #set par.line(numbering: "1")
 #let no-paren-cite(label) = {
   show regex("\(|\)"): none
   cite(label, form: "normal") 
 }
 
+// 89 / 200 char
 = Co-development of gut microbial metabolism and visual neural circuitry over human infancy
 
 Kevin S. Bonham#super([1])\*,
@@ -21,7 +23,7 @@ Marlie Miles#super([4]),
 Donna Herr#super([4]),
 Lauren Davel#super([4]),
 Cara Bosco#super([2]),
-Khula South Africa Data Collection Team#super([4]),
+Khula South Africa Data Collection Team#sym.dagger#super([4]),
 Curtis Huttenhower#super([5])
 Nicolò Pini#super([6,7]),
 Daniel C. Alexander#super([8]),
@@ -31,13 +33,17 @@ Dima Amso#super([11]),
 Melissa Gladstone#super([12]),
 William P. Fifer#super([6,7]),
 Kirsten A. Donald#super([3,13]),
-Laurel J. Gabard-Durnam#super([2])†,
-Vanja Klepac-Ceraj#super([1])†,
+Laurel J. Gabard-Durnam#super([2])#sym.dagger.double,
+Vanja Klepac-Ceraj#super([1])#sym.dagger.double,
 
 #set align(left)
 
 \*These authors contributed equally#linebreak()
-†co-corresponding authors#linebreak()
+#sym.dagger Khula South African Data Collection Team:
+    Layla Bradford, Simone Williams, Lauren Davel,
+    Tembeka Mhlakwaphalwa, Bokang Methola, Khanyisa Nkubungu,
+    Candice Knipe, Zamazimba Madi, Nwabisa Mlandu#linebreak()
+#sym.dagger.double co-corresponding authors#linebreak()
 
 #super([1])Department of Biological Sciences, Wellesley College, Wellesley, MA, USA#linebreak()
 #super([2])Department of Phychology, Northeastern University, Boston, MA, USA#linebreak()
@@ -52,6 +58,11 @@ Vanja Klepac-Ceraj#super([1])†,
 #super([11])Department of Psychology, Columbia University, New York City, NY, USA#linebreak()
 #super([12])Department of Women and Children’s Health, Institute of Life Course and Medical Science, Alder Hey Children’s NHS Foundation Trust, University of Liverpool, Liverpool, United Kingdom#linebreak()
 #super([13])Neuroscience Institute, University of Cape Town, Cape Town, Western Cape, ZAF
+
+// 61 char - needs to be 55
+*Running title*: Infant gut microbiome associates with visual neurodevelopment
+
+*Keywords*: visual cortex development, metagenome, infant gut microbiome, visual-evoked potential, neuroplasticity
 
 === ORCID numbers:
 #table(columns: (1fr, 1fr, 1fr, 1fr),
@@ -77,11 +88,8 @@ Vanja Klepac-Ceraj#super([1])†,
     [Vanja Klepac-Ceraj], [0000-0001-5387-5706],
 )
 
-\*Khula South African Data Collection Team: Layla Bradford, Simone Williams, Lauren Davel, Tembeka Mhlakwaphalwa, Bokang Methola, Khanyisa Nkubungu, Candice Knipe, Zamazimba Madi, Nwabisa Mlandu
+#pagebreak()
 
-*Running title*: Infant gut microbiome associates with visual neurodevelopment
-
-*Keywords*: visual cortex development, metagenome, infant gut microbiome, visual-evoked potential, neuroplasticity
 //
 // Leave comments like this
 
@@ -200,6 +208,337 @@ We evaluated the concurrent association between microbial genes and VEP amplitud
 and we tested prospective influences of microbial genes from early visits on VEP changes at later visits.
 In this way, we were able to reveal the temporal dynamics of gut-brain co-development
 within individuals during this most critical window of plasticity in both systems.
+
+== Methods and Materials
+
+=== Cohort
+
+==== Participants and Study Design
+
+Infants were recruited from local community clinics in Gugulethu,
+an informal settlement in Cape Town, South Africa,
+as part of a prospective longitudinal study
+(most enrollments happened prenatally with 16% of infants enrolled shortly after birth;
+#no-paren-cite(<zieffCharacterizingDevelopingExecutive2024>)).
+The first language for the majority of residents in this area is Xhosa.
+Study procedures were offered in English or Xhosa depending on the language preference of the mother.
+This study was approved by the relevant university Health Research Ethics Committees
+(University of Cape Town study number: 666/2021).
+Informed consent was collected from mothers on behalf of themself and their infants.
+Demographic information, including maternal place of birth,
+primary spoken language, maternal age at enrollment,
+maternal educational attainment, and maternal income,
+were collected at enrollment
+(see Table 1).
+
+Families were invited to participate in three in-lab study visits
+over their infant’s first two years of life.
+At the first in-lab study visit (hereafter visit-1),
+occurring when infants were between approximately 2 months and 6 months of age,
+the following data were collected:
+the infants' age (in months), sex,
+infant electroencephalography (EEG),
+and infant stool samples.
+
+At the second study visit (hereafter visit-2),
+occurring when infants were between approximately 6 months and 12 months of age
+(age in months: M=8.60, SD=1.48, range=5.41-12.00)
+and at the third study visit (hereafter visit-3),
+occurring when infants were between approximately 12 months and 17 months of age
+(age in months: M=14.10, SD=1.04, range=12.10-17.00),
+infant EEG and stool samples were collected again.
+At visits in which infants
+were unable to complete both EEG and stool samples on the same day,
+EEG and stool samples were collected on different days.
+For concurrent time point analyses,
+infants with EEG and stool collected more than two months apart were excluded.
+Not all infants had EEG and microbiome data
+collected at all three time points or contributed usable data at all three-time points.
+
+All enrolled infants received a comprehensive medical exam at each visit,
+which included assessments of eye-related conditions.
+Several infants (n=3)
+were identified as having eye-related anomalies during the medical exam,
+and they were excluded from any further analyses.
+
+=== EEG Processing
+
+==== EEG Data Acquisition
+
+Electroencephalography (EEG) data were acquired from infants while they were seated in their caregiver’s lap in a dimly-lit,
+quiet room using a 128-channel high density HydroCel Geodesic Sensor Net
+(EGI, Eugene, OR),
+amplified with a NetAmps 400 high-input amplifier,
+and recorded via an Electrical Geodesics, Inc.
+(EGI, Eugene, OR)
+system with a 1000 Hz sampling rate.
+EEG data were online referenced to the vertex (channel Cz)
+through the EGI Netstation software.
+Impedances were kept below 100KΩ
+in accordance with the impedance capabilities of the high-impedance amplifiers.
+Geodesic Sensor Nets with modified tall pedestals
+designed for improving inclusion of infants with thick/curly/tall hair were used as needed across participants
+@mlanduEvaluatingNovelHighdensity2024.
+Shea moisture leave-in castor oil conditioner
+was applied to hair across the scalp prior to net placement
+to improve both impedances and participant comfort
+@mlanduEvaluatingNovelHighdensity2024.
+This leave-in conditioner contains insulating ingredients,
+so there is no risk of electrical bridging,
+and has not been found to disrupt the EEG signal during testing (unpublished data).
+Conditioning hair in this way allows for nets
+to lay closer to the scalp for curly/coily hair types
+and makes for more comfortable net removal at the end of testing.
+
+The Visual-Evoked Potential (VEP) taski
+was presented using Eprime 3.0 software
+(Psychology Software Tools, Pittsburgh, PA)
+on a Lenovo desktop computer with an external monitor
+19.5 inches on the diagonal facing the infant
+(with monitor approximately 65 cm away from the infant).
+A standard phase-reversal VEP was induced
+with a black and white checkerboard
+(1cm x 1 cm squares within the board)
+stimulus that alternated presentation
+(black squares became white, white squares became black)
+every 500 milliseconds for a total of 100 trials.
+Participant looking was monitored by video and by an assistant throughout data collection.
+If the participant looked away during the VEP task,
+the task was rerun.
+
+==== EEG Data Pre-Processing
+
+VEP data were exported from native Netstation .mff format
+to .raw format and then pre-processed
+using the HAPPE+ER pipeline within the HAPPE v3.3 software,
+an automated open-source EEG processing software
+validated for infant data
+@monachinoHAPPEEventRelatedHAPPE2022.
+A subset of the 128 channels
+were selected for pre-processing that excluded the rim electrodes
+as these are typically artifact-laden
+(channels excluded from pre-processing included in Table S4).
+The HAPPE pre-processing pipeline was run
+with user-selected specifications outlined in Table S4.
+
+
+Pre-processed VEP data were considered usable
+and moved forward to VEP extraction if HAPPE pre-processing ran successfully,
+at least 15 trials were retained following bad trial rejection,
+and at least one good channel was kept within the visual ROI.
+Note that channels marked bad during pre-processing
+had their data interpolated as part of standard preprocessing pipelines for ERPs
+@monachinoHAPPEEventRelatedHAPPE2022.
+Interpolated channels were included in analyses here
+as is typically done in developmental samples,
+and given the low overall rates of interpolation present
+(e.g., an average of between 4 to 5 of 5 possible good channels in the region of interest were retained at each visit time point).
+
+
+==== Visual-Evoked Potentials (VEPs)
+
+VEP waveforms were extracted and quantified
+using the HAPPE+ER v3.3 GenerateERPs script
+@monachinoHAPPEEventRelatedHAPPE2022.
+Electrodes in the occipital region were selected as a region of interest
+(i.e., E70, E71, E75, E76, E83).
+The VEP waveform has three main components to be quantified:
+a negative N1 peak,
+a positive P1 peak,
+and a negative N2 peak.
+Due to normative maturation of the waveforms as infants age,
+one set of user-specified windows for calculating component features
+was used for visit-1 and 2 and another was used for visit-3.
+For visits 1 and 2,
+the window for calculating features for the N1 component was 40-100 ms,
+75-175 ms for the P1 component,
+and 100-325 ms for the N2 component.
+For visit-3, the window for calculating features for the N1 component was 35-80 ms,
+75-130 ms for the P1 component,
+and 100-275 ms for the N2 component.
+HAPPE+ER parameters used in extracting the ERPs are summarized in Table S5.
+
+To correct for the potential influence of earlier components on later components,
+corrected amplitudes and latencies were calculated and used in all analyses.
+Specifically, the P1 amplitude was corrected for the N1 amplitude
+(corrected P1 amplitude = P1 - N1 amplitude),
+the P1 latency was corrected for the N1 latency
+(corrected P1 latency = P1 - N1 latency),
+the N2 amplitude was corrected for the P1 amplitude
+(corrected N2 amplitude = N2 - P1 amplitude),
+and the N2 latency was corrected for the P1 latency
+(corrected N2 latency = N2 - P1 latency).
+
+All VEPs were visually inspected to ensure that the automatically extracted values
+were correct and were adjusted if observable peaks
+occurred outside the automated window bounds.
+Participants were considered to have failed this visual inspection
+and were subsequently removed from the data set
+if their VEP did not produce three discernible peaks.
+VEP waveforms of included participants by time point are included in Figure 1E.
+97 infants provided usable VEP data at visit-1,
+130 infants provided usable VEP data at visit-2,
+and 131 infants provided usable VEP data at visit-3.
+For included participants,
+EEG data quality metrics are summarized in Table S6.
+T-tests for data quality metrics
+(i.e., number of trials collected, number of trials retained,
+number of channels retained in the ROI,
+Pearson’s r for data pre- vs. post-wavelet thresholding
+at 5, 8, 12, and 20 Hz)
+were run between each visit combination
+(i.e., visit-1 vs. visit-2, visit-1 vs. visit-3, visit-2 vs. visit-3).
+For visits that differed in data quality,
+follow-up post hoc correlations were run for the data quality measure
+with each VEP feature at each visit in the T-test.
+In no case did the data quality metric relate to VEP features at multiple visits,
+making it highly unlikely the data quality difference contributed to results.
+
+=== Biospecimens and sequencing
+
+==== Sample Collection
+
+Stool samples (n=315) were collected in the clinic
+by the research assistant directly from the diaper,
+transferred to Zymo DNA/RNA ShieldTM Fecal collection Tubes
+(\#R1101, Zymo Research Corp., Irvine, USA)
+and immediately frozen at -80 ˚C.
+Stool samples were not collected
+if the participant had taken antibiotics within the two weeks prior to sampling.
+
+==== DNA Extraction
+
+DNA extraction was performed at Medical Microbiology,
+University of Cape Town, South Africa,
+from stool samples collected in DNA/RNA Shield™ Fecal collection tube
+using the Zymo Research Fecal DNA MiniPrep kit
+(\# D4300, Zymo Research Corp., Irvine, USA)
+following manufacturer’s protocol.
+To assess the extraction process's quality,
+ZymoBIOMICS® Microbial Community Standards
+(\#D6300 and \#D6310, Zymo Research Corp., Irvine, USA)
+were incorporated and subjected to the identical process as the stool samples.
+The DNA yield and purity were determined using the NanoDrop® ND -1000
+(Nanodrop Technologies Inc. Wilmington, USA).
+
+==== Sequencing
+
+Shotgun metagenomic sequencing was performed on all samples
+at the Integrated Microbiome Research Resource
+(IMR, Dalhousie University, NS, Canada).
+A pooled library (max 96 samples per run)
+was prepared using the Illumina Nextera Flex Kit
+for MiSeq and NextSeq from 1 ng of each sample.
+Samples were then pooled onto a plate
+and sequenced on the Illumina NextSeq 2000 platform
+using 150+150 bp paired-end P3 cells,
+generating 24M million raw reads and 3.6 Gb of sequence per sample
+@comeauPreparingMultiplexedWGS2023.
+
+=== Statistics / computational analysis
+
+==== Age-Related Changes in VEP Features
+
+To determine age-related changes in VEP features,
+six linear mixed models with each VEP feature as the outcome
+(i.e., N1 amplitude/latency, P1 amplitude/latency, N2 amplitude/latency)
+were run using the lme4 package
+@batesFittingLinearMixedEffects2015
+in R with age in months as the predictor of interest
+and number of retained trials as a covariate.
+
+==== Metagenome processing
+
+Raw metagenomic sequence reads (2.5 x 107 ± 1.4 x 107 reads/sample)
+were processed using tools from the bioBakery as previously described
+@bonhamGutresidentMicroorganismsTheir2023
+@beghiniIntegratingTaxonomicFunctional2021.
+Briefly, KneadData v0.10.0 was used with default parameters
+to trim low-quality reads and remove human sequences (using reference database hg37).
+Next, MetaPhlAn v3.1.0 (using database mpa_v31_CHOCOPhlAn_201901)
+was used with default parameters to map microbial marker genes to generate taxonomic profiles.
+Taxonomic profiles and raw reads were passed
+to HUMAnN v3.7 to generate stratified functional profiles.
+
+==== Microbial community analysis
+
+Principal coordinates analysis
+was performed in the julia programming language
+@bezansonJuliaFreshApproach2017
+using the Microbiome.jl package
+@bonhamMicrobiomeJlBiobakeryUtils2021.
+Bray-Curtis dissimilarity (Distances.jl)
+was calculated across all pairs of samples,
+filtering for species-level classification.
+Classical multidimensional scaling
+was performed on the dissimilarity matrix (MultivariateStats.jl),
+and axes with negative eigenvalues were discarded.
+
+==== Feature Set Enrichment Analysis (FSEA)
+
+Potentially neuroactive genesets
+were extracted from Supplementary Dataset 1 from
+@valles-colomerNeuroactivePotentialHuman2019.
+Gut-brain modules provide Kegg Orthologue IDs (KOs)
+@suzekUniRefComprehensiveNonredundant2007
+@kanehisaKEGGResourceDeciphering2004,
+which were mapped to UniRef90 IDs
+using the utility mapping file provided with HUMAnN v3.1
+@beghiniIntegratingTaxonomicFunctional2021.
+For each stool/VEP pair,
+logistic regression (LR) was performed,
+linking the presence or absence of that UniRef in a sample
+with each VEP feature (i.e., N1, P1, and N2 latencies and amplitudes),
+controlling for the age at which the stool sample was collected,
+the number of retained VEP trials,
+and the difference in age between the stool collection and VEP measurement.
+For concurrently collected stool and VEP comparisons (Figure 2),
+participants whose stool collection and VEP measurements
+were more than two months apart were excluded.
+
+$ "UniRef" ~ "vep" + "age_months" + "n_trials" + "age_diff" $
+
+FSEA was performed on each geneset
+that had at least five members in each comparison group
+according to the procedure set out in Subramanian et. al. (2005)
+@subramanianGeneSetEnrichment2005.
+Briefly, enrichment scores (ES) are calculated
+based on the rank order of z-statistics from the LR for each UniRef.
+A permutation test was then performed
+where the ES for 5000 random samples of ranks
+of the same length as the gene set are calculated,
+and the pseudo-p value is the fraction of permutations
+where the permutation ES has a greater absolute value than the true ES.
+
+Benjamini-Hochberg FDR correction
+was performed separately on all concurrently tested geneset/VEP feature combinations
+and all longitudinal geneset/VEP feature combinations.
+Corrected p-values (q-values) less than 0.2
+were considered statistically significant.
+
+For longitudinal comparisons,
+all participants that had a stool sample collected
+at one visit and a VEP assessment at a subsequent visit were included
+(visit-1 stool → visit-2 VEP, N = 84;
+ v1 → v2, N = 76;
+ v2 → v3, N = 69).
+A total of 95 geneset/VEP features
+were significant when using an FDR-corrected p-value cutoff of q < 0.2.
+To ensure the robustness of these findings,
+we randomly permuted participant IDs
+between the stool and VEP assessments and repeated the analysis.
+Over 10 random permutations,
+a mean of 19.5 significant associations were identified,
+suggesting that FDR correction is correctly calibrating the false-positive rate.
+
+=== Data and code availability
+
+Code for initial processing of data and for analyses performed in this manuscript
+are available on github and archived on Zenodo
+@bonhamKlepacCerajLabEEGMicrobiomeInitial2024.
+Input data will be archived on Dryad
+and downloadable via included scripts in analysis code upon publication.
+
 
 == Results
 
@@ -633,336 +972,6 @@ This study, therefore,
 provides a foundation for deep investigation
 of the link between the human gut microbiome and brain development.
 
-== Materials and methods
-
-=== Cohort
-
-==== Participants and Study Design
-
-Infants were recruited from local community clinics in Gugulethu,
-an informal settlement in Cape Town, South Africa,
-as part of a prospective longitudinal study
-(most enrollments happened prenatally with 16% of infants enrolled shortly after birth;
-#no-paren-cite(<zieffCharacterizingDevelopingExecutive2024>)).
-The first language for the majority of residents in this area is Xhosa.
-Study procedures were offered in English or Xhosa depending on the language preference of the mother.
-This study was approved by the relevant university Health Research Ethics Committees
-(University of Cape Town study number: 666/2021).
-Informed consent was collected from mothers on behalf of themself and their infants.
-Demographic information, including maternal place of birth,
-primary spoken language, maternal age at enrollment,
-maternal educational attainment, and maternal income,
-were collected at enrollment
-(see Table 1).
-
-Families were invited to participate in three in-lab study visits
-over their infant’s first two years of life.
-At the first in-lab study visit (hereafter visit-1),
-occurring when infants were between approximately 2 months and 6 months of age,
-the following data were collected:
-the infants' age (in months), sex,
-infant electroencephalography (EEG),
-and infant stool samples.
-
-At the second study visit (hereafter visit-2),
-occurring when infants were between approximately 6 months and 12 months of age
-(age in months: M=8.60, SD=1.48, range=5.41-12.00)
-and at the third study visit (hereafter visit-3),
-occurring when infants were between approximately 12 months and 17 months of age
-(age in months: M=14.10, SD=1.04, range=12.10-17.00),
-infant EEG and stool samples were collected again.
-At visits in which infants
-were unable to complete both EEG and stool samples on the same day,
-EEG and stool samples were collected on different days.
-For concurrent time point analyses,
-infants with EEG and stool collected more than two months apart were excluded.
-Not all infants had EEG and microbiome data
-collected at all three time points or contributed usable data at all three-time points.
-
-All enrolled infants received a comprehensive medical exam at each visit,
-which included assessments of eye-related conditions.
-Several infants (n=3)
-were identified as having eye-related anomalies during the medical exam,
-and they were excluded from any further analyses.
-
-=== EEG Processing
-
-==== EEG Data Acquisition
-
-Electroencephalography (EEG) data were acquired from infants while they were seated in their caregiver’s lap in a dimly-lit,
-quiet room using a 128-channel high density HydroCel Geodesic Sensor Net
-(EGI, Eugene, OR),
-amplified with a NetAmps 400 high-input amplifier,
-and recorded via an Electrical Geodesics, Inc.
-(EGI, Eugene, OR)
-system with a 1000 Hz sampling rate.
-EEG data were online referenced to the vertex (channel Cz)
-through the EGI Netstation software.
-Impedances were kept below 100KΩ
-in accordance with the impedance capabilities of the high-impedance amplifiers.
-Geodesic Sensor Nets with modified tall pedestals
-designed for improving inclusion of infants with thick/curly/tall hair were used as needed across participants
-@mlanduEvaluatingNovelHighdensity2024.
-Shea moisture leave-in castor oil conditioner
-was applied to hair across the scalp prior to net placement
-to improve both impedances and participant comfort
-@mlanduEvaluatingNovelHighdensity2024.
-This leave-in conditioner contains insulating ingredients,
-so there is no risk of electrical bridging,
-and has not been found to disrupt the EEG signal during testing (unpublished data).
-Conditioning hair in this way allows for nets
-to lay closer to the scalp for curly/coily hair types
-and makes for more comfortable net removal at the end of testing.
-
-The Visual-Evoked Potential (VEP) taski
-was presented using Eprime 3.0 software
-(Psychology Software Tools, Pittsburgh, PA)
-on a Lenovo desktop computer with an external monitor
-19.5 inches on the diagonal facing the infant
-(with monitor approximately 65 cm away from the infant).
-A standard phase-reversal VEP was induced
-with a black and white checkerboard
-(1cm x 1 cm squares within the board)
-stimulus that alternated presentation
-(black squares became white, white squares became black)
-every 500 milliseconds for a total of 100 trials.
-Participant looking was monitored by video and by an assistant throughout data collection.
-If the participant looked away during the VEP task,
-the task was rerun.
-
-==== EEG Data Pre-Processing
-
-VEP data were exported from native Netstation .mff format
-to .raw format and then pre-processed
-using the HAPPE+ER pipeline within the HAPPE v3.3 software,
-an automated open-source EEG processing software
-validated for infant data
-@monachinoHAPPEEventRelatedHAPPE2022.
-A subset of the 128 channels
-were selected for pre-processing that excluded the rim electrodes
-as these are typically artifact-laden
-(channels excluded from pre-processing included in Table S4).
-The HAPPE pre-processing pipeline was run
-with user-selected specifications outlined in Table S4.
-
-
-Pre-processed VEP data were considered usable
-and moved forward to VEP extraction if HAPPE pre-processing ran successfully,
-at least 15 trials were retained following bad trial rejection,
-and at least one good channel was kept within the visual ROI.
-Note that channels marked bad during pre-processing
-had their data interpolated as part of standard preprocessing pipelines for ERPs
-@monachinoHAPPEEventRelatedHAPPE2022.
-Interpolated channels were included in analyses here
-as is typically done in developmental samples,
-and given the low overall rates of interpolation present
-(e.g., an average of between 4 to 5 of 5 possible good channels in the region of interest were retained at each visit time point).
-
-
-==== Visual-Evoked Potentials (VEPs)
-
-VEP waveforms were extracted and quantified
-using the HAPPE+ER v3.3 GenerateERPs script
-@monachinoHAPPEEventRelatedHAPPE2022.
-Electrodes in the occipital region were selected as a region of interest
-(i.e., E70, E71, E75, E76, E83).
-The VEP waveform has three main components to be quantified:
-a negative N1 peak,
-a positive P1 peak,
-and a negative N2 peak.
-Due to normative maturation of the waveforms as infants age,
-one set of user-specified windows for calculating component features
-was used for visit-1 and 2 and another was used for visit-3.
-For visits 1 and 2,
-the window for calculating features for the N1 component was 40-100 ms,
-75-175 ms for the P1 component,
-and 100-325 ms for the N2 component.
-For visit-3, the window for calculating features for the N1 component was 35-80 ms,
-75-130 ms for the P1 component,
-and 100-275 ms for the N2 component.
-HAPPE+ER parameters used in extracting the ERPs are summarized in Table S5.
-
-To correct for the potential influence of earlier components on later components,
-corrected amplitudes and latencies were calculated and used in all analyses.
-Specifically, the P1 amplitude was corrected for the N1 amplitude
-(corrected P1 amplitude = P1 - N1 amplitude),
-the P1 latency was corrected for the N1 latency
-(corrected P1 latency = P1 - N1 latency),
-the N2 amplitude was corrected for the P1 amplitude
-(corrected N2 amplitude = N2 - P1 amplitude),
-and the N2 latency was corrected for the P1 latency
-(corrected N2 latency = N2 - P1 latency).
-
-All VEPs were visually inspected to ensure that the automatically extracted values
-were correct and were adjusted if observable peaks
-occurred outside the automated window bounds.
-Participants were considered to have failed this visual inspection
-and were subsequently removed from the data set
-if their VEP did not produce three discernible peaks.
-VEP waveforms of included participants by time point are included in Figure 1E.
-97 infants provided usable VEP data at visit-1,
-130 infants provided usable VEP data at visit-2,
-and 131 infants provided usable VEP data at visit-3.
-For included participants,
-EEG data quality metrics are summarized in Table S6.
-T-tests for data quality metrics
-(i.e., number of trials collected, number of trials retained,
-number of channels retained in the ROI,
-Pearson’s r for data pre- vs. post-wavelet thresholding
-at 5, 8, 12, and 20 Hz)
-were run between each visit combination
-(i.e., visit-1 vs. visit-2, visit-1 vs. visit-3, visit-2 vs. visit-3).
-For visits that differed in data quality,
-follow-up post hoc correlations were run for the data quality measure
-with each VEP feature at each visit in the T-test.
-In no case did the data quality metric relate to VEP features at multiple visits,
-making it highly unlikely the data quality difference contributed to results.
-
-=== Biospecimens and sequencing
-
-==== Sample Collection
-
-Stool samples (n=315) were collected in the clinic
-by the research assistant directly from the diaper,
-transferred to Zymo DNA/RNA ShieldTM Fecal collection Tubes
-(\#R1101, Zymo Research Corp., Irvine, USA)
-and immediately frozen at -80 ˚C.
-Stool samples were not collected
-if the participant had taken antibiotics within the two weeks prior to sampling.
-
-==== DNA Extraction
-
-DNA extraction was performed at Medical Microbiology,
-University of Cape Town, South Africa,
-from stool samples collected in DNA/RNA Shield™ Fecal collection tube
-using the Zymo Research Fecal DNA MiniPrep kit
-(\# D4300, Zymo Research Corp., Irvine, USA)
-following manufacturer’s protocol.
-To assess the extraction process's quality,
-ZymoBIOMICS® Microbial Community Standards
-(\#D6300 and \#D6310, Zymo Research Corp., Irvine, USA)
-were incorporated and subjected to the identical process as the stool samples.
-The DNA yield and purity were determined using the NanoDrop® ND -1000
-(Nanodrop Technologies Inc. Wilmington, USA).
-
-==== Sequencing
-
-Shotgun metagenomic sequencing was performed on all samples
-at the Integrated Microbiome Research Resource
-(IMR, Dalhousie University, NS, Canada).
-A pooled library (max 96 samples per run)
-was prepared using the Illumina Nextera Flex Kit
-for MiSeq and NextSeq from 1 ng of each sample.
-Samples were then pooled onto a plate
-and sequenced on the Illumina NextSeq 2000 platform
-using 150+150 bp paired-end P3 cells,
-generating 24M million raw reads and 3.6 Gb of sequence per sample
-@comeauPreparingMultiplexedWGS2023.
-
-=== Statistics / computational analysis
-
-==== Age-Related Changes in VEP Features
-
-To determine age-related changes in VEP features,
-six linear mixed models with each VEP feature as the outcome
-(i.e., N1 amplitude/latency, P1 amplitude/latency, N2 amplitude/latency)
-were run using the lme4 package
-@batesFittingLinearMixedEffects2015
-in R with age in months as the predictor of interest
-and number of retained trials as a covariate.
-
-==== Metagenome processing
-
-Raw metagenomic sequence reads (2.5 x 107 ± 1.4 x 107 reads/sample)
-were processed using tools from the bioBakery as previously described
-@bonhamGutresidentMicroorganismsTheir2023
-@beghiniIntegratingTaxonomicFunctional2021.
-Briefly, KneadData v0.10.0 was used with default parameters
-to trim low-quality reads and remove human sequences (using reference database hg37).
-Next, MetaPhlAn v3.1.0 (using database mpa_v31_CHOCOPhlAn_201901)
-was used with default parameters to map microbial marker genes to generate taxonomic profiles.
-Taxonomic profiles and raw reads were passed
-to HUMAnN v3.7 to generate stratified functional profiles.
-
-==== Microbial community analysis
-
-Principal coordinates analysis
-was performed in the julia programming language
-@bezansonJuliaFreshApproach2017
-using the Microbiome.jl package
-@bonhamMicrobiomeJlBiobakeryUtils2021.
-Bray-Curtis dissimilarity (Distances.jl)
-was calculated across all pairs of samples,
-filtering for species-level classification.
-Classical multidimensional scaling
-was performed on the dissimilarity matrix (MultivariateStats.jl),
-and axes with negative eigenvalues were discarded.
-
-==== Feature Set Enrichment Analysis (FSEA)
-
-Potentially neuroactive genesets
-were extracted from Supplementary Dataset 1 from
-@valles-colomerNeuroactivePotentialHuman2019.
-Gut-brain modules provide Kegg Orthologue IDs (KOs)
-@suzekUniRefComprehensiveNonredundant2007
-@kanehisaKEGGResourceDeciphering2004,
-which were mapped to UniRef90 IDs
-using the utility mapping file provided with HUMAnN v3.1
-@beghiniIntegratingTaxonomicFunctional2021.
-For each stool/VEP pair,
-logistic regression (LR) was performed,
-linking the presence or absence of that UniRef in a sample
-with each VEP feature (i.e., N1, P1, and N2 latencies and amplitudes),
-controlling for the age at which the stool sample was collected,
-the number of retained VEP trials,
-and the difference in age between the stool collection and VEP measurement.
-For concurrently collected stool and VEP comparisons (Figure 2),
-participants whose stool collection and VEP measurements
-were more than two months apart were excluded.
-
-$ "UniRef" ~ "vep" + "age_months" + "n_trials" + "age_diff" $
-
-FSEA was performed on each geneset
-that had at least five members in each comparison group
-according to the procedure set out in Subramanian et. al. (2005)
-@subramanianGeneSetEnrichment2005.
-Briefly, enrichment scores (ES) are calculated
-based on the rank order of z-statistics from the LR for each UniRef.
-A permutation test was then performed
-where the ES for 5000 random samples of ranks
-of the same length as the gene set are calculated,
-and the pseudo-p value is the fraction of permutations
-where the permutation ES has a greater absolute value than the true ES.
-
-Benjamini-Hochberg FDR correction
-was performed separately on all concurrently tested geneset/VEP feature combinations
-and all longitudinal geneset/VEP feature combinations.
-Corrected p-values (q-values) less than 0.2
-were considered statistically significant.
-
-For longitudinal comparisons,
-all participants that had a stool sample collected
-at one visit and a VEP assessment at a subsequent visit were included
-(visit-1 stool → visit-2 VEP, N = 84;
- v1 → v2, N = 76;
- v2 → v3, N = 69).
-A total of 95 geneset/VEP features
-were significant when using an FDR-corrected p-value cutoff of q < 0.2.
-To ensure the robustness of these findings,
-we randomly permuted participant IDs
-between the stool and VEP assessments and repeated the analysis.
-Over 10 random permutations,
-a mean of 19.5 significant associations were identified,
-suggesting that FDR correction is correctly calibrating the false-positive rate.
-
-=== Data and code availability
-
-Code for initial processing of data and for analyses performed in this manuscript
-are available on github and archived on Zenodo
-@bonhamKlepacCerajLabEEGMicrobiomeInitial2024.
-Input data will be archived on Dryad
-and downloadable via included scripts in analysis code upon publication.
-
 == Acknowledgments
 
 We would like to extend our thanks
@@ -974,6 +983,23 @@ ensuring the success of this project.
 We would like to express our appreciation
 to the members of the Huttenhower laboratory for their insightful comments and edits.
 This research was supported by the Wellcome LEAP 1kD program.
+
+=== CRediT
+
+Conceptualization: KSB, ETM, KAD, LJGD, VKC#linebreak()
+Data curation: KSB, ETM, GFB, FP, SM, MRZ, MM, DH#linebreak()
+Formal analysis: KSB, ETM#linebreak()
+Funding acquisition: KSB, NP, DCA, DKJ, SCRW, DA, MG, WPF, KAD, LJGD, VKC#linebreak()
+Investigation: KSB, ETM, GFB, SM, MRZ, MM, DH#linebreak()
+Methodology: KSB, NP, DCA, DKJ, SCRW, DA, MG, WPF, KAD, LJGD, VKC#linebreak()
+Project administration: LJGD, VKC#linebreak()
+Software: KSB, ETM, GFB, CH, LJGD#linebreak()
+Resources: SM, AS, FP, MRZ, MM, LD, CB, Khula, KAD, VKC#linebreak()
+Supervision: KSB, LJGD, VKC#linebreak()
+Validation: KSB, ETM#linebreak()
+Visualization: KSB#linebreak()
+Writing – original draft KSB, ETM, LJGD, VKC#linebreak()
+Writing – review & editing KSB, ETM, CH, NP, KAD#linebreak()
 
 == Author correspondence
 
