@@ -229,7 +229,7 @@ Demographic information, including maternal place of birth,
 primary spoken language, maternal age at enrollment,
 maternal educational attainment, and maternal income,
 were collected at enrollment
-(see Table 1).
+(see @table1).
 
 Families were invited to participate in three in-lab study visits
 over their infant’s first two years of life.
@@ -375,7 +375,7 @@ occurred outside the automated window bounds.
 Participants were considered to have failed this visual inspection
 and were subsequently removed from the data set
 if their VEP did not produce three discernible peaks.
-VEP waveforms of included participants by time point are included in Figure 1E.
+VEP waveforms of included participants by time point are included in @figure1\E.
 97 infants provided usable VEP data at visit-1,
 130 infants provided usable VEP data at visit-2,
 and 131 infants provided usable VEP data at visit-3.
@@ -492,7 +492,7 @@ with each VEP feature (i.e., N1, P1, and N2 latencies and amplitudes),
 controlling for the age at which the stool sample was collected,
 the number of retained VEP trials,
 and the difference in age between the stool collection and VEP measurement.
-For concurrently collected stool and VEP comparisons (Figure 2),
+For concurrently collected stool and VEP comparisons (@figure2),
 participants whose stool collection and VEP measurements
 were more than two months apart were excluded.
 
@@ -546,7 +546,7 @@ and downloadable via included scripts in analysis code upon publication.
 
 To investigate the co-development of the gut microbiome and visual neurodevelopment,
 we collected stool and the VEP in a longitudinal cohort of 194 children in South Africa during the first 18 months of life
-(Figure 1A, B, Table 1;
+(@figure1\A, B, @table1;
 visit-1, N = 119, age 3.6 ± 0.7 months,
 visit-2, N = 144, age 8.7 ± 1.4 months,
 visit-3, N = 130, age 14.2 ± 1.0 months).
@@ -556,9 +556,9 @@ As expected for children at this age
 @backhedDynamicsStabilizationHuman2015,
 microbial composition was developmentally dependent,
 with the first principal coordinate axis for both taxonomic profiles
-(Figure 1C; variance explained = 15.1%; R = -0.50)
+(@figure1\C; variance explained = 15.1%; R = -0.50)
 and functional profiles
-(Figure 1D; variance explained = 12.9%; R = -0.57)
+(@figure1\D; variance explained = 12.9%; R = -0.57)
 driven strongly by the age of the participant at the time of collection.
 Similarly, both amplitude and latency VEP features were strongly correlated with age,
 as expected
@@ -572,7 +572,7 @@ corrected N2 amplitude became smaller
 (N2: b=0.52, p<.05),
 and all latencies became shorter
 (N1: b=-0.79, p<.05; P1: b=-1.21, p<.05; N2: b=-4.10, p<.05)
-(Figure 1E).
+(@figure1\E).
 
 === Microbial genes with neuroactive potential are associated with concurrently measured visual development
 
@@ -596,7 +596,7 @@ Of the 35 genesets assessed,
 and of those, 18 were significantly associated with at least one EEG feature
 during at least one visit within the 18-month window,
 after correcting for false discovery rate
-(Benjamini-Hochberg, q < 0.2; Figure 2, Table S2).
+(Benjamini-Hochberg, q < 0.2; @figure2, Table S2).
 Microbial genes involved in synthesis or degradation of molecules with neuroactive potential across all categories considered
 (i.e., neurotransmitters, amino acid metabolism, SCFAs, other)
 were associated with both VEP amplitudes and latencies at each visit,
@@ -658,13 +658,13 @@ we performed FSEA on stool samples collected at visit-1 with visit-2 VEP
 or visit-3 VEP
 (age at stool collection = 3.7 ± 0.7 months, age at VEP = 14.1 ± 1.1 months),
 as well as visit-2 stool samples with visit-3 VEP (age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; Table S3)
-(Figure 3A).
+(@figure3\A).
 
 All gene sets except those involved in the synthesis of 3,4-dihydroxyphenylacetic acid (DOPAC),
 a metabolite of dopamine,
 that had a significant hit with concurrently measured VEP
 were also significantly associated with at least one future VEP feature
-(Figure 3B, Tables 2-5).
+(@figure3\B, Tables 2-5).
 Notably, the quantity of those associations increased substantially
 for all longitudinal comparisons compared to concurrent comparisons.
 For example, only 6 visit-1 microbial gene sets were associated with visit-1 VEP,
@@ -980,8 +980,6 @@ who generously provided their time and samples for this study.
 We are also grateful to the dedicated nurses and researchers
 who recruited participants and collected data,
 ensuring the success of this project.
-We would like to express our appreciation
-to the members of the Huttenhower laboratory for their insightful comments and edits.
 This research was supported by the Wellcome LEAP 1kD program.
 
 === CRediT
@@ -998,8 +996,8 @@ Resources: SM, AS, FP, MRZ, MM, LD, CB, Khula, KAD, VKC#linebreak()
 Supervision: KSB, LJGD, VKC#linebreak()
 Validation: KSB, ETM#linebreak()
 Visualization: KSB#linebreak()
-Writing – original draft KSB, ETM, LJGD, VKC#linebreak()
-Writing – review & editing KSB, ETM, CH, NP, KAD#linebreak()
+Writing – original draft: KSB, ETM, LJGD, VKC#linebreak()
+Writing – review & editing: KSB, ETM, CH, NP, KAD#linebreak()
 
 == Author correspondence
 
@@ -1105,7 +1103,7 @@ Writing – review & editing KSB, ETM, CH, NP, KAD#linebreak()
             table.cell(colspan:2)[ᵇAt the time of writing (1/16/24), 1 US Dollar = 18.87 South African Rand (ZAR).]
             ),
     caption: [*Overall Demographic Information*]
-)
+) <table1>
 
 
 #set table.cell(align: center+horizon)
@@ -1184,7 +1182,7 @@ Writing – review & editing KSB, ETM, CH, NP, KAD#linebreak()
             [N2], [0.355044972], [0.180080899],
     table.hline(stroke: 2pt),
     )
-)
+) <table2>
 
 #figure(
     caption:[*Longitudinal FSEA, visit-1 stool #sym.arrow.r.stroked visit-3 VEP*],
@@ -1254,7 +1252,7 @@ Writing – review & editing KSB, ETM, CH, NP, KAD#linebreak()
             [N2], [0.35858587], [0.080012903],
     table.hline(stroke: 2pt),
     )
-)
+) <table3>
 
 #figure(
     caption:[*Longitudinal FSEA, visit-2 stool #sym.arrow.r.stroked visit-3 VEP*],
@@ -1346,7 +1344,7 @@ Writing – review & editing KSB, ETM, CH, NP, KAD#linebreak()
         [latency],
             [P1], [0.268785756], [0.180430435],
     )
-)
+) <table4>
 
 #pagebreak()
 
@@ -1404,7 +1402,7 @@ Writing – review & editing KSB, ETM, CH, NP, KAD#linebreak()
     (A) Age distributions for stool samples (left) and VEP (right)
     for each longitudinal comparison (same individual) tested,
     V1 stool →V2 VEP, V1 stool →V3 VEP, and V2 stool →V3 VEP.
-    As in Figure 2, (B) and (C) show FSEA results for all genesets
+    As in @figure2, (B) and (C) show FSEA results for all genesets
     where at least one visit had a significant hit (q < 0.2)
     with at least one VEP latency or amplitude respectively.
     Dots indicate the Z-statistic from logistic regression for each gene in a gene set.
