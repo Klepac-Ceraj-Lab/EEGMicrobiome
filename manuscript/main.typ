@@ -52,11 +52,13 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger.double,
 #super([5])Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA, USA#linebreak()
 #super([6])Department of Psychiatry, Columbia University, Irving Medical Center, New York City, NY, USA#linebreak()
 #super([7])Division of Developmental Neuroscience, New York State Psychiatric Institute, New York City, NY, USA#linebreak()
-#super([8])Centre for Medical Image Computing, Department of Computer Science, University College London, London, United Kingdom#linebreak()
+#super([8])Centre for Medical Image Computing, Department of Computer Science,
+    University College London, London, United Kingdom#linebreak()
 #super([9])Cardiff University Brain Research Imaging Centre, Cardiff University, Cardiff, Wales, United Kingdom#linebreak()
 #super([10])Department of Neuroimaging, King’s College London, United Kingdom#linebreak()
 #super([11])Department of Psychology, Columbia University, New York City, NY, USA#linebreak()
-#super([12])Department of Women and Children’s Health, Institute of Life Course and Medical Science, Alder Hey Children’s NHS Foundation Trust, University of Liverpool, Liverpool, United Kingdom#linebreak()
+#super([12])Department of Women and Children’s Health, Institute of Life Course and Medical Science,
+    Alder Hey Children’s NHS Foundation Trust, University of Liverpool, Liverpool, United Kingdom#linebreak()
 #super([13])Neuroscience Institute, University of Cape Town, Cape Town, Western Cape, ZAF
 
 // 61 char - needs to be 55
@@ -990,23 +992,23 @@ Formal analysis: KSB, ETM#linebreak()
 Funding acquisition: KSB, NP, DCA, DKJ, SCRW, DA, MG, WPF, KAD, LJGD, VKC#linebreak()
 Investigation: KSB, ETM, GFB, SM, MRZ, MM, DH#linebreak()
 Methodology: KSB, NP, DCA, DKJ, SCRW, DA, MG, WPF, KAD, LJGD, VKC#linebreak()
-Project administration: LJGD, VKC#linebreak()
+Project administration: MRZ, MM, DH, LJGD, VKC#linebreak()
 Software: KSB, ETM, GFB, CH, LJGD#linebreak()
 Resources: SM, AS, FP, MRZ, MM, LD, CB, Khula, KAD, VKC#linebreak()
 Supervision: KSB, LJGD, VKC#linebreak()
 Validation: KSB, ETM#linebreak()
-Visualization: KSB#linebreak()
+Visualization: KSB, ETM#linebreak()
 Writing – original draft: KSB, ETM, LJGD, VKC#linebreak()
 Writing – review & editing: KSB, ETM, CH, NP, KAD#linebreak()
 
 == Author correspondence
 
 #grid( columns: (1fr, 1fr), align: center, gutter: 4pt,
-      [ Vanja Klepac-Ceraj ], [ Laurel Gabard-Durnam ],
+      [ Vanja Klepac-Ceraj ],      [ Laurel Gabard-Durnam ],
       [ vklepacc\@wellesley.edu ], [ l.gabard-durnam\@northeastern.edu ],
-      [ 781-283-3541 ], [ 628 ISEC ],
-      [ 106 Central St ], [ Northeastern University ],
-      [ Wellesley, MA 02481] , [Boston, MA 02482 ]
+      [ 781-283-3541 ],            [ 628 ISEC ],
+      [ 106 Central St ],          [ Northeastern University ],
+      [ Wellesley, MA 02481] ,     [Boston, MA 02482 ]
 )
 
 
