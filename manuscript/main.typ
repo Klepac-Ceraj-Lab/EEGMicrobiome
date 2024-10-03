@@ -61,8 +61,8 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger.double,
     Alder Hey Children’s NHS Foundation Trust, University of Liverpool, Liverpool, United Kingdom#linebreak()
 #super([13])Neuroscience Institute, University of Cape Town, Cape Town, Western Cape, ZAF
 
-// 61 char - needs to be 55
-*Running title*: Infant gut microbiome associates with visual neurodevelopment
+// 50 / 55 char
+*Running title*: Infant gut microbiome and visual neurodevelopment
 
 *Keywords*: visual cortex development, metagenome, infant gut microbiome, visual-evoked potential, neuroplasticity
 
