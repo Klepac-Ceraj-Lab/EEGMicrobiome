@@ -1,6 +1,12 @@
-#set page(paper: "us-letter")
+#set page(paper: "us-letter", numbering: "1 of 1")
 #set text(8pt, font: "Liberation Sans", lang: "en")
+
+//double spacing
+#set text(top-edge: 0.7em, bottom-edge: -0.3em)
+#set par(leading: 1em)
+
 #set align(center)
+
 
 // Only in local using latest development version of typst
 #set par.line(numbering: "1")
@@ -1002,6 +1008,10 @@ Validation: KSB, ETM#linebreak()
 Visualization: KSB, ETM#linebreak()
 Writing – original draft: KSB, ETM, LJGD, VKC#linebreak()
 Writing – review & editing: KSB, ETM, CH, NP, KAD#linebreak()
+
+== Disclosures and Conflicts
+
+The authors declare no financial or other conflicts of interest.
 
 == Author correspondence
 
