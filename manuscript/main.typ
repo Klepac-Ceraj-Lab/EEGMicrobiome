@@ -98,7 +98,8 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger,
 
 //
 // Leave comments like this
-
+#set par(first-line-indent: 2em)
+#show par: set block(spacing: 0.65em)
 #set text(10pt)
 == Abstract
 
@@ -1009,7 +1010,7 @@ Visualization: KSB, ETM#linebreak()
 Writing – original draft: KSB, ETM, LJGD, VKC#linebreak()
 Writing – review & editing: KSB, ETM, CH, NP, KAD#linebreak()
 
-== Disclosures and Conflicts
+== Disclosures
 
 The authors declare no financial or other conflicts of interest.
 
