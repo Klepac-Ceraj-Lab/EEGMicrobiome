@@ -32,18 +32,14 @@ Steve C. R. Williams#super([10]),
 Dima Amso#super([11]),
 Melissa Gladstone#super([12]),
 William P. Fifer#super([6,7]),
-Kirsten A. Donald#super([3,13]),
-Laurel J. Gabard-Durnam#super([2])#sym.dagger.double,
-Vanja Klepac-Ceraj#super([1])#sym.dagger.double,
+Kirsten A. Donald#super([4,13]),
+Laurel J. Gabard-Durnam#super([2])#sym.dagger,
+Vanja Klepac-Ceraj#super([1])#sym.dagger,
 
 #set align(left)
 
 \*These authors contributed equally#linebreak()
-#sym.dagger Khula South African Data Collection Team:
-    Layla Bradford, Simone Williams, Lauren Davel,
-    Tembeka Mhlakwaphalwa, Bokang Methola, Khanyisa Nkubungu,
-    Candice Knipe, Zamazimba Madi, Nwabisa Mlandu#linebreak()
-#sym.dagger.double co-corresponding authors#linebreak()
+#sym.dagger co-corresponding authors#linebreak()
 
 #super([1])Department of Biological Sciences, Wellesley College, Wellesley, MA, USA#linebreak()
 #super([2])Department of Phychology, Northeastern University, Boston, MA, USA#linebreak()
@@ -73,7 +69,10 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger.double,
     [Guilherme Fahur Bottino], [0000-0003-1953-1576],
     [Ana Sobrino], [],
     [Fadheela Patel], [0000-0001-5177-7416],
+    [Shelley McCann], [0000-0002-9753-7968],
     [Michal Zieff], [0000-0001-9352-9947],
+    [Marlie Miles], [],
+    [Donna Herr], [],
     [Lauren Davel], [],
     [Cara Bosco], [],
     [Curtis Huttenhower], [0000-0002-1110-0096],
@@ -84,7 +83,6 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger.double,
     [Dima Amso], [0000-0001-6798-4698],
     [Melissa Gladstone], [0000-0002-2579-9301],
     [William P. Fifer], [0000-0002-6936-9303],
-    [Shelley McCann], [0000-0002-9753-7968],
     [Kirsten A. Donald], [0000-0002-0276-9660],
     [Laurel J. Gabard-Durnam], [0000-0002-4564-8068],
     [Vanja Klepac-Ceraj], [0000-0001-5387-5706],
@@ -982,6 +980,10 @@ who generously provided their time and samples for this study.
 We are also grateful to the dedicated nurses and researchers
 who recruited participants and collected data,
 ensuring the success of this project.
+The Khula South African Data Collection Team is
+Layla Bradford, Simone Williams, Lauren Davel,
+Tembeka Mhlakwaphalwa, Bokang Methola, Khanyisa Nkubungu,
+Candice Knipe, Zamazimba Madi, and Nwabisa Mlandu.
 This research was supported by the Wellcome LEAP 1kD program.
 
 === CRediT
