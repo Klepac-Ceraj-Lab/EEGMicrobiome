@@ -29,7 +29,7 @@ Marlie Miles#super([4]),
 Donna Herr#super([4]),
 Lauren Davel#super([4]),
 Cara Bosco#super([2]),
-Khula South Africa Data Collection Team#sym.dagger#super([4]),
+Khula South Africa Data Collection Team#super([4]),
 Curtis Huttenhower#super([5])
 Nicolò Pini#super([6,7]),
 Daniel C. Alexander#super([8]),
