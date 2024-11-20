@@ -3,6 +3,484 @@ title: Linear Models with Maaslin3
 author: Kevin Bonham, PhD
 ---
 
+## Generate input files
+
+First, we need to generate input files for taxa
+and metadata in the form that MaAsLin3 needs them -
+samples as rows and features as columns.
+
+```{julia}
+using EEGMicrobiome
+using CSV
+using DataFrames
+```
+
+
+```{julia}
+cohorts = load_cohorts()
+has_taxa = subset(cohorts, "seqprep"=> ByRow(!ismissing))
+seqpreps = has_taxa.seqprep
+seqset = Set(seqpreps)
+
+sample_subject = Dict(row.seqprep => row.subject_id for row in eachrow(cohorts) if !ismissing(row.seqprep))
+```
+
+```{julia}
+taxa = let files = filter(f-> contains(basename(f), "profile.tsv") && replace(basename(f), r"(SEQ\d+).+"=> s"\1") ∈ seqset,
+               readdir("/grace/sequencing/processed/mgx/metaphlan/"; join=true)
+               )
+    rows = map(seqpreps) do seqprep
+        file = only(filter(f-> contains(f, seqprep), files))
+        df = CSV.read(file, DataFrame; header=["taxon", "ncbi", "abundance", "additional"], skipto=5)
+        subset!(df, "taxon"=> ByRow(taxon-> contains(taxon, r"s__|UNKNOWN") && !contains(taxon, "t__")))
+        df.taxon = replace.(df.taxon, r".+(s__.+)"=> s"\1")
+        NamedTuple{Tuple(Symbol(t) for t in df.taxon)}(df.abundance)
+    end
+    taxa = mapreduce(row-> DataFrame([row]), (df1, df2) -> vcat(df1, df2; cols=:union), rows)
+    for name in names(taxa)
+        taxa[!, name] = coalesce.(taxa[!, name], 0.)
+    end
+    taxa.sample = seqpreps
+    select(taxa, "sample", Cols(:))
+end
+```
+
+Now we have our master table for taxa, let's construct our cohort sub-tables.
+
+
+```{julia}
+mdata_cols = ("stool_age", "eeg_age",
+              "peak_latency_N1",           "peak_amp_N1",
+              "peak_latency_P1_corrected", "peak_amp_P1_corrected",
+              "peak_latency_N2_corrected", "peak_amp_N2_corrected")
+
+# v1 concurrent
+let cohort = select(cohorts[cohorts.cohort_v1, :], "seqprep" => "sample", mdata_cols...)
+    samples = Set(cohort.sample)
+    CSV.write("data/outputs/maaslin/cohort_v1_metadata.tsv", cohort; delim="\t")
+    CSV.write("data/outputs/maaslin/cohort_v1_species.tsv", subset(taxa, "sample"=> ByRow(sample-> sample ∈ samples)) ; delim="\t")
+end
+
+# v2 concurrent
+let cohort = select(cohorts[cohorts.cohort_v2, :], "seqprep" => "sample", mdata_cols...)
+    samples = Set(cohort.sample)
+    CSV.write("data/outputs/maaslin/cohort_v2_metadata.tsv", cohort; delim="\t")
+    CSV.write("data/outputs/maaslin/cohort_v2_species.tsv", subset(taxa, "sample"=> ByRow(sample-> sample ∈ samples)) ; delim="\t")
+end
+
+# v3 concurrent
+let cohort = select(cohorts[cohorts.cohort_v3, :], "seqprep" => "sample", mdata_cols...)
+    samples = Set(cohort.sample)
+    CSV.write("data/outputs/maaslin/cohort_v3_metadata.tsv", cohort; delim="\t")
+    CSV.write("data/outputs/maaslin/cohort_v3_species.tsv", subset(taxa, "sample"=> ByRow(sample-> sample ∈ samples)) ; delim="\t")
+end
+
+```
+
+```{julia}
+mdata_cols = ("stool_age", "eeg_age",
+              "peak_latency_N1",           "peak_amp_N1",
+              "peak_latency_P1_corrected", "peak_amp_P1_corrected",
+              "peak_latency_N2_corrected", "peak_amp_N2_corrected")
+
+# v1v2 future
+let cohort = select(cohorts[cohorts.cohort_v1v2_vep, :], "subject_id", mdata_cols...)
+    samples = Set(cohorts[cohorts.cohort_v1v2_stool, "seqprep"])
+    CSV.write("data/outputs/maaslin/cohort_v1v2_metadata.tsv", cohort; delim="\t")
+    taxa_out = subset(taxa, "sample"=> ByRow(sample-> sample ∈ samples))
+    transform!(taxa_out, "sample" => ByRow(sample-> sample_subject[sample]) => "subject_id")
+    CSV.write("data/outputs/maaslin/cohort_v1v2_species.tsv", select(taxa_out, "subject_id", Not("sample")); delim="\t")
+end
+
+
+# v1v3 future
+let cohort = select(cohorts[cohorts.cohort_v1v3_vep, :], "subject_id", mdata_cols...)
+    samples = Set(cohorts[cohorts.cohort_v1v3_stool, "seqprep"])
+    CSV.write("data/outputs/maaslin/cohort_v1v3_metadata.tsv", cohort; delim="\t")
+    taxa_out = subset(taxa, "sample"=> ByRow(sample-> sample ∈ samples))
+    transform!(taxa_out, "sample" => ByRow(sample-> sample_subject[sample]) => "subject_id")
+    CSV.write("data/outputs/maaslin/cohort_v1v3_species.tsv", select(taxa_out, "subject_id", Not("sample")); delim="\t")
+end
+
+
+# v2v3 future
+let cohort = select(cohorts[cohorts.cohort_v2v3_vep, :], "subject_id", mdata_cols...)
+    samples = Set(cohorts[cohorts.cohort_v2v3_stool, "seqprep"])
+    CSV.write("data/outputs/maaslin/cohort_v2v3_metadata.tsv", cohort; delim="\t")
+    taxa_out = subset(taxa, "sample"=> ByRow(sample-> sample ∈ samples))
+    transform!(taxa_out, "sample" => ByRow(sample-> sample_subject[sample]) => "subject_id")
+    CSV.write("data/outputs/maaslin/cohort_v2v3_species.tsv", select(taxa_out, "subject_id", Not("sample")); delim="\t")
+end
+
+```
+
+
+
 ```{r}
 library(maaslin3)
+
+taxa_table <- read.csv("data/outputs/maaslin/cohort_v1_species.tsv", sep = '\t', row.names=1)
+metadata <- read.csv("data/outputs/maaslin/cohort_v1_metadata.tsv", sep = '\t', row.names=1)
+
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1_latency_N1',
+         formula = '~ peak_latency_N1 + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1_amp_N1',
+         formula = '~ peak_amp_N1 + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1_latency_P1',
+         formula = '~ peak_latency_P1_corrected + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1_amp_P1',
+         formula = '~ peak_amp_P1_corrected + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1_latency_N2',
+         formula = '~ peak_latency_N2_corrected + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1_amp_N2',
+         formula = '~ peak_amp_N2_corrected + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
 ```
+
+```{r}
+
+taxa_table <- read.csv("data/outputs/maaslin/cohort_v2_species.tsv", sep = '\t', row.names=1)
+metadata <- read.csv("data/outputs/maaslin/cohort_v2_metadata.tsv", sep = '\t', row.names=1)
+
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v2_latency_N1',
+         formula = '~ peak_latency_N1 + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v2_amp_N1',
+         formula = '~ peak_amp_N1 + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v2_latency_P1',
+         formula = '~ peak_latency_P1_corrected + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v2_amp_P1',
+         formula = '~ peak_amp_P1_corrected + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v2_latency_N2',
+         formula = '~ peak_latency_N2_corrected + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v2_amp_N2',
+         formula = '~ peak_amp_N2_corrected + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+
+```
+
+```{r}
+taxa_table <- read.csv("data/outputs/maaslin/cohort_v3_species.tsv", sep = '\t', row.names=1)
+metadata <- read.csv("data/outputs/maaslin/cohort_v3_metadata.tsv", sep = '\t', row.names=1)
+
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v3_latency_N1',
+         formula = '~ peak_latency_N1 + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v3_amp_N1',
+         formula = '~ peak_amp_N1 + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v3_latency_P1',
+         formula = '~ peak_latency_P1_corrected + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v3_amp_P1',
+         formula = '~ peak_amp_P1_corrected + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v3_latency_N2',
+         formula = '~ peak_latency_N2_corrected + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v3_amp_N2',
+         formula = '~ peak_amp_N2_corrected + stool_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+```
+
+```{r}
+taxa_table <- read.csv("data/outputs/maaslin/cohort_v1v2_species.tsv", sep = '\t', row.names=1)
+metadata <- read.csv("data/outputs/maaslin/cohort_v1v2_metadata.tsv", sep = '\t', row.names=1)
+
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1v2_latency_N1',
+         formula = '~ peak_latency_N1 + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1v2_amp_N1',
+         formula = '~ peak_amp_N1 + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1v2_latency_P1',
+         formula = '~ peak_latency_P1_corrected + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1v2_amp_P1',
+         formula = '~ peak_amp_P1_corrected + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1v2_latency_N2',
+         formula = '~ peak_latency_N2_corrected + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1v2_amp_N2',
+         formula = '~ peak_amp_N2_corrected + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+```
+
+
+```{r}
+taxa_table <- read.csv("data/outputs/maaslin/cohort_v1v3_species.tsv", sep = '\t', row.names=1)
+metadata <- read.csv("data/outputs/maaslin/cohort_v1v3_metadata.tsv", sep = '\t', row.names=1)
+
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1v3_latency_N1',
+         formula = '~ peak_latency_N1 + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1v3_amp_N1',
+         formula = '~ peak_amp_N1 + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1v3_latency_P1',
+         formula = '~ peak_latency_P1_corrected + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1v3_amp_P1',
+         formula = '~ peak_amp_P1_corrected + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1v3_latency_N2',
+         formula = '~ peak_latency_N2_corrected + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v1v3_amp_N2',
+         formula = '~ peak_amp_N2_corrected + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+```
+ 
+```{r}
+taxa_table <- read.csv("data/outputs/maaslin/cohort_v2v3_species.tsv", sep = '\t', row.names=1)
+metadata <- read.csv("data/outputs/maaslin/cohort_v2v3_metadata.tsv", sep = '\t', row.names=1)
+
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v2v3_latency_N1',
+         formula = '~ peak_latency_N1 + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v2v3_amp_N1',
+         formula = '~ peak_amp_N1 + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v2v3_latency_P1',
+         formula = '~ peak_latency_P1_corrected + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v2v3_amp_P1',
+         formula = '~ peak_amp_P1_corrected + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v2v3_latency_N2',
+         formula = '~ peak_latency_N2_corrected + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+
+maaslin3(input_data = taxa_table, input_metadata = metadata,
+         output = 'data/outputs/maaslin/model_v2v3_amp_N2',
+         formula = '~ peak_amp_N2_corrected + stool_age + eeg_age',
+         normalization = 'TSS', transform = 'LOG', augment = TRUE,
+         standardize = TRUE, max_significance = 0.2,
+         median_comparison_abundance = TRUE,
+         median_comparison_prevalence = FALSE,
+         max_pngs = 250, cores = 1)
+```
+
+
