@@ -345,16 +345,16 @@ datlower = data(vep_timeseries) * mapping(:ms, :lower, color=:timepoint)
 datupper = data(vep_timeseries) * mapping(:ms, :upper, color=:timepoint)
 
 let datage = data(subset(mdata, "eeg_age" => ByRow(!ismissing))) * mapping(:eeg_age => "age (months)", color="visit")
-  draw!(ax_eeg_hist, datage * AlgebraOfGraphics.density(); palettes=(; color=colors_timepoints))
+    draw!(ax_eeg_hist, datage * AlgebraOfGraphics.density(), scales(Color= (; palette=colors_timepoints)))
 end
 
 let datage = data(subset(mdata, "stool_age" => ByRow(!ismissing))) * mapping(:stool_age => "age (months)", color="visit")
-  draw!(ax_stool_hist, datage * AlgebraOfGraphics.density(); palettes=(; color=colors_timepoints))
+    draw!(ax_stool_hist, datage * AlgebraOfGraphics.density(), scales(Color = (; palette = colors_timepoints)))
 end
 
-mpl = draw!(ax_eeg_curves, datmean * visual(Lines); palettes=(; color=colors_timepoints))
-dpl = draw!(ax_eeg_curves, datlower * visual(Lines; linestyle=:dash); palettes=(; color=colors_timepoints))
-draw!(ax_eeg_curves, datupper * visual(Lines; linestyle=:dash); palettes=(; color=colors_timepoints))
+mpl = draw!(ax_eeg_curves, datmean * visual(Lines), scales(Color=(; palette = colors_timepoints)))
+dpl = draw!(ax_eeg_curves, datlower * visual(Lines; linestyle=:dash), scales(Color=(; palette = colors_timepoints)))
+draw!(ax_eeg_curves, datupper * visual(Lines; linestyle=:dash), scales(Color=(; palette = colors_timepoints)))
 
 Legend(grid_eeg_curves[1, 1],
   [LineElement(; color=:gray), LineElement(; color=:gray, linestyle=:dash)],
@@ -912,6 +912,46 @@ Legend(bars[1, length(tps)+1], [MarkerElement(; marker=:rect, color=colors_gstyp
 
 linkyaxes!(axs...)
 save("/home/kevin/Downloads/bars-fsea-posneg.png", current_figure())
+
+#-
+
+bars = Figure(; size=(900, 600))
+
+ampaxs = Axis[]
+
+for (i, v) in enumerate(ftps)
+  df = subset(futfsea_df, "timepoint" => ByRow(==(v)))
+  ax = Axis(bars[1, i]; ylabel="count", xticks=(1:length(eeg_features), eeg_features), xticklabelrotation=pi / 2)
+    toplot = mapreduce(vcat, enumerate(filter(f-> contains(f, "amp", eeg_features)))) do (j, f)
+    subdf = subset(df, "eeg_feature" => ByRow(==(f)))
+    map(enumerate(collect(keys(geneset_types)))) do (k, gs)
+      npos = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(>(0))).q₀)
+      nneg = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(<(0))).q₀)
+      (; feature=f, fidx=j, geneset=gs, gidx=k, n_sig=(npos, nneg))
+    end
+  end |> DataFrame
+
+  barplot!(ax, toplot.fidx, getindex.(toplot.n_sig, 1); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+  barplot!(ax, toplot.fidx, -1 .* getindex.(toplot.n_sig, 2); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+  Label(bars[0, i], v; tellwidth=false)
+
+  push!(ampaxs, ax)
+end
+
+Legend(bars[1, length(tps)+1], [MarkerElement(; marker=:rect, color=colors_gstypes[t]) for t in keys(geneset_types)],
+  [String(t) for t in keys(geneset_types)]
+)
+
+linkyaxes!(ampaxs...)
+save("/home/kevin/Downloads/bars-fsea-future-posneg.png", current_figure())
+
+# ### Age / EEG scatters
+
+eeg_scatters = Figure()
+
+for (i, tp) in enumerate(tps), (j, feat) in enumerate(filter())
+    ax = Axis(eeg_scatters[1, i]; xlabel="age", ylabel=)
+end
 
 # ### Ordinations
 
