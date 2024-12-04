@@ -853,57 +853,145 @@ save("/home/kevin/Downloads/volcano-fsea-peaks.png", current_figure())
 #
 # Another idea to summarize from Vanja, looking at counts of significant hits.
 
-bars = Figure(; size=(900, 600))
+bars = Figure(; size=(900, 600));
 axs = Axis[]
 
-for (i, v) in enumerate(tps)
-  df = subset(fsea_df, "timepoint" => ByRow(==(v)))
-  ax = Axis(bars[1, i]; ylabel="count", xticks=(1:length(eeg_features), eeg_features), xticklabelrotation=pi / 2)
-  toplot = mapreduce(vcat, enumerate(eeg_features)) do (j, f)
-    subdf = subset(df, "eeg_feature" => ByRow(==(f)))
-    map(enumerate(collect(keys(geneset_types)))) do (k, gs)
-      n = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs])).q₀)
-      (; feature=f, fidx=j, geneset=gs, gidx=k, n_sig=n)
-    end
-  end |> DataFrame
+for (j, feat) in enumerate(filter(f-> contains(f, "amp"),  eeg_features))
+    df = subset(fsea_df, "eeg_feature" => ByRow(==(feat)))
+    ax = Axis(bars[1, j]; ylabel="count", xticks=(1:length(tps), [tps...]))
+    toplot = mapreduce(vcat, enumerate(tps)) do (i,tp)
+        subdf = subset(df, "timepoint" => ByRow(==(tp)))
+        map(enumerate(collect(keys(geneset_types)))) do (k, gs)
+            npos = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(>(0))).q₀)
+            nneg = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(<(0))).q₀)
+            (; feature=feat, tidx=i, geneset=gs, gidx=k, n_sig=(npos, nneg))
+        end
+    end |> DataFrame
 
-  barplot!(ax, toplot.fidx, toplot.n_sig; stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
-  Label(bars[0, i], v; tellwidth=false)
-  push!(axs, ax)
+    peak = replace(feat, r"peak_amp_([NP12]+)(_corrected)?" => s"\1")
+    
+    barplot!(ax, toplot.tidx, getindex.(toplot.n_sig, 1); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+    barplot!(ax, toplot.tidx, -1 .* getindex.(toplot.n_sig, 2); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+    Label(bars[0, j], peak; tellwidth=false)
 
+    push!(axs, ax)
 end
-
-Legend(bars[1, length(tps)+1], [MarkerElement(; marker=:rect, color=colors_gstypes[t]) for t in keys(geneset_types)],
-  [String(t) for t in keys(geneset_types)]
-)
 
 linkyaxes!(axs...)
 
-save("/home/kevin/Downloads/bars-fsea.png", current_figure())
+axs = Axis[]
 
+for (j, feat) in enumerate(filter(f-> contains(f, "lat"),  eeg_features))
+    df = subset(fsea_df, "eeg_feature" => ByRow(==(feat)))
+    ax = Axis(bars[2, j]; ylabel="count", xticks=(1:length(tps), [tps...]))
+    toplot = mapreduce(vcat, enumerate(tps)) do (i,tp)
+        subdf = subset(df, "timepoint" => ByRow(==(tp)))
+        map(enumerate(collect(keys(geneset_types)))) do (k, gs)
+            npos = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(>(0))).q₀)
+            nneg = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(<(0))).q₀)
+            (; feature=feat, tidx=i, geneset=gs, gidx=k, n_sig=(npos, nneg))
+        end
+    end |> DataFrame
 
+    barplot!(ax, toplot.tidx, getindex.(toplot.n_sig, 1); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+    barplot!(ax, toplot.tidx, -1 .* getindex.(toplot.n_sig, 2); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+
+    push!(axs, ax)
+end
+
+linkyaxes!(axs...)
+
+Label(bars[1, 0], "Amplitude"; tellwidth=true, tellheight=false)
+Label(bars[2, 0], "Latency"; tellwidth=true, tellheight=false)
+
+Legend(bars[:, 4], [MarkerElement(; marker=:rect, color=colors_gstypes[t]) for t in keys(geneset_types)],
+  [String(t) for t in keys(geneset_types)]
+)
+bars
+
+save("/home/kevin/Downloads/bars-fsea-by-peak.png", bars)
+
+#-
+
+bars = Figure(; size=(900, 600));
+axs = Axis[]
+
+for (j, feat) in enumerate(filter(f-> contains(f, "amp"),  eeg_features))
+    df = subset(futfsea_df, "eeg_feature" => ByRow(==(feat)))
+    ax = Axis(bars[1, j]; ylabel="count", xticks=(1:length(tps), [tps...]))
+    toplot = mapreduce(vcat, enumerate(tps)) do (i,tp)
+        subdf = subset(df, "timepoint" => ByRow(==(tp)))
+        map(enumerate(collect(keys(geneset_types)))) do (k, gs)
+            npos = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(>(0))).q₀)
+            nneg = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(<(0))).q₀)
+            (; feature=feat, tidx=i, geneset=gs, gidx=k, n_sig=(npos, nneg))
+        end
+    end |> DataFrame
+
+    peak = replace(feat, r"peak_amp_([NP12]+)(_corrected)?" => s"\1")
+    
+    barplot!(ax, toplot.tidx, getindex.(toplot.n_sig, 1); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+    barplot!(ax, toplot.tidx, -1 .* getindex.(toplot.n_sig, 2); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+    Label(bars[0, j], peak; tellwidth=false)
+
+    push!(axs, ax)
+end
+
+linkyaxes!(axs...)
+
+axs = Axis[]
+
+for (j, feat) in enumerate(filter(f-> contains(f, "lat"),  eeg_features))
+    df = subset(futfsea_df, "eeg_feature" => ByRow(==(feat)))
+    ax = Axis(bars[2, j]; ylabel="count", xticks=(1:length(tps), [tps...]))
+    toplot = mapreduce(vcat, enumerate(tps)) do (i,tp)
+        subdf = subset(df, "timepoint" => ByRow(==(tp)))
+        map(enumerate(collect(keys(geneset_types)))) do (k, gs)
+            npos = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(>(0))).q₀)
+            nneg = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(<(0))).q₀)
+            (; feature=feat, tidx=i, geneset=gs, gidx=k, n_sig=(npos, nneg))
+        end
+    end |> DataFrame
+
+    barplot!(ax, toplot.tidx, getindex.(toplot.n_sig, 1); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+    barplot!(ax, toplot.tidx, -1 .* getindex.(toplot.n_sig, 2); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+
+    push!(axs, ax)
+end
+
+linkyaxes!(axs...)
+
+Label(bars[1, 0], "Amplitude"; tellwidth=true, tellheight=false)
+Label(bars[2, 0], "Latency"; tellwidth=true, tellheight=false)
+
+Legend(bars[:, 4], [MarkerElement(; marker=:rect, color=colors_gstypes[t]) for t in keys(geneset_types)],
+  [String(t) for t in keys(geneset_types)]
+)
+bars
+
+save("/home/kevin/Downloads/bars-futfsea-by-peak.png", bars)
 #-
 
 bars = Figure(; size=(900, 600))
 axs = Axis[]
 
 for (i, v) in enumerate(tps)
-  df = subset(fsea_df, "timepoint" => ByRow(==(v)))
-  ax = Axis(bars[1, i]; ylabel="count", xticks=(1:length(eeg_features), eeg_features), xticklabelrotation=pi / 2)
-  toplot = mapreduce(vcat, enumerate(eeg_features)) do (j, f)
-    subdf = subset(df, "eeg_feature" => ByRow(==(f)))
-    map(enumerate(collect(keys(geneset_types)))) do (k, gs)
-      npos = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(>(0))).q₀)
-      nneg = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(<(0))).q₀)
-      (; feature=f, fidx=j, geneset=gs, gidx=k, n_sig=(npos, nneg))
-    end
-  end |> DataFrame
+    df = subset(fsea_df, "timepoint" => ByRow(==(v)))
+    ax = Axis(bars[1, i]; ylabel="count", xticks=(1:length(eeg_features), eeg_features), xticklabelrotation=pi / 2)
+    toplot = mapreduce(vcat, enumerate(eeg_features)) do (j, f)
+        subdf = subset(df, "eeg_feature" => ByRow(==(f)))
+        map(enumerate(collect(keys(geneset_types)))) do (k, gs)
+        npos = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(>(0))).q₀)
+        nneg = count(<(0.2), subset(subdf, "geneset" => ByRow(g -> g ∈ geneset_types[gs]), "es" => ByRow(<(0))).q₀)
+        (; feature=f, fidx=j, geneset=gs, gidx=k, n_sig=(npos, nneg))
+        end
+    end |> DataFrame
 
-  barplot!(ax, toplot.fidx, getindex.(toplot.n_sig, 1); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
-  barplot!(ax, toplot.fidx, -1 .* getindex.(toplot.n_sig, 2); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
-  Label(bars[0, i], v; tellwidth=false)
+    barplot!(ax, toplot.fidx, getindex.(toplot.n_sig, 1); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+    barplot!(ax, toplot.fidx, -1 .* getindex.(toplot.n_sig, 2); stack=toplot.gidx, color=[colors_gstypes[gs] for gs in toplot.geneset])
+    Label(bars[0, i], v; tellwidth=false)
 
-  push!(axs, ax)
+    push!(axs, ax)
 end
 
 Legend(bars[1, length(tps)+1], [MarkerElement(; marker=:rect, color=colors_gstypes[t]) for t in keys(geneset_types)],
@@ -947,11 +1035,87 @@ save("/home/kevin/Downloads/bars-fsea-future-posneg.png", current_figure())
 
 # ### Age / EEG scatters
 
-eeg_scatters = Figure()
+amp_scatters = Figure(; size=(900,900), title="Amplitudes");
 
-for (i, tp) in enumerate(tps), (j, feat) in enumerate(filter())
-    ax = Axis(eeg_scatters[1, i]; xlabel="age", ylabel=)
+for (i, tp) in enumerate(tps), (j,feat) in enumerate(filter(f-> contains(f, "amp"), eeg_features))
+    ax = Axis(amp_scatters[j, i]; xlabel="age (months)", ylabel="voltage (μV)")
+    df = subset(mdata, "cohort_$tp" => identity)
+    scatter!(ax, df[!, "eeg_age"], df[!, feat])
 end
+
+for (i, tp) in enumerate(tps)
+    Label(amp_scatters[0,i], tp; tellwidth=false)
+end
+
+for (j, feat) in enumerate(filter(f-> contains(f, "amp"), eeg_features))
+    peak = replace(feat, r"peak_amp_([NP12]+)(_corrected)?" => s"\1")
+    Label(amp_scatters[j,0], peak; tellwidth=true, tellheight=false)
+end
+
+amp_scatters
+
+save("/home/kevin/Downloads/eeg_amp_scatters_concurrent.png", amp_scatters)
+
+lat_scatters = Figure(; size=(900,900), title="Latencies");
+
+for (i, tp) in enumerate(tps), (j,feat) in enumerate(filter(f-> contains(f, "lat"), eeg_features))
+    ax = Axis(lat_scatters[j, i]; xlabel="age (months)", ylabel="latency (ms)")
+    df = subset(mdata, "cohort_$tp" => identity)
+    scatter!(ax, df[!, "eeg_age"], df[!, feat])
+end
+
+for (i, tp) in enumerate(tps)
+    Label(lat_scatters[0,i], tp; tellwidth=false)
+end
+
+for (j, feat) in enumerate(filter(f-> contains(f, "lat"), eeg_features))
+    peak = replace(feat, r"peak_latency_([NP12]+)(_corrected)?" => s"\1")
+    Label(lat_scatters[j,0], peak; tellwidth=true, tellheight=false)
+end
+
+lat_scatters
+
+save("/home/kevin/Downloads/eeg_lat_scatters_concurrent.png", lat_scatters)
+
+#-
+
+amp_scatters = Figure(; size=(900,900), title="Amplitudes");
+
+for (j,feat) in enumerate(filter(f-> contains(f, "amp"), eeg_features))
+    ax = Axis(amp_scatters[j, 1]; xlabel="age (months)", ylabel="voltage (μV)")
+    for (i, tp) in enumerate(tps)
+        df = subset(mdata, "cohort_$tp" => identity)
+        scatter!(ax, df[!, "eeg_age"], df[!, feat]; color = colors_timepoints[i][2])
+    end
+end
+
+for (j, feat) in enumerate(filter(f-> contains(f, "amp"), eeg_features))
+    peak = replace(feat, r"peak_amp_([NP12]+)(_corrected)?" => s"\1")
+    Label(amp_scatters[j,0], peak; tellwidth=true, tellheight=false)
+end
+
+amp_scatters
+
+save("/home/kevin/Downloads/eeg_amp_scatters_tp_combined.png", amp_scatters)
+
+lat_scatters = Figure(; size=(900,900), title="Latencies");
+
+for (j,feat) in enumerate(filter(f-> contains(f, "lat"), eeg_features))
+    ax = Axis(lat_scatters[j, 1]; xlabel="age (months)", ylabel="latency (ms)")
+    for (i, tp) in enumerate(tps)
+        df = subset(mdata, "cohort_$tp" => identity)
+        scatter!(ax, df[!, "eeg_age"], df[!, feat]; color = colors_timepoints[i][2])
+    end
+end
+
+for (j, feat) in enumerate(filter(f-> contains(f, "lat"), eeg_features))
+    peak = replace(feat, r"peak_latency_([NP12]+)(_corrected)?" => s"\1")
+    Label(lat_scatters[j,0], peak; tellwidth=true, tellheight=false)
+end
+
+lat_scatters
+
+save("/home/kevin/Downloads/eeg_lat_scatters_tp_combined.png", lat_scatters)
 
 # ### Ordinations
 

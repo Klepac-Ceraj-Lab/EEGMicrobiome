@@ -13,6 +13,54 @@ using MLJ
 using MLJDecisionTreeInterface
 using StableRNGs
 
+tps = ("v1", "v2", "v3")
+ftps = ("v1v2", "v1v3", "v2v3")
+
+mdata = load_cohorts()
+
+long_sub = let
+  wide_sub = select(
+    leftjoin(
+      select(unstack(mdata, "subject_id", "visit", "eeg_age"),
+        "subject_id", "v1" => "eeg_v1", "v2" => "eeg_v2", "v3" => "eeg_v3"),
+      select(unstack(mdata, "subject_id", "visit", "stool_age"),
+        "subject_id", "v1" => "seqprep_v1", "v2" => "seqprep_v2", "v3" => "seqprep_v3"),
+      on="subject_id"),
+    "subject_id", r"v1", r"v2", r"v3"
+  )
+
+  long_sub = DataFrame()
+  for row in eachrow(wide_sub), tp in tps
+    stool_age = row["seqprep_$tp"]
+    eeg_age = row["eeg_$tp"]
+    push!(long_sub, (; subject_id=row.subject_id, timepoint=tp, stool_age, eeg_age); cols=:union)
+  end
+
+  @chain long_sub begin
+    subset!(AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> !all(ismissing, nt)))
+    transform!(AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> minimum(skipmissing(values(nt)))) => "minage")
+    sort!("minage")
+  end
+end
+
+
+v1 = get_cohort(mdata, "v1")
+v2 = get_cohort(mdata, "v2")
+v3 = get_cohort(mdata, "v3")
+v1v2 = get_cohort(mdata, "v1v2")
+v1v3 = get_cohort(mdata, "v1v3")
+v2v3 = get_cohort(mdata, "v2v3")
+
+
+
+##
+
+eeg_features = "peak_latency_" .* ["N1", "P1_corrected", "N2_corrected"]
+eeg_features = [eeg_features; replace.(eeg_features, "latency" => "amp")]
+
+na_map = FeatureSetEnrichments.get_neuroactive_unirefs()
+
+
 eeg = load_eeg()
 eeg.peak_latency_P1_corrected = eeg.peak_latency_P1 .- eeg.peak_latency_N1
 eeg.peak_latency_N2_corrected = eeg.peak_latency_N2 .- eeg.peak_latency_P1
