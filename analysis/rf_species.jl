@@ -18,32 +18,6 @@ ftps = ("v1v2", "v1v3", "v2v3")
 
 mdata = load_cohorts()
 
-long_sub = let
-  wide_sub = select(
-    leftjoin(
-      select(unstack(mdata, "subject_id", "visit", "eeg_age"),
-        "subject_id", "v1" => "eeg_v1", "v2" => "eeg_v2", "v3" => "eeg_v3"),
-      select(unstack(mdata, "subject_id", "visit", "stool_age"),
-        "subject_id", "v1" => "seqprep_v1", "v2" => "seqprep_v2", "v3" => "seqprep_v3"),
-      on="subject_id"),
-    "subject_id", r"v1", r"v2", r"v3"
-  )
-
-  long_sub = DataFrame()
-  for row in eachrow(wide_sub), tp in tps
-    stool_age = row["seqprep_$tp"]
-    eeg_age = row["eeg_$tp"]
-    push!(long_sub, (; subject_id=row.subject_id, timepoint=tp, stool_age, eeg_age); cols=:union)
-  end
-
-  @chain long_sub begin
-    subset!(AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> !all(ismissing, nt)))
-    transform!(AsTable(["stool_age", "eeg_age"]) => ByRow(nt -> minimum(skipmissing(values(nt)))) => "minage")
-    sort!("minage")
-  end
-end
-
-
 v1 = get_cohort(mdata, "v1")
 v2 = get_cohort(mdata, "v2")
 v3 = get_cohort(mdata, "v3")
@@ -58,28 +32,58 @@ v2v3 = get_cohort(mdata, "v2v3")
 eeg_features = "peak_latency_" .* ["N1", "P1_corrected", "N2_corrected"]
 eeg_features = [eeg_features; replace.(eeg_features, "latency" => "amp")]
 
+na_ko = FeatureSetEnrichments.get_neuroactive_kos()
 na_map = FeatureSetEnrichments.get_neuroactive_unirefs()
 
+allkos = Set(union(values(na_ko)...))
+allseqs = Set(skipmissing(mdata.seqprep))
 
-eeg = load_eeg()
-eeg.peak_latency_P1_corrected = eeg.peak_latency_P1 .- eeg.peak_latency_N1
-eeg.peak_latency_N2_corrected = eeg.peak_latency_N2 .- eeg.peak_latency_P1
-eeg.peak_amp_P1_corrected = eeg.peak_amp_P1 .- eeg.peak_amp_N1
-eeg.peak_amp_N2_corrected = eeg.peak_amp_N2 .- eeg.peak_amp_P1
-rename!(eeg, "age" => "eeg_age")
-mbo = load_microbiome(eeg.subject)
-subset!(mbo, :visit=> ByRow(!ismissing))
-transform!(mbo, "visit" => ByRow(v -> ismissing(v) ? v : replace(v, "mo" => "m")) => "timepoint")
-load_taxonomic_profiles!(mbo)
 
-topspec = readlines("data/outputs/topspecies.txt")
-
-modelin = @chain eeg begin
-    leftjoin(mbo; on=["subject", "timepoint"])
-    dropmissing!
-    subset!("seqprep" => ByRow(!ismissing))
+kos = let files = filter(f-> contains(basename(f),"kos"), readdir("/grace/sequencing/processed/mgx/humann/rename/", join=true))
+    mapreduce(vcat, files) do file
+        m = match(r"^([A-Za-z0-9]+)_(S\d+)?_kos_rename\.tsv", basename(file))
+        if isnothing(m)
+            @error file
+            return DataFrame()
+        end
+        (seq, s_well) = m.captures
+        seq in allseqs || return DataFrame()
+        @info "loeading $seq"
+        df = CSV.read(file, DataFrame; delim='\t', header=["gene", "abundance"], skipto=2)
+        df.seqprep .= String(seq)
+        return df
+    end
 end
+
+transform!(kos, "gene"=> ByRow(g-> begin
+    spl = split(g, '|')
+    (gene, species) = length(spl) > 1 ? spl : (only(spl), missing)
+    ko = match(r"K\d+", gene)
+    ko = isnothing(ko) ? missing : ko.match
+    (; gene, species, ko)
+end)=> ["gene", "species", "ko"])
+
+transform!(groupby(kos, "seqid"), ["abundance", "species"]=> ((abundance, species) -> begin
+    unstrat = findall(ismissing, species)
+    total = sum(abundance[unstrat])
+    abundance ./ total .* 100
+end) => "relab")
+
+neuro = subset(kos, "ko" => ByRow(ko-> !ismissing(ko) && ko in allkos), "species" => ByRow(ismissing))
+
+neuromat = let mat = unstack(neuro, "seqprep", "ko", "abundance")
+    for col in names(mat, r"K\d+")
+        mat[!, col] = coalesce.(mat[!, col], 0.)
+    end
+    mat
+end
+
+leftjoin!(mdata, neuromat; on="seqprep", matchmissing=:notequal)
+
+
+
 #-
+
 
 rng = StableRNG(1984)
 
@@ -101,72 +105,79 @@ self_tuning_tree = TunedModel(
 
 #-
 
+modelin = subset(mdata, AsTable(["cohort_v1", "cohort_v2", "cohort_v3"]) => ByRow(any), "K00010"=>ByRow(!ismissing))
+
+for col in names(modelin, r"latency")
+    modelin[!, col] = Float64.(modelin[!, col])
+end
+
 summary_stats = DataFrame()
 
 for eeg_feat in names(modelin, r"peak_")
     @info "Testing $eeg_feat"
-    pfolds = partition(unique(modelin.subject), 0.25, 0.25, 0.25)
-    trainfolds = map(ps -> findall(s-> s ∉ ps, modelin.subject), pfolds)
-    testfolds = map(ps -> findall(s-> s ∈ ps, modelin.subject), pfolds)
+    pfolds = partition(unique(modelin.subject_id), 0.25, 0.25, 0.25)
+    trainfolds = map(ps -> findall(s-> s ∉ ps, modelin.subject_id), pfolds)
+    testfolds = map(ps -> findall(s-> s ∈ ps, modelin.subject_id), pfolds)
 
     predictions = copy(modelin)
     
     for (i, (train, test)) in enumerate(zip(trainfolds, testfolds))
         @info "Fold $i"
         age_only_pred = Union{Missing, Float64}[missing for _ in 1:size(modelin,1)]
-        age_only_tuned = machine(self_tuning_tree, select(modelin, "eeg_age", "n_segments"), modelin[!, eeg_feat]);
-        plus_bugs_tuned = machine(self_tuning_tree, select(modelin, "eeg_age", "n_segments", topspec...), modelin[!, eeg_feat]);
-        bugs_only_tuned = machine(self_tuning_tree, select(modelin, "n_segments", topspec...), modelin[!, eeg_feat]);
+        age_only_tuned = machine(self_tuning_tree, select(modelin, "eeg_age", "n_trials"), modelin[!, eeg_feat]);
+        plus_na_tuned = machine(self_tuning_tree, select(modelin, "eeg_age", "n_trials", Cols(r"K\d+")), modelin[!, eeg_feat]);
+        na_only_tuned = machine(self_tuning_tree, select(modelin, "n_trials", Cols(r"K\d+")), modelin[!, eeg_feat]);
 
         MLJ.fit!(age_only_tuned; rows=train)
-        MLJ.fit!(plus_bugs_tuned; rows=train)
-        MLJ.fit!(bugs_only_tuned; rows=train)
+        MLJ.fit!(plus_na_tuned; rows=train)
+        MLJ.fit!(na_only_tuned; rows=train)
 
         age_only_predictions = MLJ.predict(age_only_tuned; rows=test)
-        plus_bugs_predictions = MLJ.predict(plus_bugs_tuned; rows=test)
-        bugs_only_predictions = MLJ.predict(bugs_only_tuned; rows=test)
+        plus_na_predictions = MLJ.predict(plus_na_tuned; rows=test)
+        na_only_predictions = MLJ.predict(na_only_tuned; rows=test)
 
         age_only_dfinsert  = Union{Missing, Float64}[missing for _ in 1:size(modelin, 1)]
-        plus_bugs_dfinsert = Union{Missing, Float64}[missing for _ in 1:size(modelin, 1)]
-        bugs_only_dfinsert = Union{Missing, Float64}[missing for _ in 1:size(modelin, 1)]
+        plus_na_dfinsert = Union{Missing, Float64}[missing for _ in 1:size(modelin, 1)]
+        na_only_dfinsert = Union{Missing, Float64}[missing for _ in 1:size(modelin, 1)]
 
         age_only_dfinsert[test]  .= age_only_predictions 
-        plus_bugs_dfinsert[test] .= plus_bugs_predictions
-        bugs_only_dfinsert[test] .= bugs_only_predictions
+        plus_na_dfinsert[test] .= plus_na_predictions
+        na_only_dfinsert[test] .= na_only_predictions
         
         predictions[!, "age_only_fold$i"] = age_only_dfinsert
-        predictions[!, "plus_bugs_fold$i"] = plus_bugs_dfinsert
-        predictions[!, "bugs_only_fold$i"] = bugs_only_dfinsert
+        predictions[!, "plus_na_fold$i"] = plus_na_dfinsert
+        predictions[!, "na_only_fold$i"] = na_only_dfinsert
          
         age_only_err = mape(age_only_predictions, modelin[test, eeg_feat])
         age_only_r² = cor(age_only_predictions, modelin[test, eeg_feat])^2
 
-        plus_bugs_err = mape(plus_bugs_predictions, modelin[test, eeg_feat])
-        plus_bugs_r² = cor(plus_bugs_predictions, modelin[test, eeg_feat])^2
+        plus_na_err = mape(plus_na_predictions, modelin[test, eeg_feat])
+        plus_na_r² = cor(plus_na_predictions, modelin[test, eeg_feat])^2
 
-        bugs_only_err = mape(bugs_only_predictions, modelin[test, eeg_feat])
-        bugs_only_r² = cor(bugs_only_predictions, modelin[test, eeg_feat])^2
+        na_only_err = mape(na_only_predictions, modelin[test, eeg_feat])
+        na_only_r² = cor(na_only_predictions, modelin[test, eeg_feat])^2
         append!(summary_stats, DataFrame(
              feature = fill(eeg_feat, 3),
-             model = ["age_only", "bugs_only", "age_plus_bugs"],
-             r² = [age_only_r², bugs_only_r², plus_bugs_r²],
-             mape = [age_only_err, bugs_only_err, plus_bugs_err],
+             model = ["age_only", "na_only", "age_plus_na"],
+             r² = [age_only_r², na_only_r², plus_na_r²],
+             mape = [age_only_err, na_only_err, plus_na_err],
              fold = fill(i, 3),
         ))
     end
     
     transform!(predictions, 
         AsTable(r"age_only_fold")=> ByRow(nt-> mean(skipmissing(values(nt))))=> "age_only_mean_pred",
-        AsTable(r"plus_bugs_fold")=> ByRow(nt-> mean(skipmissing(values(nt))))=> "plus_bugs_mean_pred"
-    )    
+        AsTable(r"plus_na_fold")=> ByRow(nt-> mean(skipmissing(values(nt))))=> "plus_na_mean_pred"
+    )
+
     age_only_predictions = predictions.age_only_mean_pred
-    plus_bugs_predictions = predictions.plus_bugs_mean_pred
+    plus_na_predictions = predictions.plus_na_mean_pred
 
     age_only_err = mape(age_only_predictions, modelin[!, eeg_feat])
     age_only_r² = cor(age_only_predictions, modelin[!, eeg_feat])^2
 
-    plus_bugs_err = mape(plus_bugs_predictions, modelin[!, eeg_feat])
-    plus_bugs_r² = cor(plus_bugs_predictions, modelin[!, eeg_feat])^2
+    plus_na_err = mape(plus_na_predictions, modelin[!, eeg_feat])
+    plus_na_r² = cor(plus_na_predictions, modelin[!, eeg_feat])^2
 
     fig = Figure(; size=(400, 600))
     ax1 = Axis(fig[1,1];
@@ -177,31 +188,31 @@ for eeg_feat in names(modelin, r"peak_")
     ax2 = Axis(fig[2,1];
         ylabel="Predicted $(replace(eeg_feat, "peak_" => ""))",
         xlabel="Observed $(replace(eeg_feat, "peak_" => ""))",
-        title="Age + bugs model"
+        title="Age + na model"
     )
 
     sc1 = scatter!(ax1, modelin[!, eeg_feat], age_only_predictions;
-        color = modelin.eeg_age,
+                   color = Float64.(modelin.eeg_age),
     )
 
-    sc2 = scatter!(ax2,modelin[!, eeg_feat], plus_bugs_predictions;
-        color = modelin.eeg_age,
+    sc2 = scatter!(ax2,modelin[!, eeg_feat], plus_na_predictions;
+        color = Float64.(modelin.eeg_age),
     )
 
     Colorbar(fig[1:2,2], sc1; label= "age (months)")
 
     age_only_mn = minimum([modelin[!, eeg_feat]; age_only_predictions])
     age_only_mx = maximum([modelin[!, eeg_feat]; age_only_predictions])
-    plus_bugs_mn = minimum([modelin[!, eeg_feat]; plus_bugs_predictions])
-    plus_bugs_mx = maximum([modelin[!, eeg_feat]; plus_bugs_predictions])
+    plus_na_mn = minimum([modelin[!, eeg_feat]; plus_na_predictions])
+    plus_na_mx = maximum([modelin[!, eeg_feat]; plus_na_predictions])
 
     lines!(ax1, [age_only_mn, age_only_mx], [age_only_mn, age_only_mx]; color=:gray60, linestyle = :dash)
-    lines!(ax2, [plus_bugs_mn, plus_bugs_mx], [plus_bugs_mn, plus_bugs_mx]; color=:gray60, linestyle = :dash)
+    lines!(ax2, [plus_na_mn, plus_na_mx], [plus_na_mn, plus_na_mx]; color=:gray60, linestyle = :dash)
 
 
 
     text!(ax1, 0, 1;
-        text = "R² = $(round(age_only_r², digits=3))\nMAPE = $(round(age_only_err, digits=3))",
+        text = "R² = $(round(age_only_r², digits=5))\nMAPE = $(round(age_only_err, digits=3))",
         align = (:left, :top),
         offset = (4, -2),
         space = :relative,
@@ -209,21 +220,21 @@ for eeg_feat in names(modelin, r"peak_")
     )
 
     text!(ax2, 0, 1;
-        text = "R² = $(round(plus_bugs_r², digits=3))\nMAPE = $(round(plus_bugs_err, digits=3))",
+        text = "R² = $(round(plus_na_r², digits=5))\nMAPE = $(round(plus_na_err, digits=3))",
         align = (:left, :top),
         offset = (4, -2),
         space = :relative,
         fontsize = 12
     )
 
-    save("data/figures/rf_models/$(eeg_feat)_all_ages.png", fig)
+    save("data/figures/rf_models/$(eeg_feat)_neuroactive_all_ages.png", fig)
 end
 
 transform!(summary_stats, "model"=> ByRow(m-> begin
-    bugs = contains(m, "bugs") ? "+" : "-"
+    bugs = contains(m, "na") ? "+" : "-"
     age = contains(m, "age") ? "+" : "-"
 
     return (; bugs, age)
-end) => ["bugs", "age"])
+end) => ["na", "age"])
 
-CSV.write("data/outputs/rf_summary_stats.csv", summary_stats)
+CSV.write("data/outputs/rf_na_summary_stats.csv", summary_stats)
