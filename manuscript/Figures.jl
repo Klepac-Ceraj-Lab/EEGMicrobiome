@@ -337,8 +337,9 @@ end
 
 figure1 = Figure(; size=(4inch, 6inch));
 
-grid_cohort = GridLayout(figure1[1, 1]; alignmode=Outside())
+grid_cohort = GridLayout(figure1[1, 1])
 grid_longsamples = GridLayout(figure1[2,1])
+
 
 ax_cohort = Axis(grid_cohort[1, 1]; aspect=DataAspect(), alignmode=Outside())
 # Legend(grid_cohort[2,1],
@@ -435,9 +436,23 @@ hideydecorations!.((ax_stool_hist, ax_eeg_hist); ticks=false, ticklabels=false, 
 linkyaxes!(ax_eeg_hist, ax_stool_hist)
 linkxaxes!(ax_eeg_hist, ax_stool_hist, ax_longsamples)
 
+Label(grid_cohort[1,1,TopLeft()], "A",
+    font = :bold,
+    padding = (0, 0, 0, 0),
+    halign = :right
+)
+
+
+Label(grid_longsamples[1,0,TopLeft()], "B",
+    font = :bold,
+    padding = (0, 0, 0, 0),
+    halign = :right
+)
 save("/home/kevin/Downloads/figure1-inprogress.png", figure1)
 save("manuscript/mainfigures/figure1.svg", figure1)
 figure1
+
+
 
 
 # ##### Figure 2
@@ -483,12 +498,12 @@ tax_abundances = GridLayout(figure2[1,2])
 grid_pcoas = GridLayout(figure2[2, 2])
 
 
-ax_eeg_curves = Axis(grid_eeg_curves[1, 1];
+ax_eeg_curves = Axis(grid_eeg_curves[1:2, 1];
     xlabel="time (ms) relative to stimulus onset",
     ylabel="voltage (μV)",
     yminorticksvisible=true,
     yminorticks=IntervalsBetween(5),
-    alignmode = Mixed(left=0)
+    alignmode = Mixed(left=0, bottom=0)
 )
 ax_pcoa_spec = Axis(grid_pcoas[1, 1]; alignmode=Mixed(left=0))
 ax_pcoa_func = Axis(grid_pcoas[1, 2]; alignmode=Mixed(left=0))
@@ -533,16 +548,17 @@ mpl = draw!(ax_eeg_curves, datmean * visual(Lines), scales(Color=(; palette = co
 dpl = draw!(ax_eeg_curves, datlower * visual(Lines; linestyle=:dash), scales(Color=(; palette = colors_timepoints)))
 draw!(ax_eeg_curves, datupper * visual(Lines; linestyle=:dash), scales(Color=(; palette = colors_timepoints)))
 
-Legend(grid_eeg_curves[1, 1],
-  [LineElement(; color=:gray), LineElement(; color=:gray, linestyle=:dash)],
-  ["mean", "+/- S.E."];
-  tellwidth=false, halign=:right, valign=:bottom, margin=(2, 2, 2, 2), rowgap=-3
-)
 
-Legend(grid_eeg_curves[1, 1],
+Legend(grid_eeg_curves[1, 2],
   [LineElement(; color=c[2]) for c in colors_timepoints],
   ["Visit $i" for i in 1:3];
-  tellwidth=false, halign=:right, valign=:top, margin=(2, 2, 2, 2), rowgap=-3
+  rowgap=-3
+)
+
+Legend(grid_eeg_curves[2, 2],
+  [LineElement(; color=:gray), LineElement(; color=:gray, linestyle=:dash)],
+  ["mean", "+/- S.E."];
+  rowgap=-3
 )
 # ##### PCoAs
 
@@ -550,8 +566,13 @@ Legend(grid_eeg_curves[1, 1],
 plt_pcoa_spec = plot_pcoa!(ax_pcoa_spec, species_pco; color=get(taxprofiles, :stool_age), colormap=colormap_age)
 plt_pcoa_func = plot_pcoa!(ax_pcoa_func, unirefs_pco; color=get(unirefs, :stool_age), colormap=colormap_age)
 
-Colorbar(grid_pcoas[1, 3];
-         limits=extrema(skipmissing(mdata.stool_age)), label="Age (months)", colormap=colormap_age, alignmode=Mixed(right=0)
+grid_f2_colorbar = GridLayout(grid_pcoas[2,1:2])
+Label(grid_f2_colorbar[1,1], "Age (months)"; tellwidth=true, tellheight=true)
+
+Colorbar(grid_f2_colorbar[1,2];
+         limits=extrema(skipmissing(mdata.stool_age)),
+         colormap=colormap_age,
+         vertical=false, tellwidth=true, tellheight=true
 )
 
 # ##### Tax abundance plots
@@ -611,11 +632,35 @@ colgap!(tax_abundances, 2pt)
 rowgap!(tax_abundances, 2pt)
 colgap!(eeg_scatters, 2pt)
 rowgap!(eeg_scatters, 2pt)
+rowgap!(grid_pcoas, 2pt)
 rowsize!(figure2.layout, 2, Relative(2/5))
+
+
+Label(eeg_scatters[1,0,TopLeft()], "A",
+    font = :bold,
+    padding = (0, 0, 0, 0),
+    halign = :right
+)
+Label(tax_abundances[1,0,TopLeft()], "B",
+    font = :bold,
+    padding = (0, 0, 0, 0),
+    halign = :right
+)
+Label(grid_pcoas[1,1,TopLeft()], "C",
+    font = :bold,
+    padding = (0, 0, 0, 0),
+    halign = :right
+)
+Label(grid_pcoas[1,2,TopLeft()], "D",
+    font = :bold,
+    padding = (0, 0, 0, 0),
+    halign = :right
+)
 
 save("/home/kevin/Downloads/figure2-inprogress.png", figure2)
 save("manuscript/mainfigures/figure2.svg", figure2)
 figure2
+
 
 
 #-
@@ -701,6 +746,11 @@ end
 Label(fsea_grid[1:3,1], "Significant genesets w/amplitude (N / total)"; rotation=π/2, tellwidth=true, tellheight=false)
 Label(fsea_grid[1:3,3], "Significant genesets w/latency (N / total)"; rotation=π/2, tellwidth=true, tellheight=false)
 
+for (j, feat) in enumerate(filter(f-> contains(f, "amp"), eeg_features))
+    peak = replace(feat, r"peak_amp_([NP12]+)(_corrected)?" => s"\1")
+    Label(fsea_grid[j,0], peak; tellwidth=true, tellheight=false)
+end
+
 Legend(fsea_grid[4, :],
     [MarkerElement(; marker=:rect, color=colors_gstypes[t]) for t in keys(geneset_types)],
     ["Neurotransmitters", "Amino acid metabolism", "SCFAs", "other"];
@@ -726,7 +776,7 @@ for (k, (feat, gs)) in enumerate([
     fsea_violin1 = Axis(fsea_violins[grid_y,grid_x];
         ylabel="E.S.", xticks=(1:3, ["v1", "v2", "v3"]),
         title=replace(gs, "synthesis"=>"syn."),
-        alignmode = Mixed(bottom=0)
+        alignmode = Mixed(bottom=0,left=0)
     )
     # fsea_enrichment1 = GridLayout(fsea_violins[2,1])
     #
@@ -762,6 +812,21 @@ for (k, (feat, gs)) in enumerate([
     end
 end
 
+Label(volcano_grid[1,0,TopLeft()], "A",
+    font = :bold,
+    padding = (0, 0, 0, 0),
+    halign = :right
+)
+Label(fsea_grid[1,0,TopLeft()], "B",
+    font = :bold,
+    padding = (0, 0, 0, 0),
+    halign = :right
+)
+Label(fsea_violins[1,1,TopLeft()], "C",
+    font = :bold,
+    padding = (0, 0, 0, 0),
+    halign = :right,
+)
 colgap!(volcano_grid, 2)
 colgap!(fsea_grid, 2)
 
@@ -942,7 +1007,7 @@ fig4_violins = Figure(;size = (6inch, 3inch))
 grid_future_violins = GridLayout(fig4_violins[1, 1:3]; alignmode=Outside())
 ax_future_violins = map(enumerate(ftps)) do (i, tp)
   ax = Axis(grid_future_violins[1, i]; ylabel="age (months)", xticks=([1, 2], ["stool", "eeg"]),
-    xlabel="collection type", title="visit $(i == 3 ? "2" : "1") → visit $(i == 1 ? "2" : "3")")
+    xlabel="collection type", title="visit $(i == 3 ? "2" : "1") → visit $(i == 1 ? "2" : "3")",)
 end
 linkyaxes!(ax_future_violins...)
 
@@ -971,7 +1036,8 @@ grid_future_fsea = GridLayout(figure4[2,3])
 
 ax_future_violins = map(enumerate(ftps)) do (i, tp)
     ax = Axis(grid_future_violins[1, i]; ylabel="age (months)", xticks=([1, 2], ["stool", "eeg"]),
-        title="visit $(i == 3 ? "2" : "1") → visit $(i == 1 ? "2" : "3")")
+        title="visit $(i == 3 ? "2" : "1") → visit $(i == 1 ? "2" : "3")",
+              alignmode=Mixed(left=0))
 end
 
 linkyaxes!(ax_future_violins...)
@@ -1086,7 +1152,7 @@ for (k, (feat, gs)) in enumerate([
     fsea_violin1 = Axis(grid_future_fsea[grid_y,grid_x];
                         ylabel="E.S.", xticks=(1:3, [ftps...]),
                         title=replace(gs, "synthesis"=>"syn."),
-                        alignmode = Mixed(bottom=0)
+                        alignmode = Mixed(bottom=0, left=0)
     )
 
     # fsea_enrichment1 = GridLayout(fsea_violins[2,1])
@@ -1129,6 +1195,28 @@ rowgap!(grid_future_fsea, 2)
 rowgap!(grid_future_volcano, 2)
 colsize!(figure4.layout, 1, Relative(1/3))
 rowsize!(figure4.layout, 1, Relative(1/3))
+
+Label(grid_future_violins[1,1,TopLeft()], "A",
+    font = :bold,
+    padding = (0, 0, 0, 0),
+    halign = :right
+)
+Label(grid_future_volcano[1,0,TopLeft()], "B",
+    font = :bold,
+    padding = (0, 0, 0, 0),
+    halign = :right
+)
+Label(grid_fsea_bars[1,0,TopLeft()], "C",
+    font = :bold,
+    padding = (0, 0, 0, 0),
+    halign = :right,
+)
+Label(grid_future_fsea[1,1,TopLeft()], "D",
+    font = :bold,
+    padding = (0, 0, 0, 0),
+    halign = :right,
+)
+
 
 save("/home/kevin/Downloads/figure4-inprogress.png", figure4)
 save("manuscript/mainfigures/figure4.svg", figure4)
