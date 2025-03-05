@@ -108,6 +108,7 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger,
 #set par(first-line-indent: 2em, spacing: 0.65em)
 #set text(10pt)
 
+
 == Abstract
 
 Infancy is a time of elevated neuroplasticity supporting rapid brain and sensory development.
@@ -1135,7 +1136,9 @@ The authors declare no financial or other conflicts of interest.
   kind: table
 ): set figure.caption(position: top)
 
-
+#show figure.caption: it => context [
+  *#it.supplement~#it.counter.display()#it.separator*#it.body
+]
 
 #pagebreak()
 
