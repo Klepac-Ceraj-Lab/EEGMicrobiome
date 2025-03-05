@@ -99,9 +99,9 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger,
 
 //
 // Leave comments like this
-#set par(first-line-indent: 2em)
-#show par: set block(spacing: 0.65em)
+#set par(first-line-indent: 2em, spacing: 0.65em)
 #set text(10pt)
+
 == Abstract
 
 Infancy is a time of elevated neuroplasticity supporting rapid brain and sensory development.
@@ -1035,8 +1035,8 @@ The authors declare no financial or other conflicts of interest.
 
 #show figure: set align(left)
 
-#show figure.caption: it => [
-    *#it.supplement #it.counter.display():* #it.body
+#show figure.caption: it => context [
+  *#it.supplement~#it.counter.display()#it.separator*#it.body
 ]
 
 #pagebreak()
@@ -1373,8 +1373,7 @@ The authors declare no financial or other conflicts of interest.
 
 //#rotate(-90deg, reflow: true)[
 #figure(
-  //image("mainfigures/figure1_edit.svg"),
-  [],
+  image("mainfigures/figure1.svg"),
   caption: [
     *The gut microbiome and VEP both develop over the first 18 months of life.*#linebreak()
     (A) Study design; participants (N=194) were seen up to 3 times over the first 18 months of life.
@@ -1387,19 +1386,76 @@ The authors declare no financial or other conflicts of interest.
         When stool and EEG data were collected for the same visit (purple) but not on the same day,
         dot represents the median age of collection,
         and vertical bars in blue and red represent stool and EEG collections respectively.
-    (C) Principal coordinate analysis (PCoA) by multidimensional scaling (MDS)
-        on Bray-Curtis dissimilarity of taxonomic profiles;
-        percent variance explained (fraction of positive eigenvalues)
-        by each of the first two axes are indicated on the x and y axes respectively.
-    (D) PCoA of microbial functional profiles (UniRef90s).
-    (E) Average (solid lines) ± standard deviation (dotted lines) for VEP waveforms at each visit. 
 ],
 ) <figure1>
 //]
 
 #figure(
-  //image("mainfigures/figure2_edit.svg"),
-  [],
+  image("mainfigures/figure2.svg"),
+  caption: [
+    (A) Individual VEP feature measurements for amplitude (left) and latency (right)
+        for all participants and all visits in the study, separated by age. 
+        mean and +/- standard error (S.E.) wave-forms for each visit are plotted below.
+    (B) Relative abundance of the top 11 microbial species across all visits.
+        All other species were summed so that the total abundance is 100%.
+        each column represents a single sample, and samples are ordered by hierarchical clustering
+        based on Bray-Curtis dissimilarity of the full microbial composition.
+    (C) Principal coordinate analysis (PCoA) by multidimensional scaling (MDS)
+        on Bray-Curtis dissimilarity of taxonomic profiles;
+        percent variance explained (fraction of positive eigenvalues)
+        by each of the first two axes are indicated on the x and y axes respectively.
+    (D) PCoA of microbial functional profiles (UniRef90s).
+],
+) <figure2>
+
+#figure(
+  image("mainfigures/figure3.svg"),
+  caption: [
+    (A) Volcano plots of of gene sets tested with feature set enrichment analysis (FSEA)
+        for all 6 VEP features,
+        with enrichment score (E.S.) compared to log scaled FDR-corrected p-value (Q).
+        Colored dots were significantly enriched (positive E.S.) or depleted (negative E.S.)
+        relative to the tested VEP feature.
+    (B) Summary of results in (A), showing the fraction of each class of neuroactive genes
+        (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
+        that were statistically significantly enriched or depleted for each VEP feature
+        for each visit in the analysis.
+    (C) Enrichment plots for selected gene sets and there association with P1 latency.
+        Each plot shows the distribution of associations of individual genes
+        within the gene set and the VEP feature.
+        Dots are colored if the geneset as a whole was significantly associated.
+        Enrichment plots for all gene set / VEP feature associations may be found in Figure S2.
+],
+) <figure3>
+
+#figure(
+  image("mainfigures/figure4.svg"),
+  caption: [
+    (A) Age distributions for cross-visit comparisons,
+        with age at stool collection (left) and age of VEP measurement (right)
+        for each participant included in the analysis.
+        Collections for the same individual are connected by a dotted gray line.
+    (B) Volcano plots of of gene sets tested with feature set enrichment analysis (FSEA)
+        for all 6 VEP features,
+        with enrichment score (E.S.) compared to log scaled FDR-corrected p-value (Q).
+        Colored dots were significantly enriched (positive E.S.) or depleted (negative E.S.)
+        relative to the tested VEP feature.
+    (C) Summary of results in (B), showing the fraction of each class of neuroactive genes
+        (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
+        that were statistically significantly enriched or depleted for each VEP feature
+        for each cross-visit comparison in the analysis.
+    (D) Enrichment plots for selected gene sets and there association with P1 latency.
+        Each plot shows the distribution of associations of individual genes
+        within the gene set and the VEP feature.
+        Dots are colored if the geneset as a whole was significantly associated.
+        Enrichment plots for all gene set / VEP feature associations may be found in Figure S2.
+],
+) <figure4>
+
+
+
+#figure(
+  image("mainfigures/figureS2.svg"),
   caption: [
     *Concurrent feature set enrichment analysis of microbial neuroactive genes and VEP for three visits.*
     FSEA results for all genesets where at least one visit had a significant hit (q < 0.2)
@@ -1410,23 +1466,22 @@ The authors declare no financial or other conflicts of interest.
     Visit 1 for inositol degradation and DOPAC synthesis were not tested,
     since there were fewer than 5 genes from those genesets present in the sample (See Methods).
 ],
-) <figure2>
-
+) <figureS2>
 
 #figure(
-  //image("mainfigures/figure3_edit.svg"),
-  [],
-  caption: [
-    *Gut microbial genes predict future VEP latencies and amplitudes.*
-    (A) Age distributions for stool samples (left) and VEP (right)
-    for each longitudinal comparison (same individual) tested,
-    V1 stool →V2 VEP, V1 stool →V3 VEP, and V2 stool →V3 VEP.
-    As in @figure2, (B) and (C) show FSEA results for all genesets
-    where at least one visit had a significant hit (q < 0.2)
-    with at least one VEP latency or amplitude respectively.
-    Dots indicate the Z-statistic from logistic regression for each gene in a gene set.
-    Vertical bars indicate the median Z-statistic for the gene set as a whole.
-    The Y-axis position for each gene set indicates longitudinal comparison.
-    V1 → V2 and V1 → 3 for inositol degradation and DOPAC synthesis were not tested,
-    since there were fewer than 5 genes from those genesets present in the sample (See Methods).
-]) <figure3>
+        image("mainfigures/figureS3.svg"),
+        caption: [
+        *Gut microbial genes predict future VEP latencies and amplitudes.*
+        (A) Age distributions for stool samples (left) and VEP (right)
+        for each longitudinal comparison (same individual) tested,
+        V1 stool →V2 VEP, V1 stool →V3 VEP, and V2 stool →V3 VEP.
+        As in @figure2, (B) and (C) show FSEA results for all genesets
+        where at least one visit had a significant hit (q < 0.2)
+        with at least one VEP latency or amplitude respectively.
+        Dots indicate the Z-statistic from logistic regression for each gene in a gene set.
+        Vertical bars indicate the median Z-statistic for the gene set as a whole.
+        The Y-axis position for each gene set indicates longitudinal comparison.
+        V1 → V2 and V1 → 3 for inositol degradation and DOPAC synthesis were not tested,
+        since there were fewer than 5 genes from those genesets present in the sample (See Methods).
+]) <figureS3>
+
