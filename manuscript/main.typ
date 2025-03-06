@@ -25,28 +25,28 @@
 // 89 / 200 char
 = Co-development of gut microbial metabolism and visual neural circuitry over human infancy
 
-Kevin S. Bonham#super([1])\*,
-Emma T. Margolis#super([2])\*,
+Kevin S. Bonham#super([1,2])\*,
+Emma T. Margolis#super([3])\*,
 Guilherme Fahur Bottino#super([1]),
-Ana Sobrino#super([2]),
-Fadheela Patel#super([3]),
+Ana Sobrino#super([3]),
+Fadheela Patel#super([4]),
 Shelley McCann#super([1]),
-Michal R. Zieff#super([4]),
-Marlie Miles#super([4]),
-Donna Herr#super([4]),
-Lauren Davel#super([4]),
-Cara Bosco#super([2]),
-Khula South Africa Data Collection Team#super([4]),
-Curtis Huttenhower#super([5])
-Nicolò Pini#super([6,7]),
-Daniel C. Alexander#super([8]),
-Derek K. Jones#super([9]),
-Steve C. R. Williams#super([10]),
-Dima Amso#super([11]),
-Melissa Gladstone#super([12]),
-William P. Fifer#super([6,7]),
-Kirsten A. Donald#super([4,13]),
-Laurel J. Gabard-Durnam#super([2])#sym.dagger,
+Michal R. Zieff#super([5]),
+Marlie Miles#super([5]),
+Donna Herr#super([5]),
+Lauren Davel#super([5]),
+Cara Bosco#super([3]),
+Khula South Africa Data Collection Team#super([5]),
+Curtis Huttenhower#super([6])
+Nicolò Pini#super([7,8]),
+Daniel C. Alexander#super([9]),
+Derek K. Jones#super([10]),
+Steve C. R. Williams#super([11]),
+Dima Amso#super([12]),
+Melissa Gladstone#super([13]),
+William P. Fifer#super([7,8]),
+Kirsten A. Donald#super([5,14]),
+Laurel J. Gabard-Durnam#super([3])#sym.dagger,
 Vanja Klepac-Ceraj#super([1])#sym.dagger,
 
 #set align(left)
@@ -55,20 +55,21 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger,
 #sym.dagger co-corresponding authors#linebreak()
 
 #super([1])Department of Biological Sciences, Wellesley College, Wellesley, MA, USA#linebreak()
-#super([2])Department of Phychology, Northeastern University, Boston, MA, USA#linebreak()
-#super([3])Division of Medical Microbiology, University of Cape Town, Cape Town, Western Cape, ZAF#linebreak()
-#super([4])Department of Paediatrics and Child Health, University of Cape Town, Cape Town, Western Cape, ZAF#linebreak()
-#super([5])Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA, USA#linebreak()
-#super([6])Department of Psychiatry, Columbia University, Irving Medical Center, New York City, NY, USA#linebreak()
-#super([7])Division of Developmental Neuroscience, New York State Psychiatric Institute, New York City, NY, USA#linebreak()
-#super([8])Centre for Medical Image Computing, Department of Computer Science,
+#super([1])Department of Medicine, Tufts Medical Center, Boston, MA, USA#linebreak()
+#super([3])Department of Phychology, Northeastern University, Boston, MA, USA#linebreak()
+#super([4])Division of Medical Microbiology, University of Cape Town, Cape Town, Western Cape, ZAF#linebreak()
+#super([5])Department of Paediatrics and Child Health, University of Cape Town, Cape Town, Western Cape, ZAF#linebreak()
+#super([6])Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA, USA#linebreak()
+#super([7])Department of Psychiatry, Columbia University, Irving Medical Center, New York City, NY, USA#linebreak()
+#super([8])Division of Developmental Neuroscience, New York State Psychiatric Institute, New York City, NY, USA#linebreak()
+#super([9])Centre for Medical Image Computing, Department of Computer Science,
     University College London, London, United Kingdom#linebreak()
-#super([9])Cardiff University Brain Research Imaging Centre, Cardiff University, Cardiff, Wales, United Kingdom#linebreak()
-#super([10])Department of Neuroimaging, King’s College London, United Kingdom#linebreak()
-#super([11])Department of Psychology, Columbia University, New York City, NY, USA#linebreak()
-#super([12])Department of Women and Children’s Health, Institute of Life Course and Medical Science,
+#super([10])Cardiff University Brain Research Imaging Centre, Cardiff University, Cardiff, Wales, United Kingdom#linebreak()
+#super([11])Department of Neuroimaging, King’s College London, United Kingdom#linebreak()
+#super([12])Department of Psychology, Columbia University, New York City, NY, USA#linebreak()
+#super([13])Department of Women and Children’s Health, Institute of Life Course and Medical Science,
     Alder Hey Children’s NHS Foundation Trust, University of Liverpool, Liverpool, United Kingdom#linebreak()
-#super([13])Neuroscience Institute, University of Cape Town, Cape Town, Western Cape, ZAF
+#super([14])Neuroscience Institute, University of Cape Town, Cape Town, Western Cape, ZAF
 
 // 50 / 55 char
 *Running title*: Infant gut microbiome and visual neurodevelopment
