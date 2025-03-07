@@ -491,11 +491,11 @@ figure2 = Figure(; size=(8inch,5inch));
 
 #-
 
-eeg_scatters = GridLayout(figure2[1,1])
-grid_eeg_curves = GridLayout(figure2[2, 1])
+grid_eeg_curves = GridLayout(figure2[1, 1])
+eeg_scatters = GridLayout(figure2[2,1])
 
-tax_abundances = GridLayout(figure2[1,2])
-grid_pcoas = GridLayout(figure2[2, 2])
+grid_pcoas = GridLayout(figure2[1, 2])
+tax_abundances = GridLayout(figure2[2,2])
 
 
 ax_eeg_curves = Axis(grid_eeg_curves[1:2, 1];
@@ -633,15 +633,20 @@ rowgap!(tax_abundances, 2pt)
 colgap!(eeg_scatters, 2pt)
 rowgap!(eeg_scatters, 2pt)
 rowgap!(grid_pcoas, 2pt)
-rowsize!(figure2.layout, 2, Relative(2/5))
+rowsize!(figure2.layout, 1, Relative(2/5))
 
 
-Label(eeg_scatters[1,0,TopLeft()], "A",
+Label(grid_eeg_curves[1,1,TopLeft()], "A",
     font = :bold,
     padding = (0, 0, 0, 0),
     halign = :right
 )
-Label(tax_abundances[1,0,TopLeft()], "B",
+Label(eeg_scatters[1,0,TopLeft()], "B",
+    font = :bold,
+    padding = (0, 0, 0, 0),
+    halign = :right
+)
+Label(tax_abundances[1,0,TopLeft()], "E",
     font = :bold,
     padding = (0, 0, 0, 0),
     halign = :right
@@ -656,12 +661,16 @@ Label(grid_pcoas[1,2,TopLeft()], "D",
     padding = (0, 0, 0, 0),
     halign = :right
 )
+peak_labs = text!(ax_eeg_curves,
+                  Point2f.([(0, -4), (40, 6), (210, -5)]);
+                  text=["N1", "P1", "N2"]
+)
+
+
 
 save("/home/kevin/Downloads/figure2-inprogress.png", figure2)
 save("manuscript/mainfigures/figure2.svg", figure2)
 figure2
-
-
 
 #-
 
@@ -672,13 +681,14 @@ figure2
 
 figure3 = Figure(; size=(8inch,5inch));
 
-volcano_grid = GridLayout(figure3[1,1])
-fsea_grid = GridLayout(figure3[1, 2])
+grid_fseas_over = GridLayout(figure3[1,1:2])
+volcano_grid = GridLayout(grid_fseas_over[1,1])
+fsea_grid = GridLayout(grid_fseas_over[1, 2])
 fsea_violins = GridLayout(figure3[1,3])
 
 for (i, v) in enumerate(tps)
   df = subset(fsea_df, "timepoint" => ByRow(==(v)))
-    ax = Axis(volcano_grid[i, 1]; xlabel="E.S.", ylabel="log(Q)", alignmode=Mixed(bottom=0))
+    ax = Axis(volcano_grid[i, 1]; xlabel="E.S.", ylabel="log(Q)")
   scatter!(df.es, -1 .* log.(df.q₀ .+ 0.0005); color=map(eachrow(df)) do row
         row.q₀ < 0.2 || return (:gray, 0.3)
         colors_gstypes[gs_types_rev[row.geneset]]
@@ -751,10 +761,10 @@ for (j, feat) in enumerate(filter(f-> contains(f, "amp"), eeg_features))
     Label(fsea_grid[j,0], peak; tellwidth=true, tellheight=false)
 end
 
-Legend(fsea_grid[4, :],
+Legend(grid_fseas_over[2, :],
     [MarkerElement(; marker=:rect, color=colors_gstypes[t]) for t in keys(geneset_types)],
     ["Neurotransmitters", "Amino acid metabolism", "SCFAs", "other"];
-    orientation=:horizontal, padding=(3f0, 3f0, 3f0, 3f0), nbanks=2
+    orientation=:horizontal, padding=(3f0, 3f0, 3f0, 3f0), nbanks=1
 )
 
 gs_interval = 6
@@ -774,7 +784,7 @@ for (k, (feat, gs)) in enumerate([
     grid_x = ceil(Int, k / 2)
 
     fsea_violin1 = Axis(fsea_violins[grid_y,grid_x];
-        ylabel="E.S.", xticks=(1:3, ["v1", "v2", "v3"]),
+        ylabel="E.S. (P1 lat.)", xticks=(1:3, ["v1", "v2", "v3"]),
         title=replace(gs, "synthesis"=>"syn."),
         alignmode = Mixed(bottom=0,left=0)
     )
@@ -812,6 +822,7 @@ for (k, (feat, gs)) in enumerate([
     end
 end
 
+
 Label(volcano_grid[1,0,TopLeft()], "A",
     font = :bold,
     padding = (0, 0, 0, 0),
@@ -829,6 +840,8 @@ Label(fsea_violins[1,1,TopLeft()], "C",
 )
 colgap!(volcano_grid, 2)
 colgap!(fsea_grid, 2)
+rowgap!(volcano_grid, 2)
+rowgap!(fsea_violins, 2)
 
 save("/home/kevin/Downloads/figure3-inprogress.png", figure3)
 save("manuscript/mainfigures/figure3.svg", figure3)
@@ -1150,7 +1163,7 @@ for (k, (feat, gs)) in enumerate([
     grid_x = ceil(Int, k / 2)
 
     fsea_violin1 = Axis(grid_future_fsea[grid_y,grid_x];
-                        ylabel="E.S.", xticks=(1:3, [ftps...]),
+                        ylabel="E.S. (P1 lat.)", xticks=(1:3, [ftps...]),
                         title=replace(gs, "synthesis"=>"syn."),
                         alignmode = Mixed(bottom=0, left=0)
     )
