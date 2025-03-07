@@ -561,6 +561,8 @@ are available on github and archived on Zenodo
 @bonhamKlepacCerajLabEEGMicrobiomeInitial2024.
 Input data will be archived on Dryad
 and downloadable via included scripts in analysis code upon publication.
+\ 
+\ 
 
 
 == Results
@@ -862,7 +864,7 @@ followed a similar pattern to the SCFAs
 in that genes from visit-1 and visit-2 were largely associated
 with future VEP features at visit-3 (8/9 menaquinone associations).
 This indicates persistent associations of this early microbiome gene set
-with individual differences in VEP features early in the second year of life.It is possible that extrinsic factors related to development
+with individual differences in VEP features early in the second year of life. It is possible that extrinsic factors related to development
 mutually influence both the gut microbiome and neural development,
 though we additionally tested whether VEP features
 were associated with microbial metabolism at a future visit,
@@ -870,6 +872,8 @@ and found substantially fewer associations (29 total associations,
 compared with 95 when analyzing early stool samples with future VEP).
 While this does not prove a causal relationship,
 it is consistent with the hypothesis that microbial metabolism influences brain development.
+\ 
+\ 
 
 == Discussion
 
@@ -1081,7 +1085,7 @@ but challenges remain on how to interpret them in humans
 Given that the VEP is evolutionarily conserved in mammals
 and can be accurately measured during development,
 the hypotheses generated in humans in this study
-are readily testable mechanistically using in vivo models in future research.
+are readily testable mechanistically using _in vivo_ models in future research.
 For example, VEP could be assessed in germ-free or defined-microbiome animals
 (Wymore Brand et al. 2015; Kennedy, King, and Baldridge 2018)
 and may be supplemented with specific molecules such as SCFAs,
@@ -1093,6 +1097,8 @@ may also generate hypotheses that can be confirmed in human data.
 This study, therefore,
 provides a foundation for deep investigation
 of the link between the human gut microbiome and brain development.
+\ 
+\ 
 
 == Acknowledgments
 
@@ -1124,10 +1130,13 @@ Validation: KSB, ETM#linebreak()
 Visualization: KSB, ETM#linebreak()
 Writing – original draft: KSB, ETM, LJGD, VKC#linebreak()
 Writing – review & editing: KSB, ETM, CH, NP, KAD#linebreak()
+\ 
+\ 
 
 == Disclosures
-
 The authors declare no financial or other conflicts of interest.
+\ 
+\
 
 == Author correspondence
 
@@ -1139,7 +1148,8 @@ The authors declare no financial or other conflicts of interest.
       [ Wellesley, MA 02481] ,     [Boston, MA 02482 ]
 )
 
-
+\ 
+\ 
 
 #bibliography("refs.bib", style: "biological-psychiatry.csl")
 
