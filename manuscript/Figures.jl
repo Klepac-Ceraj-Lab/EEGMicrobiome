@@ -1045,7 +1045,7 @@ figure4 = Figure(; size=(9inch,6inch));
 grid_future_violins = GridLayout(figure4[1, 1:3]; alignmode=Outside())
 grid_future_volcano = GridLayout(figure4[2,1])
 grid_fsea_bars = GridLayout(figure4[2,2])
-grid_future_fsea = GridLayout(figure4[2,3])
+grid_future_fsea = GridLayout(figure4[2:3,3])
 
 ax_future_violins = map(enumerate(ftps)) do (i, tp)
     ax = Axis(grid_future_violins[1, i]; ylabel="age (months)", xticks=([1, 2], ["stool", "eeg"]),
@@ -1071,7 +1071,8 @@ end
 
 for (i, v) in enumerate(ftps)
     df = subset(futfsea_df, "timepoint" => ByRow(==(v)))
-    ax = Axis(grid_future_volcano[i, 1]; ylabel="log(Q)")
+    ax = Axis(grid_future_volcano[i, 1]; ylabel="log(Q)", xlabel="E.S.")
+    i == 3 || (ax.xlabelvisible = false)
     scatter!(df.es, -1 .* log.(df.q₀ .+ 0.0005); color=map(eachrow(df)) do row
         row.q₀ < 0.2 || return (:gray, 0.4)
         colors_gstypes[gs_types_rev[row.geneset]]
@@ -1079,7 +1080,7 @@ for (i, v) in enumerate(ftps)
     Label(grid_future_volcano[i, 0], v; tellheight=false)
 end
 
-Label(grid_future_volcano[end+1, 1], "E.S."; tellheight=true, tellwidth=false)
+
 
 let fsea_bars_axs = Axis[]
 
@@ -1145,10 +1146,10 @@ for (j, feat) in enumerate(filter(f-> contains(f, "amp"), eeg_features))
     Label(grid_fsea_bars[j,0], peak; tellwidth=true, tellheight=false)
 end
 
-Legend(grid_fsea_bars[4, :],
+Legend(figure4[3, 1:2],
     [MarkerElement(; marker=:rect, color=colors_gstypes[t]) for t in keys(geneset_types)],
     ["Neurotransmitters", "Amino acid metabolism", "SCFAs", "other"];
-    orientation=:horizontal, padding=(3f0, 3f0, 3f0, 3f0), nbanks=2
+    orientation=:horizontal, padding=(3f0, 3f0, 3f0, 3f0), nbanks=1
 )
 
 for (k, (feat, gs)) in enumerate([
