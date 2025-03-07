@@ -141,7 +141,8 @@ One important way this influence can occur is through interactions with the cent
 @rheePrinciplesClinicalImplications2009
 @collinsInterplayIntestinalMicrobiota2012
 @brettMicrobiotaGutBrain2019.
- The metabolic potential of the microorganisms that inhabit the gut vastly exceeds that of human cells alone,
+The metabolic potential of the microorganisms that inhabit the gut
+vastly exceeds that of human cells alone,
 with microbial genes outnumbering host genes by a hundredfold
 @gilbertCurrentUnderstandingHuman2018.
 In particular,
@@ -247,7 +248,7 @@ The first language for the majority of residents in this area is Xhosa.
 Study procedures were offered in English or Xhosa depending on the language preference of the mother.
 This study was approved by the relevant university Health Research Ethics Committees
 (University of Cape Town study number: 666/2021).
-Informed consent was collected from mothers on behalf of vesthemselves and their infants.
+Informed consent was collected from mothers on behalf of themselves and their infants.
 Demographic information, including maternal place of birth,
 primary spoken language, maternal age at enrollment,
 maternal educational attainment, and maternal income,
@@ -331,8 +332,8 @@ the task was rerun.
 
 ==== EEG Data Pre-Processing
 
-VEP data were exported from native Netstation ``.mff`` format
-to ``.raw`` format and then pre-processed
+VEP data were exported from native Netstation `.mff` format
+to `.raw` format and then pre-processed
 using the HAPPE+ER pipeline within the HAPPE v3.3 software,
 an automated open-source EEG processing software
 validated for infant data
@@ -523,7 +524,7 @@ $ "UniRef" ~ "vep" + "age_months" + "n_trials" + "age_diff" $
 
 FSEA was performed on each geneset
 that had at least five members in each comparison group
-according to the procedure set out in Subramanian et al. (2005)
+according to the procedure set out in Subramanian _et. al._ (2005)
 @subramanianGeneSetEnrichment2005.
 Briefly, enrichment scores (ES) are calculated
 based on the rank order of z-statistics from the LR for each UniRef.
@@ -596,17 +597,17 @@ microbial composition was developmentally dependent,
 as expected
 @koenigSuccessionMicrobialConsortia2011
 @yassourNaturalHistoryInfant2016
-@backhedDynamicsStabilizationHuman2015,
-with early samples dominated by _Bifidobacterium_ and _Bacteroides_
-species, while later samples have increasing _Prevotella_
-and anaerobic genera such as _Faecalibacterium prausnitzii_
-(@figure2\B).
+@backhedDynamicsStabilizationHuman2015.
 Ordinations reveal a similar relationship with age,
 with the first principal coordinate axis for both taxonomic profiles
 (@figure2\C; variance explained = 15.1%; R = -0.50)
 and functional profiles
 (@figure2\D; variance explained = 12.9%; R = -0.57)
 driven strongly by the age of the participant at the time of collection.
+Early samples dominated by _Bifidobacterium_ and _Bacteroides_
+species, while later samples have increasing _Prevotella_
+and anaerobic genera such as _Faecalibacterium prausnitzii_
+(@figure2\E).
 
 #figure(
   image("mainfigures/figure1.svg"),
@@ -630,18 +631,21 @@ driven strongly by the age of the participant at the time of collection.
   image("mainfigures/figure2.svg"),
   caption: [
     *The gut microbiome and VEP both develop over the first 18 months of life.*#linebreak()
-    (A) Individual VEP feature measurements for amplitude (left) and latency (right)
-        for all participants and all visits in the study, separated by age. 
+    (A) Mean #sym.plus.minus standard error of VEP curves from all included individuals
+        at each visit.
+    (B) Individual VEP feature measurements for peak amplitudes (left) and latencies (right)
+        for all participants and all visits in the study, separated by age and colored by visit as in (A). 
         mean and +/- standard error (S.E.) wave-forms for each visit are plotted below.
-    (B) Relative abundance of the top 11 microbial species across all visits.
-        All other species were summed so that the total abundance is 100%.
-        each column represents a single sample, and samples are ordered by hierarchical clustering
-        based on Bray-Curtis dissimilarity of the full microbial composition.
     (C) Principal coordinate analysis (PCoA) by multidimensional scaling (MDS)
         on Bray-Curtis dissimilarity of taxonomic profiles;
         percent variance explained (fraction of positive eigenvalues)
         by each of the first two axes are indicated on the x and y axes respectively.
     (D) PCoA of microbial functional profiles (UniRef90s).
+    (E) Relative abundance of the top 11 microbial species across all visits.
+        All other species were summed so that the total abundance is 100%.
+        each column represents a single sample, and samples are ordered by hierarchical clustering
+        based on Bray-Curtis dissimilarity of the full microbial composition.
+
 ],
 ) <figure2>
 
@@ -667,7 +671,7 @@ using a permutation test to determine significance of the associations
   caption: [
     *Feature Set Enrichment Analysis Reveals associations between microbial genes and VEP*#linebreak()
     (A) Volcano plots of of gene sets tested with feature set enrichment analysis (FSEA)
-        for all 6 VEP features,
+        for all 6 VEP features for each visit (visit-1 top, visit-2 middle, visit-3 bottom)
         with enrichment score (E.S.) compared to log scaled FDR-corrected p-value (Q).
         Colored dots were significantly enriched (positive E.S.) or depleted (negative E.S.)
         relative to the tested VEP feature.
@@ -675,11 +679,11 @@ using a permutation test to determine significance of the associations
         (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
         that were statistically significantly enriched or depleted for each VEP feature
         for each visit in the analysis.
-    (C) Enrichment plots for selected gene sets and there association with P1 latency.
+    (C) Enrichment plots for selected gene sets and their association with P1 latency.
         Each plot shows the distribution of associations of individual genes
         within the gene set and the VEP feature.
         Dots are colored if the geneset as a whole was significantly associated.
-        Enrichment plots for all gene set / VEP feature associations are shown in Figure S2.
+        Enrichment plots for all gene set / VEP feature associations are shown in @figureS2.
 ],
 ) <figure3>
 #v(1em)
@@ -692,7 +696,7 @@ after correcting for false discovery rate
 (Benjamini-Hochberg, q < 0.2; @figure3, Table S2).
 Microbial genes involved in synthesis or degradation of molecules with neuroactive potential across all categories considered
 (i.e., neurotransmitters, amino acid metabolism, SCFAs, other)
-were associated with both VEP amplitudes and latencies at each visit (Figure S2) (Figure S2),
+were associated with both VEP amplitudes and latencies at each visit (@figureS2),
 demonstrating widespread associations between early life gut microbiome and visual cortex neurodevelopment.
 The number of these associations increased over time
 (visit-1 had 6 associations, visit-2 had 24, and visit-3 had 37).
@@ -745,20 +749,16 @@ We initially hypothesized that the earliest microbial influences
 would have the largest effects on brain development,
 but in cross-sectional analysis with concurrently measured VEP, we observed the fewest number of associations at visit-1. 
 To differentiate whether this cross-sectional finding indicated the early microbiome
-was sparsely related to visual cortical development at 4 months only or more broadly at all subsequent time points. We initially hypothesizedthe earlst micobial influ
-wouldhave the largest effects on bradevelopn,
-ut in cross-sectina analyss with oncurrentlymeasured VEP, we bserved he fewst umber of associaons at visit-1. 
-T diferentiatewherthis cross-sctionfinding indcatd the early
-wassprselrlatd ovisual corcaldvelopmnt a 4 monthnly or mor boadly at all subsequent points
-we sought to determine whether microbial genes at early time points were associated with subsequent VEP development.
-To investigate this,
-we performed FSEA on stool samples collected at visit-1 with visit-2 VEP
+was sparsely related to visual cortical development
+or simply took time to manifest,
+we sought to determine whether microbial genes at early time points were associated with later VEP development.
+We therefore performed FSEA on stool samples collected at visit-1 with visit-2 VEP
 (see @table2, age at stool collection = 3.6 ± 0.8 months, age at VEP = 8.6 ± 1.5 months)
 or visit-3 VEP
 (see @table3, age at stool collection = 3.7 ± 0.7 months, age at VEP = 14.1 ± 1.1 months),
 as well as visit-2 stool samples with visit-3 VEP
 (see @table4, age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; Table S3)
-(@figure4\A, Figure S3).
+(@figure4\A, @figureS3).
 
 
 #figure(
@@ -781,7 +781,7 @@ as well as visit-2 stool samples with visit-3 VEP
         Each plot shows the distribution of associations of individual genes
         within the gene set and the VEP feature.
         Dots are colored if the geneset as a whole was significantly associated.
-        Enrichment plots for all gene set / VEP feature associations may be found in Figure S2.
+        Enrichment plots for all gene set / VEP feature associations may be found in @figureS2.
 ],
 ) <figure4>
 #v(1em)
@@ -857,7 +857,7 @@ from both visit-1 and visit-2 showed associations with future VEP features,
 but here the effects were almost entirely observed
 for VEP features at visit-3 (10/10 propionate and 7/8 butyrate associations).
 Moreover, acetate and butyrate metabolism genes
-were doubly associated with future VEP latencies compared to amplitude features, possibly reflecting their known association with myelination pathways, possibly reflecting their known association with myelination pathways.
+were doubly associated with future VEP latencies compared to amplitude features, possibly reflecting their known association with myelination pathways.
 
 Finally, menaquinone (Vitamin K2) metabolism genes
 followed a similar pattern to the SCFAs
@@ -1495,11 +1495,16 @@ The authors declare no financial or other conflicts of interest.
 
 == Supplemental Figures
 
+
+#set figure(numbering: it => {
+    "S" + str(it - 3)
+})
+
 #figure(
   image("mainfigures/figureS2.svg"),
   caption: [
     *Concurrent feature set enrichment analysis of microbial neuroactive genes and VEP for three visits.*
-    FSEA results for all genesets where at least one visit had a significant hit (q < 0.2)
+    FSEA results for all gene sets where at least one visit had a significant hit (q < 0.2)
     with at least one VEP latency (A) or amplitude (B).
     Dots indicate the Z-statistic from logistic regression for each gene in a gene set.
     Vertical bars indicate the median Z-statistic for the gene set as a whole.
@@ -1516,7 +1521,7 @@ The authors declare no financial or other conflicts of interest.
         (A) Age distributions for stool samples (left) and VEP (right)
         for each longitudinal comparison (same individual) tested,
         V1 stool →V2 VEP, V1 stool →V3 VEP, and V2 stool →V3 VEP.
-        As in Figure S2, (B) and (C) show FSEA results for all genesets
+        As in @figureS2, (B) and (C) show FSEA results for all genesets
         where at least one visit had a significant hit (q < 0.2)
         with at least one VEP latency or amplitude respectively.
         Dots indicate the Z-statistic from logistic regression for each gene in a gene set.
