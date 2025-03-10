@@ -822,6 +822,11 @@ for (k, (feat, gs)) in enumerate([
     end
 end
 
+Legend(fsea_violins[3, 1:2],
+       [MarkerElement(; marker=:circle, color=colors_sig[i], strokewidth=1) for i in (3,5,4)],
+       ["E.S. < 0", "E.S. > 0", "not sig."],
+  orientation=:horizontal, tellheight=true, tellwidth=false
+)
 
 Label(volcano_grid[1,0,TopLeft()], "A",
     font = :bold,
@@ -838,10 +843,12 @@ Label(fsea_violins[1,1,TopLeft()], "C",
     padding = (0, 0, 0, 0),
     halign = :right,
 )
+
+colsize!(figure3.layout, 3, Relative(2/5))
 colgap!(volcano_grid, 2)
 colgap!(fsea_grid, 2)
 rowgap!(volcano_grid, 2)
-rowgap!(fsea_violins, 2)
+rowgap!(fsea_violins, 6)
 
 save("/home/kevin/Downloads/figure3-inprogress.png", figure3)
 save("manuscript/mainfigures/figure3.svg", figure3)
@@ -1202,6 +1209,12 @@ for (k, (feat, gs)) in enumerate([
 
     end
 end
+
+Legend(grid_future_fsea[3, 1:2],
+       [MarkerElement(; marker=:circle, color=colors_sig[i], strokewidth=1) for i in (3,5,4)],
+       ["E.S. < 0", "E.S. > 0", "not sig."],
+  orientation=:horizontal, tellheight=true, tellwidth=false
+)
 
 
 colgap!(grid_future_fsea, 2)
