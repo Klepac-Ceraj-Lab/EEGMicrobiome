@@ -7,10 +7,8 @@
 
 #set align(center)
 
+// Laurel Flag
 
-//this is a test
-
-// Only in local using latest development version of typst
 #set par.line(numbering: "1")
 #let no-paren-cite(label) = {
   show regex("\(|\)"): none
@@ -57,7 +55,7 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger,
 
 #super([1])Department of Biological Sciences, Wellesley College, Wellesley, MA, USA#linebreak()
 #super([1])Department of Medicine, Tufts Medical Center, Boston, MA, USA#linebreak()
-#super([3])Department of Phychology, Northeastern University, Boston, MA, USA#linebreak()
+#super([3])Department of Psychology, Northeastern University, Boston, MA, USA#linebreak()
 #super([4])Division of Medical Microbiology, University of Cape Town, Cape Town, Western Cape, ZAF#linebreak()
 #super([5])Department of Paediatrics and Child Health, University of Cape Town, Cape Town, Western Cape, ZAF#linebreak()
 #super([6])Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA, USA#linebreak()
@@ -176,7 +174,7 @@ glial and microglial maturation and myelination, and neuroinflammation
 @dalileRoleShortchainFatty2019
 @ernyMicrobiotaderivedAcetateEnables2021.
 Other indirect pathways for gut microbial influence on the brain include vagus nerve stimulation,
-neuroendocrine modulation and immune system regulation
+neuroendocrine modulation, and immune system regulation
 @rheePrinciplesClinicalImplications2009.
 
 Rapidly growing literature connects the metabolic potential of the gut microbiome
@@ -185,7 +183,7 @@ and brain function in humans
 #no-paren-cite(<ahmedMicrobiotaderivedMetabolitesDrivers2022>)
 #no-paren-cite(<parkerGutMicrobesMetabolites2019>)
 #no-paren-cite(<aburtoGastrointestinalBrainBarriers2024>)),
-but the overwhelming majority of this research is conducted in cohorts of adult participants.
+but the overwhelming majority of this research is conducted in adult participants.
 Importantly, both the gut microbiome and the brain undergo dramatic and rapid development over the first postnatal years
 @bonhamGutresidentMicroorganismsTheir2023
 @lippeElectrophysiologicalMarkersVisuocortical2007
@@ -195,8 +193,8 @@ or change during this critical window
 @ahrensInfantMicrobesMetabolites2024a
 @meyerAssociationGutMicrobiota2022
 @callaghanMindGutAssociations2020.
-Interrogating this early co-development in humans is, therefore,
-key to both understanding adaptive gut-brain function and behavior and to informing strategies to support it.
+Interrogating this early co-development in humans is
+key to both understanding adaptive gut-brain function and behavior and informing strategies to support it.
 Specifically, the visual cortex has been shown to be sensitive to gut microbiome modulations in adults
 @canipeDiversityGutmicrobiomeRelated2021a
 and in rodents
@@ -205,11 +203,9 @@ yet the visual cortex undergoes its most rapid period of plasticity and maturati
 @deenOrganizationHighlevelVisual2017
 @ellisRetinotopicOrganizationVisual2021
 @kiorpesVisualDevelopmentPrimates2015.
-Visual cortical functional maturation can be robustly indexed via electroencephalography (EEG)
+Visual cortical maturation can be robustly indexed via electroencephalography (EEG)
 with the Visual-Evoked Potential (VEP) response to visual stimuli from birth.
-The VEP is especially useful for indexing visual neurodevelopment as its morphology
-includes amplitude deflections as well as latencies to those deflections
-reflecting maturation of function and structure, respectively.
+The VEP morphology includes amplitude deflections, sensitive to neurotransmission changes, as well as latencies to those deflections, sensitive to structural changes. Moreover, the VEP is an important paradigm for indexing neurodevelopment given its translational potential, as it can be studied mechanistically across species and has clinical utility. (*KEVIN PULL IN CITES FROM DISCUSISON*)
 
 Here, we investigated the longitudinal co-development of microbial metabolic potential quantified
 via genes encoding enzymes that metabolize neuroactive compounds and visual neurodevelopment
@@ -696,9 +692,9 @@ after correcting for false discovery rate
 (Benjamini-Hochberg, q < 0.2; @figure3, Table S2).
 Microbial genes involved in synthesis or degradation of molecules with neuroactive potential across all categories considered
 (i.e., neurotransmitters, amino acid metabolism, SCFAs, other)
-were associated with both VEP amplitudes and latencies at each visit (@figureS2),
+were associated with both concurrent VEP amplitudes and latencies at each visit (@figureS2),
 demonstrating widespread associations between early life gut microbiome and visual cortex neurodevelopment.
-The number of these associations increased over time
+The number of these concurrent associations increased over time
 (visit-1 had 6 associations, visit-2 had 24, and visit-3 had 37).
 
 Specifically, across the gene sets involved in neurotransmitter synthesis and degradation,
@@ -707,18 +703,12 @@ primarily at the 2nd and 3rd visit
 (mean ages 8.6 and 14.1 months, respectively; @figure3\C Table S2).
 Gene sets involved in tryptophan metabolism and associated pathways
 (i.e., quinolinic acid) were also strongly concurrently related to VEP development.
-Specifically, tryptophan metabolism genes were associated with VEP latencies
-just after each VEP component showed its greatest window of developmental change
-(components emerge sequentially as follows: P1, N1, N2), that is,
-of P1 at visit-1,
-N1 and P1 at visit-2,
-and N2 at visit-3.
 
 Several short-chain fatty acid (SCFA)-metabolizing gene sets were also found to have multiple associations with VEP features.
 Specifically, acetate synthesis was strongly associated with almost all VEP features
 (Table S2).
 Butyrate synthesis was associated with P1 and N2 amplitudes and latencies
-around the end of the first year of life (visits 2 and 3),
+from 6-months onwards (visits 2 and 3),
 when the visual cortex is most actively undergoing myelination.
 Lastly, propionate synthesis/degradation was significantly associated with VEP latencies
 at every visit over the 18-month window
@@ -738,7 +728,7 @@ and within the brain where it can protect neural circuits from oxidative stress
 
 Notably, across significant gene set associations with VEP features,
 the P1 and N2 component amplitudes and latencies were consistently the most sensitive to these microbial gene sets.
-Both P1 and N2 components are known to show the most dramatic changes with development during the first year of life
+Both P1 and N2 components are known to show the most protracted and dramatic changes with development during the first year of life
 @lippeDifferentialMaturationBrain2009
 and may best reflect underlying visual learning and plasticity at this stage
 (Table S1).
@@ -750,7 +740,7 @@ would have the largest effects on brain development,
 but in cross-sectional analysis with concurrently measured VEP, we observed the fewest number of associations at visit-1. 
 To differentiate whether this cross-sectional finding indicated the early microbiome
 was sparsely related to visual cortical development
-or simply took time to manifest,
+or instead took time to manifest its influence,
 we sought to determine whether microbial genes at early time points were associated with later VEP development.
 We therefore performed FSEA on stool samples collected at visit-1 with visit-2 VEP
 (see @table2, age at stool collection = 3.6 ± 0.8 months, age at VEP = 8.6 ± 1.5 months)
@@ -786,17 +776,17 @@ as well as visit-2 stool samples with visit-3 VEP
 ) <figure4>
 #v(1em)
 
-All gene sets except those involved in the synthesis of 3,4-dihydroxyphenylacetic acid (DOPAC),
-a metabolite of dopamine,
+All gene sets 
 that had a significant hit with concurrently measured VEP
-were also significantly associated with at least one future VEP feature
+were also significantly associated with at least one future VEP feature, except those involved in the synthesis of 3,4-dihydroxyphenylacetic acid (DOPAC),
+a metabolite of dopamine
 (@figureS3\B, Tables 2-5).
 Notably, the quantity of those associations increased substantially
 for all longitudinal comparisons compared to concurrent comparisons.
 For example, only 6 visit-1 microbial gene sets were associated with visit-1 VEP,
 and each of those was only associated with a single concurrently measured VEP feature.
 By contrast, these longitudinal analyses revealed that visit-1 microbial gene sets
-show a much richer pattern of associations with future VEP feature development.
+showed a much richer pattern of associations with future VEP feature development.
 Specifically, 13 visit-1 gene sets were associated with visit-2 VEP features,
 and 11 were associated with visit-3 VEP features,
 the majority
@@ -857,14 +847,16 @@ from both visit-1 and visit-2 showed associations with future VEP features,
 but here the effects were almost entirely observed
 for VEP features at visit-3 (10/10 propionate and 7/8 butyrate associations).
 Moreover, acetate and butyrate metabolism genes
-were doubly associated with future VEP latencies compared to amplitude features, possibly reflecting their known association with myelination pathways.
+were doubly associated with future VEP latencies compared to amplitude features.
 
 Finally, menaquinone (Vitamin K2) metabolism genes
 followed a similar pattern to the SCFAs
 in that genes from visit-1 and visit-2 were largely associated
 with future VEP features at visit-3 (8/9 menaquinone associations).
 This indicates persistent associations of this early microbiome gene set
-with individual differences in VEP features early in the second year of life. It is possible that extrinsic factors related to development
+with individual differences in VEP features early in the second year of life. 
+
+It is possible that extrinsic factors related to development
 mutually influence both the gut microbiome and neural development,
 though we additionally tested whether VEP features
 were associated with microbial metabolism at a future visit,
@@ -878,12 +870,12 @@ it is consistent with the hypothesis that microbial metabolism influences brain 
 == Discussion
 
 The past decade has seen a remarkable growth in our understanding of
-the relationships between the developmental changes of the gut microbiome and the brain.
+the relations between the gut microbiome and the brain.
 However, a great deal of that investigation has focused on adult populations
 or neuropsychiatric disorders, limiting the potential to explain
-how these associations emerge during early development.
+how and when these associations emerge during development.
 Here, we address this key open question
-by leveraging a rich longitudinal dataset over the first year of life,
+by leveraging a rich longitudinal dataset over the first year and a half of life,
 which is the time of greatest developmental change
 for both the microbiome and brain given the unfolding of foundational sensory neurodevelopment.
 Our data revealed that microbial genes involved in the metabolism of neuroactive molecules
@@ -969,8 +961,7 @@ it may also play a role in glutamate uptake in the brain
 @tavaresQuinolinicAcidInhibits2000.
 Specifically, tryptophan metabolism genes
 were associated with VEP latencies just after each VEP component showed its greatest window of developmental change
-(components emerge sequentially as follows: P1, N1, N2),
-that is, of P1 at visit-1, N1 and P1 at visit-2, and N2 at visit-3.
+(components emerge sequentially as follows: P1, N1, N2).
 This pathway may thus relate to processes stabilizing the neural circuitry
 (i.e. downregulating neuroplasticity)
 underlying each VEP component,
@@ -983,7 +974,7 @@ and this biosynthesis is regulated by microbes
 @yanoIndigenousBacteriaGut2015
 @jamesonLinkingGutMicrobiota2018,
 making this pathway an especially promising candidate intervention target
-for further research in development.
+for future research in development.
 
 
 We further found that gene sets for short-chain fatty acids
@@ -1029,18 +1020,18 @@ on the microbial-gut-brain axis in early life
 due to the sequencing method,
 the large number of participants,
 the longitudinal study design,
-and the inclusion of participants from a previously under-represented region of the world.
+and the inclusion of participants from a scientifically under-represented region of the world.
 The use of shotgun metagenomic sequencing
 enables direct interrogation of microbial metabolic potential.
 Prior research primarily used amplicon (16S rRNA gene) sequencing,
 which enables lower-resolution taxonomic identification
 and is restricted to inferring metabolic potential based on taxonomy.
-Moreover, while several studies in infancy have inferred gut-brain associations
+Moreover, several studies in infancy have inferred gut-brain associations
 by linking microbiome measures to subsequent neurodevelopmental measures using behavioral assessments
 (e.g., Bayley Scales of Infant Development),
 noting associations with visually-mediated cognition
-@carlsonInfantGutMicrobiome2018b,
-this study assessed the development of the visual cortex directly using the VEP.
+@carlsonInfantGutMicrobiome2018b. However, 
+this study assessed gut-brain associations directly using the VEP derived from electroencephalography.
 The VEP is advantageous
 because features reflect largely neurotransmission-related (via amplitudes)
 or structural (i.e., myelination, via latencies)
@@ -1530,5 +1521,6 @@ The authors declare no financial or other conflicts of interest.
         V1 → V2 and V1 → 3 for inositol degradation and DOPAC synthesis were not tested,
         since there were fewer than 5 genes from those genesets present in the sample (See Methods).
 ]) <figureS3>
+
 
 
