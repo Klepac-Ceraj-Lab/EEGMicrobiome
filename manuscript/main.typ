@@ -590,23 +590,6 @@ and all latencies became shorter
 (N1: b=-0.79, p<.05; P1: b=-1.21, p<.05; N2: b=-4.10, p<.05)
 (@figure2\A).
 
-#figure(
-  image("mainfigures/figure1.svg"),
-  caption: [
-    *Study design to capture the dynamic nature of early microbiome and brain development.*#linebreak()
-    (A) Study design; participants (N=194) were seen up to 3 times over the first 18 months of life.
-        Stool samples and EEG data were collected, generating microbial functional profiles (stool)
-        and VEP waveforms (EEG) used in subsequent analyses.
-    (B) Longitudinal sampling of study participants;
-        Density plots (top) for stool and EEG collection show the ages represented in each visit.
-        The scatter plot (bottom) shows individual participant visits.
-        Dotted lines connect separate visits for the same participant.
-        When stool and EEG data were collected for the same visit (purple) but not on the same day,
-        dot represents the median age of collection,
-        and vertical bars in blue and red represent stool and EEG collections, respectively.
-],
-) <figure1>
-
 
 Similarly,
 microbial composition was developmentally dependent,
@@ -626,27 +609,6 @@ and anaerobic genera such as _Faecalibacterium_
 (@figure2\E).
 
 
-#figure(
-  image("mainfigures/figure2.svg"),
-  caption: [
-    *The gut microbiome and VEP both develop over the first 18 months of life.*#linebreak()
-    (A) Mean #sym.plus.minus standard error of VEP curves from all included individuals
-        at each visit.
-    (B) Individual VEP feature measurements for peak amplitudes (left) and latencies (right)
-        for all participants and all visits in the study, separated by age and colored by visit as in (A). 
-    (C) Principal coordinate analysis (PCoA) by multidimensional scaling (MDS)
-        on Bray-Curtis dissimilarity of taxonomic profiles;
-        percent variance explained (fraction of positive eigenvalues)
-        by each of the first two axes are indicated on the x and y axes respectively.
-    (D) PCoA of microbial functional profiles (UniRef90s).
-    (E) Relative abundance of the top 11 microbial species across all visits.
-        All other species were summed so that the total abundance is 100%.
-        Each column represents a single sample, and samples are ordered by hierarchical clustering
-        based on Bray-Curtis dissimilarity of the full microbial composition.
-
-],
-) <figure2>
-
 
 === Microbial genes with neuroactive potential are associated with concurrently measured visual development
 
@@ -663,28 +625,6 @@ as the response to determine concurrent associations (see Methods).
 Z statistics for in-set genes were compared to all genes
 using a permutation test to determine significance of the associations
 @subramanianGeneSetEnrichment2005.
-
-#figure(
-  image("mainfigures/figure3.svg"),
-  caption: [
-    *Feature Set Enrichment Analysis Reveals associations between microbial genes and VEP*#linebreak()
-    (A) Volcano plots of of gene sets tested with feature set enrichment analysis (FSEA)
-        for all 6 VEP features for each visit (visit-1 top, visit-2 middle, visit-3 bottom)
-        with enrichment score (E.S.) compared to log scaled FDR-corrected p-value (Q).
-        Colored dots were significantly enriched (positive E.S.) or depleted (negative E.S.)
-        relative to the tested VEP feature.
-    (B) Summary of results in (A), showing the fraction of each class of neuroactive genes
-        (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
-        that were statistically significantly enriched or depleted for each VEP feature
-        for each visit in the analysis.
-    (C) Enrichment plots for selected gene sets and their association with P1 latency.
-        Each plot shows the distribution of associations of individual genes
-        within the gene set and the VEP feature.
-        Dots are colored if the geneset as a whole was significantly associated.
-        Enrichment plots for all gene set / VEP feature associations are shown in @figureS2.
-],
-) <figure3>
-#v(1em)
 
 Of the 35 genesets assessed,
 19 had sufficient representation to test,
@@ -753,30 +693,6 @@ as well as visit-2 stool samples with visit-3 VEP
 (@figure4\A, @figureS3).
 
 
-#figure(
-  image("mainfigures/figure4.svg"),
-  caption: [
-    (A) Age distributions for cross-visit comparisons,
-        with age at stool collection (left) and age of VEP measurement (right)
-        for each participant included in the analysis.
-        Collections for the same individual are connected by a dotted gray line.
-    (B) Volcano plots of of gene sets tested with feature set enrichment analysis (FSEA)
-        for all 6 VEP features,
-        with enrichment score (E.S.) compared to log scaled FDR-corrected p-value (Q).
-        Colored dots were significantly enriched (positive E.S.) or depleted (negative E.S.)
-        relative to the tested VEP feature.
-    (C) Summary of results in (B), showing the fraction of each class of neuroactive genes
-        (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
-        that were statistically significantly enriched or depleted for each VEP feature
-        for each cross-visit comparison in the analysis.
-    (D) Enrichment plots for selected gene sets and there association with P1 latency.
-        Each plot shows the distribution of associations of individual genes
-        within the gene set and the VEP feature.
-        Dots are colored if the geneset as a whole was significantly associated.
-        Enrichment plots for all gene set / VEP feature associations may be found in @figureS2.
-],
-) <figure4>
-#v(1em)
 
 All gene sets 
 that had a significant hit with concurrently measured VEP
@@ -1489,6 +1405,92 @@ The authors declare no financial or other conflicts of interest.
 ) <table4>
 
 #pagebreak()
+
+== Figures
+
+#figure(
+  image("mainfigures/figure1.svg"),
+  caption: [
+    *Study design to capture the dynamic nature of early microbiome and brain development.*#linebreak()
+    (A) Study design; participants (N=194) were seen up to 3 times over the first 18 months of life.
+        Stool samples and EEG data were collected, generating microbial functional profiles (stool)
+        and VEP waveforms (EEG) used in subsequent analyses.
+    (B) Longitudinal sampling of study participants;
+        Density plots (top) for stool and EEG collection show the ages represented in each visit.
+        The scatter plot (bottom) shows individual participant visits.
+        Dotted lines connect separate visits for the same participant.
+        When stool and EEG data were collected for the same visit (purple) but not on the same day,
+        dot represents the median age of collection,
+        and vertical bars in blue and red represent stool and EEG collections, respectively.
+],
+) <figure1>
+
+#figure(
+  image("mainfigures/figure2.svg"),
+  caption: [
+    *The gut microbiome and VEP both develop over the first 18 months of life.*#linebreak()
+    (A) Mean #sym.plus.minus standard error of VEP curves from all included individuals
+        at each visit.
+    (B) Individual VEP feature measurements for peak amplitudes (left) and latencies (right)
+        for all participants and all visits in the study, separated by age and colored by visit as in (A). 
+    (C) Principal coordinate analysis (PCoA) by multidimensional scaling (MDS)
+        on Bray-Curtis dissimilarity of taxonomic profiles;
+        percent variance explained (fraction of positive eigenvalues)
+        by each of the first two axes are indicated on the x and y axes respectively.
+    (D) PCoA of microbial functional profiles (UniRef90s).
+    (E) Relative abundance of the top 11 microbial species across all visits.
+        All other species were summed so that the total abundance is 100%.
+        Each column represents a single sample, and samples are ordered by hierarchical clustering
+        based on Bray-Curtis dissimilarity of the full microbial composition.
+
+],
+) <figure2>
+
+#figure(
+  image("mainfigures/figure3.svg"),
+  caption: [
+    *Feature Set Enrichment Analysis Reveals associations between microbial genes and VEP*#linebreak()
+    (A) Volcano plots of of gene sets tested with feature set enrichment analysis (FSEA)
+        for all 6 VEP features for each visit (visit-1 top, visit-2 middle, visit-3 bottom)
+        with enrichment score (E.S.) compared to log scaled FDR-corrected p-value (Q).
+        Colored dots were significantly enriched (positive E.S.) or depleted (negative E.S.)
+        relative to the tested VEP feature.
+    (B) Summary of results in (A), showing the fraction of each class of neuroactive genes
+        (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
+        that were statistically significantly enriched or depleted for each VEP feature
+        for each visit in the analysis.
+    (C) Enrichment plots for selected gene sets and their association with P1 latency.
+        Each plot shows the distribution of associations of individual genes
+        within the gene set and the VEP feature.
+        Dots are colored if the geneset as a whole was significantly associated.
+        Enrichment plots for all gene set / VEP feature associations are shown in @figureS2.
+],
+) <figure3>
+
+#figure(
+  image("mainfigures/figure4.svg"),
+  caption: [
+    (A) Age distributions for cross-visit comparisons,
+        with age at stool collection (left) and age of VEP measurement (right)
+        for each participant included in the analysis.
+        Collections for the same individual are connected by a dotted gray line.
+    (B) Volcano plots of of gene sets tested with feature set enrichment analysis (FSEA)
+        for all 6 VEP features,
+        with enrichment score (E.S.) compared to log scaled FDR-corrected p-value (Q).
+        Colored dots were significantly enriched (positive E.S.) or depleted (negative E.S.)
+        relative to the tested VEP feature.
+    (C) Summary of results in (B), showing the fraction of each class of neuroactive genes
+        (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
+        that were statistically significantly enriched or depleted for each VEP feature
+        for each cross-visit comparison in the analysis.
+    (D) Enrichment plots for selected gene sets and there association with P1 latency.
+        Each plot shows the distribution of associations of individual genes
+        within the gene set and the VEP feature.
+        Dots are colored if the geneset as a whole was significantly associated.
+        Enrichment plots for all gene set / VEP feature associations may be found in @figureS2.
+],
+) <figure4>
+
 
 == Supplemental Figures
 
