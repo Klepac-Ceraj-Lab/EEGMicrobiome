@@ -7,13 +7,11 @@
 
 #set align(center)
 
-// Laurel Flag
-
-#set par.line(numbering: "1")
 #let no-paren-cite(label) = {
   show regex("\(|\)"): none
   cite(label, form: "normal") 
 }
+
 
 #show figure.caption: it => context [
   #set align(left)
@@ -56,7 +54,7 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger,
 #super([1])Department of Biological Sciences, Wellesley College, Wellesley, MA, USA#linebreak()
 #super([1])Department of Medicine, Tufts Medical Center, Boston, MA, USA#linebreak()
 #super([3])Department of Psychology, Northeastern University, Boston, MA, USA#linebreak()
-#super([4])Division of Medical Microbiology, University of Cape Town, Cape Town, Western Cape, ZAF#linebreak()
+#super([s4])Division of Medical Microbiology, University of Cape Town, Cape Town, Western Cape, ZAF#linebreak()
 #super([5])Department of Paediatrics and Child Health, University of Cape Town, Cape Town, Western Cape, ZAF#linebreak()
 #super([6])Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA, USA#linebreak()
 #super([7])Department of Psychiatry, Columbia University, Irving Medical Center, New York City, NY, USA#linebreak()
@@ -205,7 +203,12 @@ yet the visual cortex undergoes its most rapid period of plasticity and maturati
 @kiorpesVisualDevelopmentPrimates2015.
 Visual cortical maturation can be robustly indexed via electroencephalography (EEG)
 with the Visual-Evoked Potential (VEP) response to visual stimuli from birth.
-The VEP morphology includes amplitude deflections, sensitive to neurotransmission changes, as well as latencies to those deflections, sensitive to structural changes. Moreover, the VEP is an important paradigm for indexing neurodevelopment given its translational potential, as it can be studied mechanistically across species and has clinical utility. (*KEVIN PULL IN CITES FROM DISCUSISON*)
+The VEP morphology includes amplitude deflections,
+sensitive to neurotransmission changes, as well as latencies to those deflections, sensitive to structural changes.
+Moreover, the VEP is an important paradigm for indexing neurodevelopment given its translational potential,
+as it can be studied mechanistically across species and has clinical utility
+@gabard-durnamSensitivePeriodsHuman2020
+@margolisLongitudinalEffectsPrenatal2024.
 
 Here, we investigated the longitudinal co-development of microbial metabolic potential quantified
 via genes encoding enzymes that metabolize neuroactive compounds and visual neurodevelopment
@@ -587,24 +590,6 @@ and all latencies became shorter
 (N1: b=-0.79, p<.05; P1: b=-1.21, p<.05; N2: b=-4.10, p<.05)
 (@figure2\A).
 
-
-Similarly,
-microbial composition was developmentally dependent,
-as expected
-@koenigSuccessionMicrobialConsortia2011
-@yassourNaturalHistoryInfant2016
-@backhedDynamicsStabilizationHuman2015.
-Ordinations reveal a similar relationship with age,
-with the first principal coordinate axis for both taxonomic profiles
-(@figure2\C; variance explained = 15.1%; R = -0.50)
-and functional profiles
-(@figure2\D; variance explained = 12.9%; R = -0.57)
-driven strongly by the age of the participant at the time of collection.
-Early samples dominated by _Bifidobacterium_ and _Bacteroides_
-species, while later samples have increasing _Prevotella_
-and anaerobic genera such as _Faecalibacterium prausnitzii_
-(@figure2\E).
-
 #figure(
   image("mainfigures/figure1.svg"),
   caption: [
@@ -623,6 +608,24 @@ and anaerobic genera such as _Faecalibacterium prausnitzii_
 ) <figure1>
 
 
+Similarly,
+microbial composition was developmentally dependent,
+as expected
+@koenigSuccessionMicrobialConsortia2011
+@yassourNaturalHistoryInfant2016
+@backhedDynamicsStabilizationHuman2015.
+Ordinations reveal a similar relationship with age,
+with the first principal coordinate axis for both taxonomic profiles
+(@figure2\C; variance explained = 15.1%; R = -0.50)
+and functional profiles
+(@figure2\D; variance explained = 12.9%; R = -0.57)
+driven strongly by the age of the participant at the time of collection.
+Early samples were dominated by _Bifidobacterium_ and _Bacteroides_
+species, while later samples have increasing _Prevotella_
+and anaerobic genera such as _Faecalibacterium_
+(@figure2\E).
+
+
 #figure(
   image("mainfigures/figure2.svg"),
   caption: [
@@ -631,7 +634,6 @@ and anaerobic genera such as _Faecalibacterium prausnitzii_
         at each visit.
     (B) Individual VEP feature measurements for peak amplitudes (left) and latencies (right)
         for all participants and all visits in the study, separated by age and colored by visit as in (A). 
-        mean and +/- standard error (S.E.) wave-forms for each visit are plotted below.
     (C) Principal coordinate analysis (PCoA) by multidimensional scaling (MDS)
         on Bray-Curtis dissimilarity of taxonomic profiles;
         percent variance explained (fraction of positive eigenvalues)
@@ -639,7 +641,7 @@ and anaerobic genera such as _Faecalibacterium prausnitzii_
     (D) PCoA of microbial functional profiles (UniRef90s).
     (E) Relative abundance of the top 11 microbial species across all visits.
         All other species were summed so that the total abundance is 100%.
-        each column represents a single sample, and samples are ordered by hierarchical clustering
+        Each column represents a single sample, and samples are ordered by hierarchical clustering
         based on Bray-Curtis dissimilarity of the full microbial composition.
 
 ],
@@ -695,7 +697,7 @@ Microbial genes involved in synthesis or degradation of molecules with neuroacti
 were associated with both concurrent VEP amplitudes and latencies at each visit (@figureS2),
 demonstrating widespread associations between early life gut microbiome and visual cortex neurodevelopment.
 The number of these concurrent associations increased over time
-(visit-1 had 6 associations, visit-2 had 24, and visit-3 had 37).
+(visit-1 had 6 associations, visit-2 had 24, and visit-3 had 37). 
 
 Specifically, across the gene sets involved in neurotransmitter synthesis and degradation,
 glutamate synthesis/degradation and GABA synthesis showed associations with all VEP features,
@@ -778,7 +780,8 @@ as well as visit-2 stool samples with visit-3 VEP
 
 All gene sets 
 that had a significant hit with concurrently measured VEP
-were also significantly associated with at least one future VEP feature, except those involved in the synthesis of 3,4-dihydroxyphenylacetic acid (DOPAC),
+were also significantly associated with at least one future VEP featuree,
+except those involved in the synthesis of 3,4-dihydroxyphenylacetic acid (DOPAC),
 a metabolite of dopamine
 (@figureS3\B, Tables 2-5).
 Notably, the quantity of those associations increased substantially
@@ -864,6 +867,7 @@ and found substantially fewer associations (29 total associations,
 compared with 95 when analyzing early stool samples with future VEP).
 While this does not prove a causal relationship,
 it is consistent with the hypothesis that microbial metabolism influences brain development.
+
 \ 
 \ 
 
@@ -875,7 +879,7 @@ However, a great deal of that investigation has focused on adult populations
 or neuropsychiatric disorders, limiting the potential to explain
 how and when these associations emerge during development.
 Here, we address this key open question
-by leveraging a rich longitudinal dataset over the first year and a half of life,
+by leveraging a rich longitudinal dataset over the first year  and a half of life,
 which is the time of greatest developmental change
 for both the microbiome and brain given the unfolding of foundational sensory neurodevelopment.
 Our data revealed that microbial genes involved in the metabolism of neuroactive molecules
@@ -1020,7 +1024,7 @@ on the microbial-gut-brain axis in early life
 due to the sequencing method,
 the large number of participants,
 the longitudinal study design,
-and the inclusion of participants from a scientifically under-represented region of the world.
+and the inclusion of participants from scientifically under-represented region of the world.
 The use of shotgun metagenomic sequencing
 enables direct interrogation of microbial metabolic potential.
 Prior research primarily used amplicon (16S rRNA gene) sequencing,
@@ -1030,7 +1034,8 @@ Moreover, several studies in infancy have inferred gut-brain associations
 by linking microbiome measures to subsequent neurodevelopmental measures using behavioral assessments
 (e.g., Bayley Scales of Infant Development),
 noting associations with visually-mediated cognition
-@carlsonInfantGutMicrobiome2018b. However, 
+@carlsonInfantGutMicrobiome2018b.
+However, 
 this study assessed gut-brain associations directly using the VEP derived from electroencephalography.
 The VEP is advantageous
 because features reflect largely neurotransmission-related (via amplitudes)
@@ -1076,9 +1081,10 @@ but challenges remain on how to interpret them in humans
 Given that the VEP is evolutionarily conserved in mammals
 and can be accurately measured during development,
 the hypotheses generated in humans in this study
-are readily testable mechanistically using _in vivo_ models in future research.
+are readily testable mechanistically using  derived from electroencephalography _in vivo_ models in future research.
 For example, VEP could be assessed in germ-free or defined-microbiome animals
-(Wymore Brand et al. 2015; Kennedy, King, and Baldridge 2018)
+@wymorebrandAlteredSchaedlerFlora2015a
+@kennedyMouseMicrobiotaModels2018a
 and may be supplemented with specific molecules such as SCFAs,
 or colonized with microbial species lacking or providing specific metabolic pathways.
 Furthermore, molecule concentrations in tissues
@@ -1521,6 +1527,5 @@ The authors declare no financial or other conflicts of interest.
         V1 → V2 and V1 → 3 for inositol degradation and DOPAC synthesis were not tested,
         since there were fewer than 5 genes from those genesets present in the sample (See Methods).
 ]) <figureS3>
-
 
 
