@@ -12,12 +12,9 @@
   cite(label, form: "normal") 
 }
 
+#set par.line(numbering: "1")
 
-#show figure.caption: it => context [
-  #set align(left)
-  #set text(8pt)
-  *#it.supplement~#it.counter.display()#it.separator*#it.body
-]
+
 
 // 89 / 200 char
 = Co-development of gut microbial metabolism and visual neural circuitry over human infancy
@@ -115,8 +112,7 @@ also undergoing extensive developmental changes in early life,
 may influence brain development through metabolism of neuroactive compounds.
 Here, we leverage longitudinal data from 194 infants across the first 18 months of life
 to show that microbial genes encoding enzymes that metabolize molecules
-that metabolize molecules
-playinging a key role in modulating early neuroplasticity
+playing a key role in modulating early neuroplasticity
 are associated with visual cortical neurodevelopment,
 measured by the Visual-Evoked Potential (VEP).
 Neuroactive compounds included neurotransmitters GABA and glutamate,
@@ -1407,6 +1403,12 @@ The authors declare no financial or other conflicts of interest.
 #pagebreak()
 
 == Figures
+
+#show figure.caption: it => context [
+  #set align(left)
+  #set text(8pt)
+  *#it.supplement~#it.counter.display()#it.separator*#it.body
+]
 
 #figure(
   image("mainfigures/figure1.svg"),
