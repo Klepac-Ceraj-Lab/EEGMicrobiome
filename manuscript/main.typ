@@ -584,7 +584,7 @@ corrected N2 amplitude became smaller
 (N2: b=0.52, p<.05),
 and all latencies became shorter
 (N1: b=-0.79, p<.05; P1: b=-1.21, p<.05; N2: b=-4.10, p<.05)
-(@figure2\A).
+(@figure2\A, B).
 
 
 Similarly,
@@ -627,7 +627,7 @@ Of the 35 genesets assessed,
 and of those, 18 were significantly associated with at least one EEG feature
 during at least one visit within the 18-month window,
 after correcting for false discovery rate
-(Benjamini-Hochberg, q < 0.2; @figure3, Table S2).
+(Benjamini-Hochberg, q < 0.2; @figure3\A, B, Table S2).
 Microbial genes involved in synthesis or degradation of molecules with neuroactive potential across all categories considered
 (i.e., neurotransmitters, amino acid metabolism, SCFAs, other)
 were associated with both concurrent VEP amplitudes and latencies at each visit (@figureS1),
@@ -709,7 +709,7 @@ the majority
 were associated with at least 2 VEP features,
 and nearly half
 (6/13 for visit-2, 5/11 for visit-3)
-were associated with more than 2 future VEP features.
+were associated with more than 2 future VEP features (@figure4\B, C).
 
 Longitudinally, the early microbiome (visit-1)
 was related to VEP features at visit-2 and visit-3 fairly evenly
@@ -732,7 +732,7 @@ indicating temporal specificity to these associations.
 With respect to the neurotransmitter-related pathways,
 amongst the associations between GABA synthesis genes and future VEP features,
 GABA genes specifically from visit-1 showed the greatest number of associations
-with future VEP features (5/6 GABA associations) at visits 2 and 3 equally,
+with future VEP features (5/6 GABA associations) at visits 2 and 3 equally (@figure4\D, @figureS2),
 and the majority of these associations were VEP amplitudes
 (reflecting development of neurotransmission including excitatory/inhibitory balance).
 To a lesser extent, glutamate metabolism genes followed a similar temporal pattern
@@ -745,7 +745,7 @@ are most relevant for changes to visual cortex function over the following year.
 Tryptophan-related pathway genes (responsible for generating serotonin,
 amongst other products) from visit-1 were also responsible
 for the majority of associations with future VEP features
-(tryptophan: 6/8 associations; quinolinic acid: 6/9 associations).
+(tryptophan: 6/8 associations; quinolinic acid: 6/9 associations, @figure4\D, @figureS2).
 In contrast to GABA but similar to glutamate,
 tryptophan-related gene associations were largely shorter-term associations
 with VEP features at the visit immediately following gene set measurement
@@ -760,7 +760,7 @@ SCFAs showed a different developmental pattern of associations with future VEP f
 Specifically, propionate and butyrate metabolism genes
 from both visit-1 and visit-2 showed associations with future VEP features,
 but here the effects were almost entirely observed
-for VEP features at visit-3 (10/10 propionate and 7/8 butyrate associations).
+for VEP features at visit-3 (10/10 propionate and 7/8 butyrate associations, @figure4\D, @figureS2).
 Moreover, acetate and butyrate metabolism genes
 were doubly associated with future VEP latencies compared to amplitude features.
 
