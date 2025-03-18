@@ -511,7 +511,7 @@ with each VEP feature (i.e., N1, P1, and N2 latencies and amplitudes),
 controlling for the age at which the stool sample was collected,
 the number of retained VEP trials,
 and the difference in age between the stool collection and VEP measurement.
-For concurrently collected stool and VEP comparisons (@figure2, @figureS2),
+For concurrently collected stool and VEP comparisons (@figure2, @figureS1),
 participants whose stool collection and VEP measurements
 were more than two months apart were excluded.
 
@@ -630,7 +630,7 @@ after correcting for false discovery rate
 (Benjamini-Hochberg, q < 0.2; @figure3, Table S2).
 Microbial genes involved in synthesis or degradation of molecules with neuroactive potential across all categories considered
 (i.e., neurotransmitters, amino acid metabolism, SCFAs, other)
-were associated with both concurrent VEP amplitudes and latencies at each visit (@figureS2),
+were associated with both concurrent VEP amplitudes and latencies at each visit (@figureS1),
 demonstrating widespread associations between early life gut microbiome and visual cortex neurodevelopment.
 The number of these concurrent associations increased over time
 (visit-1 had 6 associations, visit-2 had 24, and visit-3 had 37). 
@@ -686,7 +686,7 @@ or visit-3 VEP
 (see @table3, age at stool collection = 3.7 ± 0.7 months, age at VEP = 14.1 ± 1.1 months),
 as well as visit-2 stool samples with visit-3 VEP
 (see @table4, age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; Table S3)
-(@figure4\A, @figureS3).
+(@figure4\A, @figureS2).
 
 
 
@@ -695,7 +695,7 @@ that had a significant hit with concurrently measured VEP
 were also significantly associated with at least one future VEP featuree,
 except those involved in the synthesis of 3,4-dihydroxyphenylacetic acid (DOPAC),
 a metabolite of dopamine
-(@figureS3\B, Tables 2-5).
+(@figureS2\B, Tables 2-4).
 Notably, the quantity of those associations increased substantially
 for all longitudinal comparisons compared to concurrent comparisons.
 For example, only 6 visit-1 microbial gene sets were associated with visit-1 VEP,
@@ -1465,7 +1465,7 @@ The authors declare no financial or other conflicts of interest.
         Each plot shows the distribution of associations of individual genes
         within the gene set and the VEP feature.
         Dots are colored if the geneset as a whole was significantly associated.
-        Enrichment plots for all gene set / VEP feature associations are shown in @figureS2.
+        Enrichment plots for all gene set / VEP feature associations are shown in @figureS1.
 ],
 ) <figure3>
 
@@ -1489,7 +1489,7 @@ The authors declare no financial or other conflicts of interest.
         Each plot shows the distribution of associations of individual genes
         within the gene set and the VEP feature.
         Dots are colored if the geneset as a whole was significantly associated.
-        Enrichment plots for all gene set / VEP feature associations may be found in @figureS2.
+        Enrichment plots for all gene set / VEP feature associations may be found in @figureS1.
 ],
 ) <figure4>
 
@@ -1498,11 +1498,11 @@ The authors declare no financial or other conflicts of interest.
 
 
 #set figure(numbering: it => {
-    "S" + str(it - 3)
+    "S" + str(it - 4)
 })
 
 #figure(
-  image("mainfigures/figureS2.svg"),
+  image("mainfigures/figureS1.svg"),
   caption: [
     *Concurrent feature set enrichment analysis of microbial neuroactive genes and VEP for three visits.*
     FSEA results for all gene sets where at least one visit had a significant hit (q < 0.2)
@@ -1513,10 +1513,10 @@ The authors declare no financial or other conflicts of interest.
     Visit 1 for inositol degradation and DOPAC synthesis were not tested,
     since there were fewer than 5 genes from those genesets present in the sample (See Methods).
 ],
-) <figureS2>
+) <figureS1>
 
 #figure(
-        image("mainfigures/figureS3.svg"),
+        image("mainfigures/figureS2.svg"),
         caption: [
         *Gut microbial genes predict future VEP latencies and amplitudes.*
         (A) Age distributions for stool samples (left) and VEP (right)
@@ -1530,6 +1530,6 @@ The authors declare no financial or other conflicts of interest.
         The Y-axis position for each gene set indicates longitudinal comparison.
         V1 → V2 and V1 → 3 for inositol degradation and DOPAC synthesis were not tested,
         since there were fewer than 5 genes from those genesets present in the sample (See Methods).
-]) <figureS3>
+]) <figureS2>
 
 
