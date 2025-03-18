@@ -854,15 +854,15 @@ save("/home/kevin/Downloads/figure3-inprogress.png", figure3)
 save("manuscript/mainfigures/figure3.svg", figure3)
 figure3
 
-# ##### Figure S2
+# ##### Figure S1
 
-figureS2 = Figure(; size=(1100, 600))
+figureS1 = Figure(; size=(1100, 600))
 
 
-grid_fsea_dots = GridLayout(figureS2[1, 1])
-legend_block = GridLayout(figureS2[2, 1])
-# grid_fsea_heatmaps = GridLayout(figureS2[1,2])
-# grid_bug_heatmaps = GridLayout(figureS2[2, 1])
+grid_fsea_dots = GridLayout(figureS1[1, 1])
+legend_block = GridLayout(figureS1[2, 1])
+# grid_fsea_heatmaps = GridLayout(figureS1[1,2])
+# grid_bug_heatmaps = GridLayout(figureS1[2, 1])
 
 gs_interval = 6
 tp_interval = 1.5
@@ -1015,8 +1015,8 @@ end
 
 colsize!(legend_block, 1, Relative(1 / 8))
 
-save("/home/kevin/Downloads/figureS2-inprogress.png", figureS2)
-save("manuscript/mainfigures/figureS2.svg", figureS2)
+save("/home/kevin/Downloads/figureS1-inprogress.png", figureS1)
+save("manuscript/mainfigures/figureS1.svg", figureS1)
 
 #-
 
@@ -1251,12 +1251,12 @@ save("manuscript/mainfigures/figure4.svg", figure4)
 figure4
 #-
 
-figureS3 = Figure(; size=(1050, 750))
+figureS2 = Figure(; size=(1050, 750))
 
 
-grid_future_violins = GridLayout(figureS3[1:2, 1]; alignmode=Outside())
-grid_futfsea_dots = GridLayout(figureS3[1, 2]; alignmode=Outside())
-legend_block = GridLayout(figureS3[2, 2])
+grid_future_violins = GridLayout(figureS2[1:2, 1]; alignmode=Outside())
+grid_futfsea_dots = GridLayout(figureS2[1, 2]; alignmode=Outside())
+legend_block = GridLayout(figureS2[2, 2])
 
 ax_future_violins = map(enumerate(ftps)) do (i, tp)
   ax = Axis(grid_future_violins[i, 1]; ylabel="age (months)", xticks=([1, 2], ["stool", "eeg"]),
@@ -1431,11 +1431,11 @@ Legend(legend_block[1, 2],
   orientation=:horizontal, tellheight=true, tellwidth=false
 )
 
-colsize!(figureS3.layout, 2, Relative(4 / 5))
+colsize!(figureS2.layout, 2, Relative(4 / 5))
 linkyaxes!(ax_future_violins...)
 
-save("/home/kevin/Downloads/figureS3-inprogress.png", figureS3)
-save("manuscript/mainfigures/figureS3.svg", figureS3)
+save("/home/kevin/Downloads/figureS2-inprogress.png", figureS2)
+save("manuscript/mainfigures/figureS2.svg", figureS2)
 
 # ## Summary Ideas
 #
