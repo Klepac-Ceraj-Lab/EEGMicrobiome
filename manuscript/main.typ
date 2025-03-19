@@ -147,7 +147,8 @@ Extensive work in preclinical models suggests that these neuroactive compounds
 can influence the brain through both direct and indirect pathways.
 For example, major neurotransmitters (e.g., glutamate, γ-aminobutyric acid (GABA), serotonin, and dopamine)
 are readily synthesized and degraded by intestinal microbes and can enter circulation
-and pass the blood-brain barrier to influence central nervous function
+and pass the blood-brain barrier to influence central nervous function.
+
 @janikMagneticResonanceSpectroscopy2016
 @ahmedMicrobiotaderivedMetabolitesDrivers2022
 @matsumotoCerebralLowmolecularMetabolites2013
@@ -248,7 +249,7 @@ Demographic information, including maternal place of birth,
 primary spoken language, maternal age at enrollment,
 maternal educational attainment, and maternal income,
 were collected at enrollment
-(see @table1).
+(see @figure1, @table1).
 
 Families were invited to participate in three in-lab study visits
 over their infant’s first two years of life.
@@ -1057,8 +1058,11 @@ The authors declare no financial or other conflicts of interest.
       [ Wellesley, MA 02481] ,     [Boston, MA 02482 ]
 )
 
-\ 
-\ 
+\
+\
+
+#show "Lactobacillus": it=>{text(style: "italic",it)}
+#show "Bacteroides": it=>{text(style: "italic",it)}
 
 #bibliography("refs.bib", style: "biological-psychiatry.csl")
 
