@@ -148,7 +148,6 @@ can influence the brain through both direct and indirect pathways.
 For example, major neurotransmitters (e.g., glutamate, γ-aminobutyric acid (GABA), serotonin, and dopamine)
 are readily synthesized and degraded by intestinal microbes and can enter circulation
 and pass the blood-brain barrier to influence central nervous function.
-
 @janikMagneticResonanceSpectroscopy2016
 @ahmedMicrobiotaderivedMetabolitesDrivers2022
 @matsumotoCerebralLowmolecularMetabolites2013
