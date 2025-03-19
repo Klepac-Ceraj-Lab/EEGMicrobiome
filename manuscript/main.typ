@@ -337,9 +337,9 @@ validated for infant data
 A subset of the 128 channels
 were selected for pre-processing that excluded the rim electrodes
 as these are typically artifact-laden
-(channels excluded from pre-processing included in Table S4).
+(channels excluded from pre-processing included in Table S1).
 The HAPPE pre-processing pipeline was run
-with user-selected specifications outlined in Table S4.
+with user-selected specifications outlined in Table S1.
 
 
 Pre-processed VEP data were considered usable
@@ -376,7 +376,7 @@ and 100-325 ms for the N2 component.
 For visit-3, the window for calculating features for the N1 component was 35-80 ms,
 75-130 ms for the P1 component,
 and 100-275 ms for the N2 component.
-HAPPE+ER parameters used in extracting the ERPs are summarized in Table S5.
+HAPPE+ER parameters used in extracting the ERPs are summarized in Table S2.
 
 To correct for the potential influence of earlier components on later components,
 corrected amplitudes and latencies were calculated and used in all analyses.
@@ -400,7 +400,7 @@ Ninety seven infants provided usable VEP data at visit-1,
 130 infants provided usable VEP data at visit-2,
 and 131 infants provided usable VEP data at visit-3.
 For included participants,
-EEG data quality metrics are summarized in Table S6.
+EEG data quality metrics are summarized in Table S3.
 T-tests for data quality metrics
 (i.e., number of trials collected, number of trials retained,
 number of channels retained in the ROI,
@@ -578,13 +578,13 @@ both amplitude and latency VEP features were strongly correlated with age
 @lippeElectrophysiologicalMarkersVisuocortical2007
 @yassourNaturalHistoryInfant2016,
 That is, as infants got older, N1 amplitude became more negative
-(N1: b=-0.07, p<.05),
+(N1: b=-0.07, p < 0.05),
 corrected P1 amplitude became smaller
-(P1: b=-0.50, p<.05),
+(P1: b=-0.50, p < 0.05),
 corrected N2 amplitude became smaller
-(N2: b=0.52, p<.05),
+(N2: b=0.52, p < 0.05),
 and all latencies became shorter
-(N1: b=-0.79, p<.05; P1: b=-1.21, p<.05; N2: b=-4.10, p<.05)
+(N1: b=-0.79, p < 0.05; P1: b=-1.21, p < 0.05; N2: b=-4.10, p < 0.05)
 (@figure2\A, B).
 
 
@@ -628,7 +628,7 @@ Of the 35 genesets assessed,
 and of those, 18 were significantly associated with at least one EEG feature
 during at least one visit within the 18-month window,
 after correcting for false discovery rate
-(Benjamini-Hochberg, q < 0.2; @figure3\A, B, Table S2).
+(Benjamini-Hochberg, q < 0.2; @figure3\A, B, Table S4, S5).
 Microbial genes involved in synthesis or degradation of molecules with neuroactive potential across all categories considered
 (i.e., neurotransmitters, amino acid metabolism, SCFAs, other)
 were associated with both concurrent VEP amplitudes and latencies at each visit (@figureS1),
@@ -639,13 +639,13 @@ The number of these concurrent associations increased over time
 Specifically, across the gene sets involved in neurotransmitter synthesis and degradation,
 glutamate synthesis/degradation and GABA synthesis showed associations with all VEP features,
 primarily at the 2nd and 3rd visit
-(mean ages 8.6 and 14.1 months, respectively; @figure3\C Table S2).
+(mean ages 8.6 and 14.1 months, respectively; @figure3\C, Table S4).
 Gene sets involved in tryptophan metabolism and associated pathways
 (i.e., quinolinic acid) were also strongly concurrently related to VEP development.
 
 Several short-chain fatty acid (SCFA)-metabolizing gene sets were also found to have multiple associations with VEP features.
 Specifically, acetate synthesis was strongly associated with almost all VEP features
-(Table S2).
+(Table S4).
 Butyrate synthesis was associated with P1 and N2 amplitudes and latencies
 from 6-months onwards (visits 2 and 3),
 when the visual cortex is most actively undergoing myelination.
@@ -670,7 +670,7 @@ the P1 and N2 component amplitudes and latencies were consistently the most sens
 Both P1 and N2 components are known to show the most protracted and dramatic changes with development during the first year of life
 @lippeDifferentialMaturationBrain2009
 and may best reflect underlying visual learning and plasticity at this stage
-(Table S1).
+(Table S6).
 
 === Microbial metabolic potential predicts future brain development in infancy
 
@@ -686,10 +686,7 @@ We therefore performed FSEA on stool samples collected at visit-1 with visit-2 V
 or visit-3 VEP
 (see @table3, age at stool collection = 3.7 ± 0.7 months, age at VEP = 14.1 ± 1.1 months),
 as well as visit-2 stool samples with visit-3 VEP
-(see @table4, age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; Table S3)
-(@figure4\A, @figureS2).
-
-
+(see @table4, age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; @figure4\A, @table4, Table S7).
 
 All gene sets 
 that had a significant hit with concurrently measured VEP
