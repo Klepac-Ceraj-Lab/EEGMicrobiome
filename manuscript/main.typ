@@ -254,8 +254,9 @@ Families were invited to participate in three in-lab study visits
 over their infant’s first two years of life.
 At the first in-lab study visit (hereafter visit-1),
 occurring when infants were between approximately 2 months and 6 months of age,
+(age in months: M=3.7, SD=0.85, range=)
 the following data were collected:
-the infants' age (in months), sex,
+the infant age (in months), sex,
 infant electroencephalography (EEG),
 and infant stool samples.
 
@@ -569,9 +570,9 @@ and downloadable via included scripts in analysis code upon publication.
 To investigate the co-development of the gut microbiome and visual neurodevelopment,
 we collected stool and the VEP in a longitudinal cohort of 194 children in South Africa during the first 18 months of life
 (@figure1\A, B, @table1;
-visit-1, N = 119, age 3.6 ± 0.7 months,
-visit-2, N = 144, age 8.7 ± 1.4 months,
-visit-3, N = 130, age 14.2 ± 1.0 months).
+visit-1, N = 119, age 3.7 ± 0.9 months,
+visit-2, N = 144, age 8.6 ± 1.5 months,
+visit-3, N = 130, age 14.1 ± 1.0 months).
 As expected for children at this age,
 both amplitude and latency VEP features were strongly correlated with age
 @lippeElectrophysiologicalMarkersVisuocortical2007
@@ -624,7 +625,7 @@ using a permutation test to determine significance of the associations
 
 Of the 35 genesets assessed,
 19 had sufficient representation to test,
-and of those, 18 were significantly associated with at least one EEG feature
+and of those, 18 were significantly associated with at least one VEP feature
 during at least one visit within the 18-month window,
 after correcting for false discovery rate
 (Benjamini-Hochberg, q < 0.2; @figure3\A, B, Table S4, S5).
@@ -695,7 +696,7 @@ a metabolite of dopamine
 (@figureS2\B, Tables 2-4).
 Notably, the quantity of those associations increased substantially
 for all longitudinal comparisons compared to concurrent comparisons.
-For example, only 6 visit-1 microbial gene sets were associated with visit-1 VEP,
+For example, only 6 visit-1 microbial gene sets were associated with visit-1 VEP features,
 and each of those was only associated with a single concurrently measured VEP feature.
 By contrast, these longitudinal analyses revealed that visit-1 microbial gene sets
 showed a much richer pattern of associations with future VEP feature development.
@@ -917,7 +918,7 @@ VEP latency features reflect myelination
 @youLatencyDelayVisual2011,
 and accordingly, these SCFAs showed more associations
 with VEP latency features prospectively,
-especially VEP latency features in vsit 3.
+especially VEP latency features in visit 3.
 This pattern of results is consistent with these SCFA roles’ in myelination
 occurring over the second half of the developmental window studied.
 SCFAs including acetate, butyrate, and propionate
@@ -990,8 +991,8 @@ but challenges remain on how to interpret them in humans
 Given that the VEP is evolutionarily conserved in mammals
 and can be accurately measured during development,
 the hypotheses generated in humans in this study
-are readily testable mechanistically using  derived from electroencephalography _in vivo_ models in future research.
-For example, VEP could be assessed in germ-free or defined-microbiome animals
+are readily testable mechanistically using VEP derived from electroencephalography _in vivo_ models in future research.
+For example, the VEP could be assessed in germ-free or defined-microbiome animals
 @wymorebrandAlteredSchaedlerFlora2015a
 @kennedyMouseMicrobiotaModels2018a
 and may be supplemented with specific molecules such as SCFAs,
