@@ -123,6 +123,24 @@ Microbial gene sets around 4 months of age
 were strongly associated with the VEP from around 9 to 14 months of age
 and showed more associations than concurrently measured gene sets,
 suggesting microbial metabolism in early life may affect subsequent neural plasticity and development.
+
+#upper()[*Importance*] Over the past decade,
+extensive research has revealed strong links
+between the gut microbiome and the brain,
+at least in adults or those with neuropsychiatric disorders.
+This study explores how these associations emerge in early development
+using a longitudinal sample of 194 infants
+with repeated microbiome metabolism and electroencephalography (EEG) measures
+during the critical early period of visual cortex neuroplasticity.
+We examined microbial genes encoding enzymes for neuroactive compounds
+(e.g., GABA, glutamate, tryptophan, short-chain fatty acids)
+and their association with the visual-evoked potential (VEP).
+Genes from 4-month stool samples strongly correlated with VEP features
+between 9 and 14 months, suggesting early microbial metabolism influences
+later visual neurodevelopment.
+These prospective associations were more numerous than concurrent ones.
+Our findings suggest that early gut microbiome metabolic potential
+plays a crucial role in shaping neural plasticity and visual neurodevelopment.
 \ 
 \ 
 
@@ -254,7 +272,7 @@ Families were invited to participate in three in-lab study visits
 over their infant’s first two years of life.
 At the first in-lab study visit (hereafter visit-1),
 occurring when infants were between approximately 2 months and 6 months of age,
-(age in months: M=3.7, SD=0.85, range=)
+(age in months: M=3.7, SD=0.85, range=1.91-5.54)
 the following data were collected:
 the infant age (in months), sex,
 infant electroencephalography (EEG),
@@ -751,7 +769,7 @@ with VEP features at the visit immediately following gene set measurement
 indicating dynamic co-development over the first 18 months of life.
 Across neurotransmitter-related gene set associations
 (GABA, glutamate, tryptophan/serotonin),
-there was thus a clear pattern whereby early (\~4 months old)
+there was thus a clear pattern whereby early (approximately 4 months old)
 microbiome gene sets showed the largest number of associations with subsequent VEP feature development.
 
 SCFAs showed a different developmental pattern of associations with future VEP features.
@@ -1050,8 +1068,8 @@ The authors declare no financial or other conflicts of interest.
 #grid( columns: (1fr, 1fr), align: center, gutter: 4pt,
       [ Vanja Klepac-Ceraj ],      [ Laurel Gabard-Durnam ],
       [ vklepacc\@wellesley.edu ], [ l.gabard-durnam\@northeastern.edu ],
-      [ 781-283-3541 ],            [ 628 ISEC ],
-      [ 106 Central St ],          [ Northeastern University ],
+      [ 106 Central St ],          [ 628 ISEC ],
+      [ Wellesley College ],       [ Northeastern University ],
       [ Wellesley, MA 02481] ,     [Boston, MA 02482 ]
 )
 
@@ -1452,7 +1470,7 @@ The authors declare no financial or other conflicts of interest.
 #figure(
   image("mainfigures/figure3.svg"),
   caption: [
-    *Feature Set Enrichment Analysis Reveals associations between microbial genes and VEP*#linebreak()
+    *Feature set enrichment analysis reveals associations between microbial genes and VEP*#linebreak()
     (A) Volcano plots of of gene sets tested with feature set enrichment analysis (FSEA)
         for all 6 VEP features for each visit (visit-1 top, visit-2 middle, visit-3 bottom)
         with enrichment score (E.S.) compared to log scaled FDR-corrected p-value (Q).
@@ -1473,6 +1491,7 @@ The authors declare no financial or other conflicts of interest.
 #figure(
   image("mainfigures/figure4.svg"),
   caption: [
+      *Early gut microbial metabolism shows stronger link to future VEP development*#linebreak()
     (A) Age distributions for cross-visit comparisons,
         with age at stool collection (left) and age of VEP measurement (right)
         for each participant included in the analysis.
@@ -1496,7 +1515,7 @@ The authors declare no financial or other conflicts of interest.
 
 
 == Supplemental Figures
-
+  
 
 #set figure(numbering: it => {
     "S" + str(it - 4)
