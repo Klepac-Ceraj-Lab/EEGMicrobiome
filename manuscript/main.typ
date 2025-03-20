@@ -1068,9 +1068,10 @@ The authors declare no financial or other conflicts of interest.
 #grid( columns: (1fr, 1fr), align: center, gutter: 4pt,
       [ Vanja Klepac-Ceraj ],      [ Laurel Gabard-Durnam ],
       [ vklepacc\@wellesley.edu ], [ l.gabard-durnam\@northeastern.edu ],
-      [ 106 Central St ],          [ 628 ISEC ],
       [ Wellesley College ],       [ Northeastern University ],
-      [ Wellesley, MA 02481] ,     [Boston, MA 02482 ]
+      [ Science Center E210],      [ 628 ISEC ],
+      [ 106 Central St ],          [805 Columbus Ave],
+      [ Wellesley, MA 02481],      [Boston, MA 02120 ]
 )
 
 \
@@ -1491,7 +1492,7 @@ The authors declare no financial or other conflicts of interest.
 #figure(
   image("mainfigures/figure4.svg"),
   caption: [
-      *Early gut microbial metabolism shows stronger link to future VEP development*#linebreak()
+    *Early gut microbial metabolism is associated with future VEP development*#linebreak()
     (A) Age distributions for cross-visit comparisons,
         with age at stool collection (left) and age of VEP measurement (right)
         for each participant included in the analysis.
