@@ -864,13 +864,13 @@ figure3
 
 # ##### Figure S2
 
-figureS2 = Figure(; size=(1100, 600))
+figureS1 = Figure(; size=(1100, 600));
 
 
-grid_fsea_dots = GridLayout(figureS2[1, 1])
-legend_block = GridLayout(figureS2[2, 1])
-# grid_fsea_heatmaps = GridLayout(figureS2[1,2])
-# grid_bug_heatmaps = GridLayout(figureS2[2, 1])
+grid_fsea_dots = GridLayout(figureS1[1, 1])
+legend_block = GridLayout(figureS1[2, 1])
+# grid_fsea_heatmaps = GridLayout(figureS1[1,2])
+# grid_bug_heatmaps = GridLayout(figureS1[2, 1])
 
 gs_interval = 6
 tp_interval = 1.5
@@ -1023,8 +1023,12 @@ end
 
 colsize!(legend_block, 1, Relative(1 / 8))
 
-save("/home/kevin/Downloads/figureS2-inprogress.png", figureS2)
-save("manuscript/mainfigures/figureS2.svg", figureS2)
+Label(grid_fsea_dots[1,1, TopLeft()], "A"; font=:bold,padding=(0,0,0,0), halign=:right)
+Label(grid_fsea_dots[1,2, TopLeft()], "B"; font=:bold,padding=(0,0,0,0), halign=:right)
+
+save("/home/kevin/Downloads/figureS1-inprogress.png", figureS1)
+save("manuscript/mainfigures/figureS1.svg", figureS1)
+figureS1
 
 #-
 
@@ -1259,12 +1263,12 @@ save("manuscript/mainfigures/figure4.svg", figure4)
 figure4
 #-
 
-figureS3 = Figure(; size=(1050, 750))
+figureS2 = Figure(; size=(1050, 750));
 
 
-grid_future_violins = GridLayout(figureS3[1:2, 1]; alignmode=Outside())
-grid_futfsea_dots = GridLayout(figureS3[1, 2]; alignmode=Outside())
-legend_block = GridLayout(figureS3[2, 2])
+grid_future_violins = GridLayout(figureS2[1:2, 1]; alignmode=Outside())
+grid_futfsea_dots = GridLayout(figureS2[1, 2]; alignmode=Outside())
+legend_block = GridLayout(figureS2[2, 2])
 
 ax_future_violins = map(enumerate(ftps)) do (i, tp)
   ax = Axis(grid_future_violins[i, 1]; ylabel="age (months)", xticks=([1, 2], ["stool", "eeg"]),
@@ -1423,6 +1427,12 @@ for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
 end
 
 #-
+
+
+Label(grid_future_violins[1,1, TopLeft()], "A"; font=:bold,padding=(0,0,0,0), halign=:right)
+Label(grid_futfsea_latency[1,1, TopLeft()], "B"; font=:bold,padding=(0,0,0,0), halign=:right)
+Label(grid_futfsea_amplitude[1,1, TopLeft()], "C"; font=:bold,padding=(0,0,0,0), halign=:right)
+
 Legend(legend_block[1, 1],
   [MarkerElement(; marker=:rect, color=colors_gstypes[g]) for g in keys(geneset_types)][[1, 3, 2, 4]],
   ["Neurotransmitters", "Amino acid metabolism", "SCFAs", "other"][[1, 3, 2, 4]];
@@ -1439,11 +1449,12 @@ Legend(legend_block[1, 2],
   orientation=:horizontal, tellheight=true, tellwidth=false
 )
 
-colsize!(figureS3.layout, 2, Relative(4 / 5))
+colsize!(figureS2.layout, 2, Relative(4 / 5))
 linkyaxes!(ax_future_violins...)
 
-save("/home/kevin/Downloads/figureS3-inprogress.png", figureS3)
-save("manuscript/mainfigures/figureS3.svg", figureS3)
+save("/home/kevin/Downloads/figureS2-inprogress.png", figureS2)
+save("manuscript/mainfigures/figureS2.svg", figureS2)
+figureS2
 
 # ## Summary Ideas
 #
