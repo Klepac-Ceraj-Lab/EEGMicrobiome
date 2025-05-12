@@ -862,7 +862,7 @@ save("/home/kevin/Downloads/figure3-inprogress.png", figure3)
 save("manuscript/mainfigures/figure3.svg", figure3)
 figure3
 
-# ##### Figure S2
+# ##### Figure S1
 
 figureS1 = Figure(; size=(1100, 600));
 

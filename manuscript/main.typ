@@ -12,12 +12,9 @@
   cite(label, form: "normal") 
 }
 
+#set par.line(numbering: "1")
 
-#show figure.caption: it => context [
-  #set align(left)
-  #set text(8pt)
-  *#it.supplement~#it.counter.display()#it.separator*#it.body
-]
+
 
 // 89 / 200 char
 = Co-development of gut microbial metabolism and visual neural circuitry over human infancy
@@ -115,8 +112,7 @@ also undergoing extensive developmental changes in early life,
 may influence brain development through metabolism of neuroactive compounds.
 Here, we leverage longitudinal data from 194 infants across the first 18 months of life
 to show that microbial genes encoding enzymes that metabolize molecules
-that metabolize molecules
-playinging a key role in modulating early neuroplasticity
+playing a key role in modulating early neuroplasticity
 are associated with visual cortical neurodevelopment,
 measured by the Visual-Evoked Potential (VEP).
 Neuroactive compounds included neurotransmitters GABA and glutamate,
@@ -127,6 +123,24 @@ Microbial gene sets around 4 months of age
 were strongly associated with the VEP from around 9 to 14 months of age
 and showed more associations than concurrently measured gene sets,
 suggesting microbial metabolism in early life may affect subsequent neural plasticity and development.
+
+#upper()[*Importance*] Over the past decade,
+extensive research has revealed strong links
+between the gut microbiome and the brain,
+at least in adults or those with neuropsychiatric disorders.
+This study explores how these associations emerge in early development
+using a longitudinal sample of 194 infants
+with repeated microbiome metabolism and electroencephalography (EEG) measures
+during the critical early period of visual cortex neuroplasticity.
+We examined microbial genes encoding enzymes for neuroactive compounds
+(e.g., GABA, glutamate, tryptophan, short-chain fatty acids)
+and their association with the visual-evoked potential (VEP).
+Genes from 4-month stool samples strongly correlated with VEP features
+between 9 and 14 months, suggesting early microbial metabolism influences
+later visual neurodevelopment.
+These prospective associations were more numerous than concurrent ones.
+Our findings suggest that early gut microbiome metabolic potential
+plays a crucial role in shaping neural plasticity and visual neurodevelopment.
 \ 
 \ 
 
@@ -151,7 +165,7 @@ Extensive work in preclinical models suggests that these neuroactive compounds
 can influence the brain through both direct and indirect pathways.
 For example, major neurotransmitters (e.g., glutamate, γ-aminobutyric acid (GABA), serotonin, and dopamine)
 are readily synthesized and degraded by intestinal microbes and can enter circulation
-and pass the blood-brain barrier to influence central nervous function
+and pass the blood-brain barrier to influence central nervous function.
 @janikMagneticResonanceSpectroscopy2016
 @ahmedMicrobiotaderivedMetabolitesDrivers2022
 @matsumotoCerebralLowmolecularMetabolites2013
@@ -252,14 +266,15 @@ Demographic information, including maternal place of birth,
 primary spoken language, maternal age at enrollment,
 maternal educational attainment, and maternal income,
 were collected at enrollment
-(see @table1).
+(see @figure1, @table1).
 
 Families were invited to participate in three in-lab study visits
 over their infant’s first two years of life.
 At the first in-lab study visit (hereafter visit-1),
 occurring when infants were between approximately 2 months and 6 months of age,
+(age in months: M=3.7, SD=0.85, range=1.91-5.54)
 the following data were collected:
-the infants' age (in months), sex,
+the infant age (in months), sex,
 infant electroencephalography (EEG),
 and infant stool samples.
 
@@ -340,9 +355,9 @@ validated for infant data
 A subset of the 128 channels
 were selected for pre-processing that excluded the rim electrodes
 as these are typically artifact-laden
-(channels excluded from pre-processing included in Table S4).
+(channels excluded from pre-processing included in Table S1).
 The HAPPE pre-processing pipeline was run
-with user-selected specifications outlined in Table S4.
+with user-selected specifications outlined in Table S1.
 
 
 Pre-processed VEP data were considered usable
@@ -379,7 +394,7 @@ and 100-325 ms for the N2 component.
 For visit-3, the window for calculating features for the N1 component was 35-80 ms,
 75-130 ms for the P1 component,
 and 100-275 ms for the N2 component.
-HAPPE+ER parameters used in extracting the ERPs are summarized in Table S5.
+HAPPE+ER parameters used in extracting the ERPs are summarized in Table S2.
 
 To correct for the potential influence of earlier components on later components,
 corrected amplitudes and latencies were calculated and used in all analyses.
@@ -403,7 +418,7 @@ Ninety seven infants provided usable VEP data at visit-1,
 130 infants provided usable VEP data at visit-2,
 and 131 infants provided usable VEP data at visit-3.
 For included participants,
-EEG data quality metrics are summarized in Table S6.
+EEG data quality metrics are summarized in Table S3.
 T-tests for data quality metrics
 (i.e., number of trials collected, number of trials retained,
 number of channels retained in the ROI,
@@ -515,7 +530,7 @@ with each VEP feature (i.e., N1, P1, and N2 latencies and amplitudes),
 controlling for the age at which the stool sample was collected,
 the number of retained VEP trials,
 and the difference in age between the stool collection and VEP measurement.
-For concurrently collected stool and VEP comparisons (@figure2, @figureS2),
+For concurrently collected stool and VEP comparisons (@figure2, @figureS1),
 participants whose stool collection and VEP measurements
 were more than two months apart were excluded.
 
@@ -573,39 +588,22 @@ and downloadable via included scripts in analysis code upon publication.
 To investigate the co-development of the gut microbiome and visual neurodevelopment,
 we collected stool and the VEP in a longitudinal cohort of 194 children in South Africa during the first 18 months of life
 (@figure1\A, B, @table1;
-visit-1, N = 119, age 3.6 ± 0.7 months,
-visit-2, N = 144, age 8.7 ± 1.4 months,
-visit-3, N = 130, age 14.2 ± 1.0 months).
+visit-1, N = 119, age 3.7 ± 0.9 months,
+visit-2, N = 144, age 8.6 ± 1.5 months,
+visit-3, N = 130, age 14.1 ± 1.0 months).
 As expected for children at this age,
 both amplitude and latency VEP features were strongly correlated with age
 @lippeElectrophysiologicalMarkersVisuocortical2007
 @yassourNaturalHistoryInfant2016,
 That is, as infants got older, N1 amplitude became more negative
-(N1: b=-0.07, p<.05),
+(N1: b=-0.07, p < 0.05),
 corrected P1 amplitude became smaller
-(P1: b=-0.50, p<.05),
+(P1: b=-0.50, p < 0.05),
 corrected N2 amplitude became smaller
-(N2: b=0.52, p<.05),
+(N2: b=0.52, p < 0.05),
 and all latencies became shorter
-(N1: b=-0.79, p<.05; P1: b=-1.21, p<.05; N2: b=-4.10, p<.05)
-(@figure2\A).
-
-#figure(
-  image("mainfigures/figure1.svg"),
-  caption: [
-    *Study design to capture the dynamic nature of early microbiome and brain development.*#linebreak()
-    (A) Study design; participants (N=194) were seen up to 3 times over the first 18 months of life.
-        Stool samples and EEG data were collected, generating microbial functional profiles (stool)
-        and VEP waveforms (EEG) used in subsequent analyses.
-    (B) Longitudinal sampling of study participants;
-        Density plots (top) for stool and EEG collection show the ages represented in each visit.
-        The scatter plot (bottom) shows individual participant visits.
-        Dotted lines connect separate visits for the same participant.
-        When stool and EEG data were collected for the same visit (purple) but not on the same day,
-        dot represents the median age of collection,
-        and vertical bars in blue and red represent stool and EEG collections, respectively.
-],
-) <figure1>
+(N1: b=-0.79, p < 0.05; P1: b=-1.21, p < 0.05; N2: b=-4.10, p < 0.05)
+(@figure2\A, B).
 
 
 Similarly,
@@ -626,27 +624,6 @@ and anaerobic genera such as _Faecalibacterium_
 (@figure2\E).
 
 
-#figure(
-  image("mainfigures/figure2.svg"),
-  caption: [
-    *The gut microbiome and VEP both develop over the first 18 months of life.*#linebreak()
-    (A) Mean #sym.plus.minus standard error of VEP curves from all included individuals
-        at each visit.
-    (B) Individual VEP feature measurements for peak amplitudes (left) and latencies (right)
-        for all participants and all visits in the study, separated by age and colored by visit as in (A). 
-    (C) Principal coordinate analysis (PCoA) by multidimensional scaling (MDS)
-        on Bray-Curtis dissimilarity of taxonomic profiles;
-        percent variance explained (fraction of positive eigenvalues)
-        by each of the first two axes are indicated on the x and y axes respectively.
-    (D) PCoA of microbial functional profiles (UniRef90s).
-    (E) Relative abundance of the top 11 microbial species across all visits.
-        All other species were summed so that the total abundance is 100%.
-        Each column represents a single sample, and samples are ordered by hierarchical clustering
-        based on Bray-Curtis dissimilarity of the full microbial composition.
-
-],
-) <figure2>
-
 
 === Microbial genes with neuroactive potential are associated with concurrently measured visual development
 
@@ -664,37 +641,15 @@ Z statistics for in-set genes were compared to all genes
 using a permutation test to determine significance of the associations
 @subramanianGeneSetEnrichment2005.
 
-#figure(
-  image("mainfigures/figure3.svg"),
-  caption: [
-    *Feature Set Enrichment Analysis Reveals associations between microbial genes and VEP*#linebreak()
-    (A) Volcano plots of of gene sets tested with feature set enrichment analysis (FSEA)
-        for all 6 VEP features for each visit (visit-1 top, visit-2 middle, visit-3 bottom)
-        with enrichment score (E.S.) compared to log scaled FDR-corrected p-value (Q).
-        Colored dots were significantly enriched (positive E.S.) or depleted (negative E.S.)
-        relative to the tested VEP feature.
-    (B) Summary of results in (A), showing the fraction of each class of neuroactive genes
-        (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
-        that were statistically significantly enriched or depleted for each VEP feature
-        for each visit in the analysis.
-    (C) Enrichment plots for selected gene sets and their association with P1 latency.
-        Each plot shows the distribution of associations of individual genes
-        within the gene set and the VEP feature.
-        Dots are colored if the geneset as a whole was significantly associated.
-        Enrichment plots for all gene set / VEP feature associations are shown in @figureS2.
-],
-) <figure3>
-#v(1em)
-
 Of the 35 genesets assessed,
 19 had sufficient representation to test,
-and of those, 18 were significantly associated with at least one EEG feature
+and of those, 18 were significantly associated with at least one VEP feature
 during at least one visit within the 18-month window,
 after correcting for false discovery rate
-(Benjamini-Hochberg, q < 0.2; @figure3, Table S2).
+(Benjamini-Hochberg, q < 0.2; @figure3\A, B, Table S4, S5).
 Microbial genes involved in synthesis or degradation of molecules with neuroactive potential across all categories considered
 (i.e., neurotransmitters, amino acid metabolism, SCFAs, other)
-were associated with both concurrent VEP amplitudes and latencies at each visit (@figureS2),
+were associated with both concurrent VEP amplitudes and latencies at each visit (@figureS1),
 demonstrating widespread associations between early life gut microbiome and visual cortex neurodevelopment.
 The number of these concurrent associations increased over time
 (visit-1 had 6 associations, visit-2 had 24, and visit-3 had 37). 
@@ -702,13 +657,13 @@ The number of these concurrent associations increased over time
 Specifically, across the gene sets involved in neurotransmitter synthesis and degradation,
 glutamate synthesis/degradation and GABA synthesis showed associations with all VEP features,
 primarily at the 2nd and 3rd visit
-(mean ages 8.6 and 14.1 months, respectively; @figure3\C Table S2).
+(mean ages 8.6 and 14.1 months, respectively; @figure3\C, Table S4).
 Gene sets involved in tryptophan metabolism and associated pathways
 (i.e., quinolinic acid) were also strongly concurrently related to VEP development.
 
 Several short-chain fatty acid (SCFA)-metabolizing gene sets were also found to have multiple associations with VEP features.
 Specifically, acetate synthesis was strongly associated with almost all VEP features
-(Table S2).
+(Table S4).
 Butyrate synthesis was associated with P1 and N2 amplitudes and latencies
 from 6-months onwards (visits 2 and 3),
 when the visual cortex is most actively undergoing myelination.
@@ -733,7 +688,7 @@ the P1 and N2 component amplitudes and latencies were consistently the most sens
 Both P1 and N2 components are known to show the most protracted and dramatic changes with development during the first year of life
 @lippeDifferentialMaturationBrain2009
 and may best reflect underlying visual learning and plasticity at this stage
-(Table S1).
+(Table S6).
 
 === Microbial metabolic potential predicts future brain development in infancy
 
@@ -749,44 +704,17 @@ We therefore performed FSEA on stool samples collected at visit-1 with visit-2 V
 or visit-3 VEP
 (see @table3, age at stool collection = 3.7 ± 0.7 months, age at VEP = 14.1 ± 1.1 months),
 as well as visit-2 stool samples with visit-3 VEP
-(see @table4, age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; Table S3)
-(@figure4\A, @figureS3).
-
-
-#figure(
-  image("mainfigures/figure4.svg"),
-  caption: [
-    (A) Age distributions for cross-visit comparisons,
-        with age at stool collection (left) and age of VEP measurement (right)
-        for each participant included in the analysis.
-        Collections for the same individual are connected by a dotted gray line.
-    (B) Volcano plots of of gene sets tested with feature set enrichment analysis (FSEA)
-        for all 6 VEP features,
-        with enrichment score (E.S.) compared to log scaled FDR-corrected p-value (Q).
-        Colored dots were significantly enriched (positive E.S.) or depleted (negative E.S.)
-        relative to the tested VEP feature.
-    (C) Summary of results in (B), showing the fraction of each class of neuroactive genes
-        (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
-        that were statistically significantly enriched or depleted for each VEP feature
-        for each cross-visit comparison in the analysis.
-    (D) Enrichment plots for selected gene sets and there association with P1 latency.
-        Each plot shows the distribution of associations of individual genes
-        within the gene set and the VEP feature.
-        Dots are colored if the geneset as a whole was significantly associated.
-        Enrichment plots for all gene set / VEP feature associations may be found in @figureS2.
-],
-) <figure4>
-#v(1em)
+(see @table4, age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; @figure4\A, @table4, Table S7).
 
 All gene sets 
 that had a significant hit with concurrently measured VEP
 were also significantly associated with at least one future VEP featuree,
 except those involved in the synthesis of 3,4-dihydroxyphenylacetic acid (DOPAC),
 a metabolite of dopamine
-(@figureS3\B, Tables 2-5).
+(@figureS2\B, Tables 2-4).
 Notably, the quantity of those associations increased substantially
 for all longitudinal comparisons compared to concurrent comparisons.
-For example, only 6 visit-1 microbial gene sets were associated with visit-1 VEP,
+For example, only 6 visit-1 microbial gene sets were associated with visit-1 VEP features,
 and each of those was only associated with a single concurrently measured VEP feature.
 By contrast, these longitudinal analyses revealed that visit-1 microbial gene sets
 showed a much richer pattern of associations with future VEP feature development.
@@ -797,7 +725,7 @@ the majority
 were associated with at least 2 VEP features,
 and nearly half
 (6/13 for visit-2, 5/11 for visit-3)
-were associated with more than 2 future VEP features.
+were associated with more than 2 future VEP features (@figure4\B, C).
 
 Longitudinally, the early microbiome (visit-1)
 was related to VEP features at visit-2 and visit-3 fairly evenly
@@ -820,7 +748,7 @@ indicating temporal specificity to these associations.
 With respect to the neurotransmitter-related pathways,
 amongst the associations between GABA synthesis genes and future VEP features,
 GABA genes specifically from visit-1 showed the greatest number of associations
-with future VEP features (5/6 GABA associations) at visits 2 and 3 equally,
+with future VEP features (5/6 GABA associations) at visits 2 and 3 equally (@figure4\D, @figureS2),
 and the majority of these associations were VEP amplitudes
 (reflecting development of neurotransmission including excitatory/inhibitory balance).
 To a lesser extent, glutamate metabolism genes followed a similar temporal pattern
@@ -833,7 +761,7 @@ are most relevant for changes to visual cortex function over the following year.
 Tryptophan-related pathway genes (responsible for generating serotonin,
 amongst other products) from visit-1 were also responsible
 for the majority of associations with future VEP features
-(tryptophan: 6/8 associations; quinolinic acid: 6/9 associations).
+(tryptophan: 6/8 associations; quinolinic acid: 6/9 associations, @figure4\D, @figureS2).
 In contrast to GABA but similar to glutamate,
 tryptophan-related gene associations were largely shorter-term associations
 with VEP features at the visit immediately following gene set measurement
@@ -841,14 +769,14 @@ with VEP features at the visit immediately following gene set measurement
 indicating dynamic co-development over the first 18 months of life.
 Across neurotransmitter-related gene set associations
 (GABA, glutamate, tryptophan/serotonin),
-there was thus a clear pattern whereby early (\~4 months old)
+there was thus a clear pattern whereby early (approximately 4 months old)
 microbiome gene sets showed the largest number of associations with subsequent VEP feature development.
 
 SCFAs showed a different developmental pattern of associations with future VEP features.
 Specifically, propionate and butyrate metabolism genes
 from both visit-1 and visit-2 showed associations with future VEP features,
 but here the effects were almost entirely observed
-for VEP features at visit-3 (10/10 propionate and 7/8 butyrate associations).
+for VEP features at visit-3 (10/10 propionate and 7/8 butyrate associations, @figure4\D, @figureS2).
 Moreover, acetate and butyrate metabolism genes
 were doubly associated with future VEP latencies compared to amplitude features.
 
@@ -1008,7 +936,7 @@ VEP latency features reflect myelination
 @youLatencyDelayVisual2011,
 and accordingly, these SCFAs showed more associations
 with VEP latency features prospectively,
-especially VEP latency features in vsit 3.
+especially VEP latency features in visit 3.
 This pattern of results is consistent with these SCFA roles’ in myelination
 occurring over the second half of the developmental window studied.
 SCFAs including acetate, butyrate, and propionate
@@ -1081,8 +1009,8 @@ but challenges remain on how to interpret them in humans
 Given that the VEP is evolutionarily conserved in mammals
 and can be accurately measured during development,
 the hypotheses generated in humans in this study
-are readily testable mechanistically using  derived from electroencephalography _in vivo_ models in future research.
-For example, VEP could be assessed in germ-free or defined-microbiome animals
+are readily testable mechanistically using VEP derived from electroencephalography _in vivo_ models in future research.
+For example, the VEP could be assessed in germ-free or defined-microbiome animals
 @wymorebrandAlteredSchaedlerFlora2015a
 @kennedyMouseMicrobiotaModels2018a
 and may be supplemented with specific molecules such as SCFAs,
@@ -1140,13 +1068,17 @@ The authors declare no financial or other conflicts of interest.
 #grid( columns: (1fr, 1fr), align: center, gutter: 4pt,
       [ Vanja Klepac-Ceraj ],      [ Laurel Gabard-Durnam ],
       [ vklepacc\@wellesley.edu ], [ l.gabard-durnam\@northeastern.edu ],
-      [ 781-283-3541 ],            [ 628 ISEC ],
-      [ 106 Central St ],          [ Northeastern University ],
-      [ Wellesley, MA 02481] ,     [Boston, MA 02482 ]
+      [ Wellesley College ],       [ Northeastern University ],
+      [ Science Center E210],      [ 628 ISEC ],
+      [ 106 Central St ],          [805 Columbus Ave],
+      [ Wellesley, MA 02481],      [Boston, MA 02120 ]
 )
 
-\ 
-\ 
+\
+\
+
+#show "Lactobacillus": it=>{text(style: "italic",it)}
+#show "Bacteroides": it=>{text(style: "italic",it)}
 
 #bibliography("refs.bib", style: "biological-psychiatry.csl")
 
@@ -1490,15 +1422,108 @@ The authors declare no financial or other conflicts of interest.
 
 #pagebreak()
 
-== Supplemental Figures
+== Figures
 
+#show figure.caption: it => context [
+  #set align(left)
+  #set text(8pt)
+  *#it.supplement~#it.counter.display()#it.separator*#it.body
+]
+
+#figure(
+  image("mainfigures/figure1.svg"),
+  caption: [
+    *Study design to capture the dynamic nature of early microbiome and brain development.*#linebreak()
+    (A) Study design; participants (N=194) were seen up to 3 times over the first 18 months of life.
+        Stool samples and EEG data were collected, generating microbial functional profiles (stool)
+        and VEP waveforms (EEG) used in subsequent analyses.
+    (B) Longitudinal sampling of study participants;
+        Density plots (top) for stool and EEG collection show the ages represented in each visit.
+        The scatter plot (bottom) shows individual participant visits.
+        Dotted lines connect separate visits for the same participant.
+        When stool and EEG data were collected for the same visit (purple) but not on the same day,
+        dot represents the median age of collection,
+        and vertical bars in blue and red represent stool and EEG collections, respectively.
+],
+) <figure1>
+
+#figure(
+  image("mainfigures/figure2.svg"),
+  caption: [
+    *The gut microbiome and VEP both develop over the first 18 months of life.*#linebreak()
+    (A) Mean #sym.plus.minus standard error of VEP curves from all included individuals
+        at each visit.
+    (B) Individual VEP feature measurements for peak amplitudes (left) and latencies (right)
+        for all participants and all visits in the study, separated by age and colored by visit as in (A). 
+    (C) Principal coordinate analysis (PCoA) by multidimensional scaling (MDS)
+        on Bray-Curtis dissimilarity of taxonomic profiles;
+        percent variance explained (fraction of positive eigenvalues)
+        by each of the first two axes are indicated on the x and y axes respectively.
+    (D) PCoA of microbial functional profiles (UniRef90s).
+    (E) Relative abundance of the top 11 microbial species across all visits.
+        All other species were summed so that the total abundance is 100%.
+        Each column represents a single sample, and samples are ordered by hierarchical clustering
+        based on Bray-Curtis dissimilarity of the full microbial composition.
+
+],
+) <figure2>
+
+#figure(
+  image("mainfigures/figure3.svg"),
+  caption: [
+    *Feature set enrichment analysis reveals associations between microbial genes and VEP*#linebreak()
+    (A) Volcano plots of of gene sets tested with feature set enrichment analysis (FSEA)
+        for all 6 VEP features for each visit (visit-1 top, visit-2 middle, visit-3 bottom)
+        with enrichment score (E.S.) compared to log scaled FDR-corrected p-value (Q).
+        Colored dots were significantly enriched (positive E.S.) or depleted (negative E.S.)
+        relative to the tested VEP feature.
+    (B) Summary of results in (A), showing the fraction of each class of neuroactive genes
+        (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
+        that were statistically significantly enriched or depleted for each VEP feature
+        for each visit in the analysis.
+    (C) Enrichment plots for selected gene sets and their association with P1 latency.
+        Each plot shows the distribution of associations of individual genes
+        within the gene set and the VEP feature.
+        Dots are colored if the geneset as a whole was significantly associated.
+        Enrichment plots for all gene set / VEP feature associations are shown in @figureS1.
+],
+) <figure3>
+
+#figure(
+  image("mainfigures/figure4.svg"),
+  caption: [
+    *Early gut microbial metabolism is associated with future VEP development*#linebreak()
+    (A) Age distributions for cross-visit comparisons,
+        with age at stool collection (left) and age of VEP measurement (right)
+        for each participant included in the analysis.
+        Collections for the same individual are connected by a dotted gray line.
+    (B) Volcano plots of of gene sets tested with feature set enrichment analysis (FSEA)
+        for all 6 VEP features,
+        with enrichment score (E.S.) compared to log scaled FDR-corrected p-value (Q).
+        Colored dots were significantly enriched (positive E.S.) or depleted (negative E.S.)
+        relative to the tested VEP feature.
+    (C) Summary of results in (B), showing the fraction of each class of neuroactive genes
+        (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
+        that were statistically significantly enriched or depleted for each VEP feature
+        for each cross-visit comparison in the analysis.
+    (D) Enrichment plots for selected gene sets and there association with P1 latency.
+        Each plot shows the distribution of associations of individual genes
+        within the gene set and the VEP feature.
+        Dots are colored if the geneset as a whole was significantly associated.
+        Enrichment plots for all gene set / VEP feature associations may be found in @figureS1.
+],
+) <figure4>
+
+
+== Supplemental Figures
+  
 
 #set figure(numbering: it => {
-    "S" + str(it - 3)
+    "S" + str(it - 4)
 })
 
 #figure(
-  image("mainfigures/figureS2.svg"),
+  image("mainfigures/figureS1.svg"),
   caption: [
     *Concurrent feature set enrichment analysis of microbial neuroactive genes and VEP for three visits.*
     FSEA results for all gene sets where at least one visit had a significant hit (q < 0.2)
@@ -1509,10 +1534,10 @@ The authors declare no financial or other conflicts of interest.
     Visit 1 for inositol degradation and DOPAC synthesis were not tested,
     since there were fewer than 5 genes from those genesets present in the sample (See Methods).
 ],
-) <figureS2>
+) <figureS1>
 
 #figure(
-        image("mainfigures/figureS3.svg"),
+        image("mainfigures/figureS2.svg"),
         caption: [
         *Gut microbial genes predict future VEP latencies and amplitudes.*
         (A) Age distributions for stool samples (left) and VEP (right)
@@ -1526,6 +1551,6 @@ The authors declare no financial or other conflicts of interest.
         The Y-axis position for each gene set indicates longitudinal comparison.
         V1 → V2 and V1 → 3 for inositol degradation and DOPAC synthesis were not tested,
         since there were fewer than 5 genes from those genesets present in the sample (See Methods).
-]) <figureS3>
+]) <figureS2>
 
 
