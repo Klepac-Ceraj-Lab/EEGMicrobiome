@@ -1448,6 +1448,7 @@ Legend(legend_block[1, 2],
   ["(-)", "(+)"];
   orientation=:horizontal, tellheight=true, tellwidth=false
 )
+colsize!(legend_block, 1,Relative(1/3))
 
 colsize!(figureS2.layout, 2, Relative(4 / 5))
 linkyaxes!(ax_future_violins...)
