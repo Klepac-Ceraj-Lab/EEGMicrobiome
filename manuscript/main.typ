@@ -226,6 +226,7 @@ reflecting underlying cortical circuit function
 (i.e., the balance of excitatory/inhibitory postsynaptic potentials;
 @MuthukumaraswamyElevating_Endog2013
 @lippeElectrophysiologicalMarkersVisuocortical2007
+@ThompsonISCEV_standard_2024
 // Sustar, et al., 2025
 as well as latencies to those deflections,
 thought to reflect structural integrity and myelination of the parvocellular and magnocellular pathways
@@ -607,15 +608,18 @@ $"vep"$ is the nummerical value of the VEP feature (eg N1 latency),
 $"age_months"$ is the child's age at the time of stool collection,
 and $"n_trials"$ is the number of EEG trials retained at that visit.
 For models comparing separate visits (@figure4),
-values for $"species"$ and $"age_months"$ are from the earlier visit
+values for $"UniRef"$ and $"age_months"$ are from the earlier visit
 (from which the stool sample was collected)
 and $"vep"$ and $"n_trials"$ are from the later visit (when VEP was measured).
 In addition, longitudinal models
 also included the term $+ "age_diff"$, which is the number of months between
 stool collection and VEP measurement.
 
-FSEA was performed on each geneset
-that had at least five members in each comparison group
+FSEA was performed on each gene set
+that had at least five members
+that were present in at least one sample in the relevant visit
+(17 at visit 1, 19 at visits 2 and 3),
+against each of the 6 VEP features (N1, P1, N2 latencies and amplitudes)
 according to the procedure set out in Subramanian _et. al._ (2005)
 @subramanianGeneSetEnrichment2005.
 Briefly, enrichment scores (ES) are calculated
