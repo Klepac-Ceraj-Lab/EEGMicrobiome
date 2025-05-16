@@ -51,8 +51,8 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger,
 #super([1])Department of Biological Sciences, Wellesley College, Wellesley, MA, USA#linebreak()
 #super([1])Department of Medicine, Tufts Medical Center, Boston, MA, USA#linebreak()
 #super([3])Department of Psychology, Northeastern University, Boston, MA, USA#linebreak()
-#super([s4])Division of Medical Microbiology, University of Cape Town, Cape Town, Western Cape, ZAF#linebreak()
-#super([5])Department of Paediatrics and Child Health, University of Cape Town, Cape Town, Western Cape, ZAF#linebreak()
+#super([4])Division of Medical Microbiology, University of Cape Town, Cape Town, Western Cape, RSA#linebreak()
+#super([5])Department of Paediatrics and Child Health, University of Cape Town, Cape Town, Western Cape, RSA#linebreak()
 #super([6])Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA, USA#linebreak()
 #super([7])Department of Psychiatry, Columbia University, Irving Medical Center, New York City, NY, USA#linebreak()
 #super([8])Division of Developmental Neuroscience, New York State Psychiatric Institute, New York City, NY, USA#linebreak()
@@ -63,7 +63,7 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger,
 #super([12])Department of Psychology, Columbia University, New York City, NY, USA#linebreak()
 #super([13])Department of Women and Children’s Health, Institute of Life Course and Medical Science,
     Alder Hey Children’s NHS Foundation Trust, University of Liverpool, Liverpool, United Kingdom#linebreak()
-#super([14])Neuroscience Institute, University of Cape Town, Cape Town, Western Cape, ZAF
+#super([14])Neuroscience Institute, University of Cape Town, Cape Town, Western Cape, RSA
 
 // 50 / 55 char
 *Running title*: Infant gut microbiome and visual neurodevelopment
@@ -110,7 +110,7 @@ Infancy is a time of elevated neuroplasticity supporting rapid brain and sensory
 The gut microbiome,
 also undergoing extensive developmental changes in early life,
 may influence brain development through metabolism of neuroactive compounds.
-Here, we leverage longitudinal data from 194 infants across the first 18 months of life
+Here, we leverage longitudinal data from 194 South African infants across the first 18 months of life
 to show that microbial genes encoding enzymes that metabolize molecules
 playing a key role in modulating early neuroplasticity
 are associated with visual cortical neurodevelopment,
@@ -329,34 +329,34 @@ Several infants (n=3)
 were identified as having eye-related anomalies during the medical exam,
 and they were excluded from any further analyses.
 
-=== EEG Processing 14.3736
- 14.3736
-==== EEG Data Acquisition 14.3736
- 14.3736
-Electroencephalography (EEG) data were a 14.3736red from infants while they were seated in their caregiver’s lap in a dimly-lit,
-quiet room using a 128-channel high dens 14.3736HydroCel Geodesic Sensor Net
-(EGI, Eugene, OR), 14.3736
-amplified with a NetAmps 400 high-input  14.3736ifier,
-and recorded via an Electrical Geodesics 14.3736c.
-(EGI, Eugene, OR) 14.3736
-system with a 1000 Hz sampling rate. 14.3736
-EEG data were online referenced to the v 14.3736x (channel Cz)
-through the EGI Netstation software. 14.3736
-Impedances were kept below 100KΩ 14.3736
-in accordance with the impedance capabil 14.3736s of the high-impedance amplifiers.
-Geodesic Sensor Nets with modified tall  14.3736stals
-designed for improving inclusion of infa 14.3736with thick/curly/tall hair were used as needed across participants
-@mlanduEvaluatingNovelHighdensity2024. 14.3736
-Shea moisture leave-in castor oil condit 14.3736r
-was applied to hair across the scalp pri 14.3736o net placement
-to improve both impedances and participa 14.3736omfort
-@mlanduEvaluatingNovelHighdensity2024. 14.3736
-This leave-in conditioner contains insul 14.3736g ingredients,
-so there is no risk of electrical bridgi 14.3736
-and has not been found to disrupt the EE 14.3736gnal during testing (unpublished data).
-Conditioning hair in this way allows for 14.3736s
-to lay closer to the scalp for curly/coi 14.3736air types
-and makes for more comfortable net remov 14.3736t the end of testing.
+=== EEG Processing
+
+==== EEG Data Acquisition
+
+Electroencephalography (EEG) data were acquired from infants while they were seated in their caregiver’s lap in a dimly-lit,
+quiet room using a 128-channel high density HydroCel Geodesic Sensor Net
+(EGI, Eugene, OR),
+amplified with a NetAmps 400 high-input amplifier,
+and recorded via an Electrical Geodesics, Inc.
+(EGI, Eugene, OR)
+system with a 1000 Hz sampling rate.
+EEG data were online referenced to the vertex (channel Cz)
+through the EGI Netstation software.
+Impedances were kept below 100KΩ
+in accordance with the impedance capabilities of the high-impedance amplifiers.
+Geodesic Sensor Nets with modified tall pedestals
+designed for improving inclusion of infants with thick/curly/tall hair were used as needed across participants
+@mlanduEvaluatingNovelHighdensity2024.
+Shea moisture leave-in castor oil conditioner
+was applied to hair across the scalp prior to net placement
+to improve both impedances and participant comfort
+@mlanduEvaluatingNovelHighdensity2024.
+This leave-in conditioner contains insulating ingredients,
+so there is no risk of electrical bridging,
+and has not been found to disrupt the EEG signal during testing (unpublished data).
+Conditioning hair in this way allows for nets
+to lay closer to the scalp for curly/coily hair types
+and makes for more comfortable net removal at the end of testing.
 
 The Visual-Evoked Potential (VEP) task
 was presented using Eprime 3.0 software
@@ -1075,9 +1075,8 @@ and alterations in the gut microbiome
 It is thus critical to study child development
 in diverse geographical and cultural contexts.
 Our infant cohort was recruited from Gugulethu,
-an urban township near Cape Town, South Africa,
-originally established during the apartheid era.
-In this township characterized by a mix of formal and informal housing,
+an urban settlement near Cape Town, South Africa.
+Gugulethu is characterized by a mix of formal and informal housing,
 many families live in economically disadvantaged conditions,
 with limited access to sanitation and other basic services.
 Although breastfeeding is widely promoted in this community,
@@ -1088,7 +1087,7 @@ from those in higher-income or industrialized settings,
 where prolonged breastfeeding and formula feeding are more common.
 In addition to diet, other factors, such as sanitation, maternal education,
 maternal depression, maternal mental health, and overall household environment,
-also differ from many settings and likely contribute
+also differ from many settings in the global North and likely contribute
 to a distinct microbial and environmental exposure landscape.
 Therefore, studying infant development in this context
 enables us to identify both universal and context-specific features
@@ -1099,7 +1098,7 @@ on the microbial-gut-brain axis in early life
 due to the sequencing method,
 the large number of participants,
 the longitudinal study design,
-and the inclusion of participants from scientifically under-represented region of the world.
+and the inclusion of participants from a scientifically under-represented region of the world.
 The use of shotgun metagenomic sequencing
 enables direct interrogation of microbial metabolic potential.
 Prior research primarily used amplicon (16S rRNA gene) sequencing,
