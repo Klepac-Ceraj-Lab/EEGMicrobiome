@@ -1840,4 +1840,17 @@ using MultivariateStats
 cor(EEGMicrobiome.loadings(species_pco, 1), mdata.stool_age)
 cor(EEGMicrobiome.loadings(unirefs_pco, 1), mdata.stool_age)
 
+let grp = groupby(fsea_df, ["timepoint"])
+    println("Concurrent VEP:")
+    println("    v1 genesets: ", length(unique(grp[(;timepoint="v1")].geneset)))
+    println("    v2 genesets: ", length(unique(grp[(;timepoint="v2")].geneset)))
+    println("    v3 genesets: ", length(unique(grp[(;timepoint="v3")].geneset)))
+end
+
+let grp = groupby(futfsea_df, ["timepoint"])
+    println("Future VEP:")
+    println("    v1v2 genesets: ", length(unique(grp[(;timepoint="v1v2")].geneset)))
+    println("    v1v3 genesets: ", length(unique(grp[(;timepoint="v1v3")].geneset)))
+    println("    v2v3 genesets: ", length(unique(grp[(;timepoint="v2v3")].geneset)))
+end
 

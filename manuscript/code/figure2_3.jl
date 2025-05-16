@@ -166,7 +166,7 @@ for feature in eeg_features
   )
 end
 
-or feature in eeg_features
+for feature in eeg_features
   @info feature
   EEGMicrobiome.runlms(v1v3_func, "./data/outputs/lms/$(feature)_v1v3_lms.csv", feature, names(v1v3_func, r"^UniRef");
     additional_cols=[:age_diff], age_col="stool_age",
