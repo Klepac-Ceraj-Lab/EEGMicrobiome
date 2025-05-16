@@ -1647,7 +1647,8 @@ The authors declare no financial or other conflicts of interest.
         see @figureS1 for disambiguated results.
     (B) Summary of results in (A), showing the fraction of each class of neuroactive genes
         (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
-        that were statistically significantly enriched or depleted for each VEP feature
+        that were statistically significantly enriched (bars above 0) or depleted (bars below 0)
+        for each VEP feature
         for each visit in the analysis.
     (C) Enrichment plots for selected gene sets and their association with concurrently measured P1 latency.
         Each plot shows the distribution of associations of individual genes
@@ -1672,7 +1673,8 @@ The authors declare no financial or other conflicts of interest.
         relative to the tested VEP feature.
     (C) Summary of results in (B), showing the fraction of each class of neuroactive genes
         (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
-        that were statistically significantly enriched or depleted for each VEP feature
+        that were statistically significantly enriched (bars above 0) or depleted (bars below 0)
+        for each VEP feature
         for each cross-visit comparison in the analysis.
     (D) Enrichment plots for selected gene sets and there association with P1 latency.
         Each plot shows the distribution of associations of individual genes
