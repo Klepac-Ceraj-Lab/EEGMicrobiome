@@ -718,7 +718,7 @@ we analyzed taxonomic profiles for associations with each VEP feature
 at each visit using MaAsLin
 @NickolsMaAsLin_3_Refi2024,
 and only the only species to pass FDR correction was _F. prausnitzii_,
-which was negatively associated with P1 amplitude at visit 3 (Table S??).
+which was negatively associated with P1 amplitude at visit 3 (Table S5).
 
 
 
@@ -746,7 +746,7 @@ and 19 were tested at visits 2 and 3
 Off these, 18 were significantly associated with at least one VEP feature
 during at least one visit within the 18-month window,
 after correcting for false discovery rate
-(Benjamini-Hochberg, q < 0.2; @figure3\A, B, Table S4, S5 - only significant hits are included).
+(Benjamini-Hochberg, q < 0.2; @figure3\A, B, Table S4, S6 - only significant hits are included).
 Microbial genes involved in synthesis or degradation of molecules with neuroactive potential across all categories considered
 (i.e., neurotransmitters, amino acid metabolism, SCFAs, other)
 were associated with both concurrent VEP amplitudes and latencies at each visit (@figureS1),
@@ -788,7 +788,7 @@ the P1 and N2 component amplitudes and latencies were consistently the most sens
 Both P1 and N2 components are known to show the most protracted and dramatic changes with development during the first year of life
 @lippeDifferentialMaturationBrain2009
 and may best reflect underlying visual learning and plasticity at this stage
-(Table S6).
+(Table S7).
 
 === Microbial metabolic potential predicts future brain development in infancy
 
@@ -805,7 +805,7 @@ We therefore performed FSEA on stool samples collected at visit-1 with visit-2 V
 or visit-3 VEP
 (see @table3, age at stool collection = 3.7 ± 0.7 months, age at VEP = 14.1 ± 1.1 months),
 as well as visit-2 stool samples with visit-3 VEP
-(see @table4, age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; @figure4\A, @table4, Table S7).
+(see @table4, age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; @figure4\A, @table4, Table S8).
 
 All gene sets 
 that had a significant hit with concurrently measured VEP
