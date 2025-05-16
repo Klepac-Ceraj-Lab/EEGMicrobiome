@@ -1160,7 +1160,7 @@ could provide more accurate systemic concentrations of molecules,
 but challenges remain on how to interpret them in humans
 @dengComparisonFecalBlood2023
 @dekkersOnlineAtlasHuman2022.
-Futher computational modeling of community-scale metabolism
+Further computational modeling of community-scale metabolism
 may also yield important insights,
 though to our knowledge this has not previously been done
 in infant populations
@@ -1629,7 +1629,8 @@ The authors declare no financial or other conflicts of interest.
         Each column within a visit represents an individual sample from a participant
         and samples are ordered by hierarchical clustering.
         “Other” represents the sum of all taxa not in the top 12.
-
+        The X-axis within each visit is sorted by hierarchical clustering,
+        and the y-axis is sorted by total abundance across all samples.
 
 ],
 ) <figure2>
