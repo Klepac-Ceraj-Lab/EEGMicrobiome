@@ -407,6 +407,10 @@ let gdf = groupby(long_sub, "subject_id")
   end
 end
 
+small_leg = axislegend(ax_longsamples, [MarkerElement(; marker=:circle, color=c) for c in [p[2] for p in samples_colors]],
+                            [p[1] for p in samples_colors];
+                       position=:lt, patchlabelgap=2, padding=(3,3,3,3), rowgap=1, patchsize=(5,5))
+
 let datage = data(subset(mdata, "eeg_age" => ByRow(!ismissing))) * mapping(:eeg_age => "age (months)", color="visit")
     draw!(ax_eeg_hist, datage * AlgebraOfGraphics.density(), scales(Color= (; palette=colors_timepoints)))
 end
@@ -468,9 +472,18 @@ function topspec(profile, n=10)
     CommunityProfile(abmat, [features(profile)[topn]; [Microbiome.Taxon("other")]], samples(profile))
 end
 
-v1_top = topspec(taxprofiles[:, [s for s in v1.seqprep]], 8)
-v2_top = topspec(taxprofiles[:, [s for s in v2.seqprep]], 8)
-v3_top = topspec(taxprofiles[:, [s for s in v3.seqprep]], 8)
+function pulltaxa(profile, taxa)
+    taxa = Set(taxa)
+    topn = findall(t-> t ∈ taxa, featurenames(profile))
+    other = sum(abundances(profile)[Not(topn), :]; dims=1)
+    abmat = vcat(abundances(profile)[topn, :], other)
+    CommunityProfile(abmat, [features(profile)[topn]; [Microbiome.Taxon("other")]], samples(profile))
+end
+
+combined_top = topspec(taxprofiles, 12) |> featurenames
+v1_top = pulltaxa(taxprofiles[:, [s for s in v1.seqprep]], combined_top)
+v2_top = pulltaxa(taxprofiles[:, [s for s in v2.seqprep]], combined_top)
+v3_top = pulltaxa(taxprofiles[:, [s for s in v3.seqprep]], combined_top)
 
 v1_top_dm = Microbiome.braycurtis(v1_top)
 v2_top_dm = Microbiome.braycurtis(v2_top)
@@ -479,6 +492,7 @@ v3_top_dm = Microbiome.braycurtis(v3_top)
 v1_top_hcl = hclust(v1_top_dm; linkage=:average, branchorder=:optimal)
 v2_top_hcl = hclust(v2_top_dm; linkage=:average, branchorder=:optimal)
 v3_top_hcl = hclust(v3_top_dm; linkage=:average, branchorder=:optimal)
+
 
 colors_species = [sp => c for (sp, c) in zip(
     [filter(!=("other"), union(featurenames.([v1_top, v2_top, v3_top])...)); ["other"]],
@@ -567,7 +581,7 @@ plt_pcoa_spec = plot_pcoa!(ax_pcoa_spec, species_pco; color=get(taxprofiles, :st
 plt_pcoa_func = plot_pcoa!(ax_pcoa_func, unirefs_pco; color=get(unirefs, :stool_age), colormap=colormap_age)
 
 grid_f2_colorbar = GridLayout(grid_pcoas[2,1:2])
-Label(grid_f2_colorbar[1,1], "Age (months)"; tellwidth=true, tellheight=true)
+Label(grid_f2_colorbar[1,1], "age (months)"; tellwidth=true, tellheight=true)
 
 Colorbar(grid_f2_colorbar[1,2];
          limits=extrema(skipmissing(mdata.stool_age)),
@@ -577,56 +591,50 @@ Colorbar(grid_f2_colorbar[1,2];
 
 # ##### Tax abundance plots
 
-v1_ab_ax = Axis(tax_abundances[1,1]; xticksvisible=false, xticklabelsvisible=false)
-v2_ab_ax = Axis(tax_abundances[1,2]; xticksvisible=false, xticklabelsvisible=false)
-v3_ab_ax = Axis(tax_abundances[1,3]; xticksvisible=false, xticklabelsvisible=false)
 
-let prof = v1_top[:, v1_top_hcl.order]
-    df = DataFrame(species = [s for s in repeat(featurenames(prof), size(prof, 2))],
-                   sample = [s for s in repeat(samplenames(prof), inner=size(prof, 1))],
-                   abundance = [a for a in vec(abundances(prof))]
-    )
-    spec = data(df) * mapping(:sample => presorted, :abundance; stack = :species, color=:species)
-    draw!(v1_ab_ax, spec * visual(BarPlot), scales(Color = (; palette = colors_species)))
+v1_ab_ax = Axis(tax_abundances[1,1];
+                yticks = (1:length(combined_top), map(l-> l=="other" ? l : rich(replace(l, r"([A-Z])[a-z]+_([a-z]+)"=> s"\1. \2"); font=:italic), combined_top)),
+                xticksvisible=false, xticklabelsvisible=false)
+v2_ab_ax = Axis(tax_abundances[1,2];
+                yticklabelsvisible = false, yticksvisible=false,
+                xticksvisible=false, xticklabelsvisible=false,
+)
+v3_ab_ax = Axis(tax_abundances[1,3];
+                yticklabelsvisible = false, yticksvisible=false,
+                xticksvisible=false, xticklabelsvisible=false,
+)
+
+hm_abundances_range = extrema(mapreduce(prof-> vec(abundances(prof)), vcat, (v1_top, v2_top, v3_top)))
+hm = let prof = v1_top[:, v1_top_hcl.order]
+    heatmap!(v1_ab_ax, collect(abundances(prof))'; colormap=:magma, colorrange=hm_abundances_range)
 end
+tax_abundances
 
 let prof = v2_top[:, v2_top_hcl.order]
-    df = DataFrame(species = [s for s in repeat(featurenames(prof), size(prof, 2))],
-                   sample = [s for s in repeat(samplenames(prof), inner=size(prof, 1))],
-                   abundance = [a for a in vec(abundances(prof))]
-    )
-    spec = data(df) * mapping(:sample => presorted, :abundance; stack = :species, color=:species)
-    draw!(v2_ab_ax, spec * visual(BarPlot), scales(Color = (; palette = colors_species)))
+    heatmap!(v2_ab_ax, collect(abundances(prof))'; colormap=:magma, colorrange=hm_abundances_range)
 end
 
 let prof = v3_top[:, v3_top_hcl.order]
-    df = DataFrame(species = [s for s in repeat(featurenames(prof), size(prof, 2))],
-                   sample = [s for s in repeat(samplenames(prof), inner=size(prof, 1))],
-                   abundance = [a for a in vec(abundances(prof))]
-    )
-    spec = data(df) * mapping(:sample => presorted, :abundance; stack = :species, color=:species)
-    draw!(v3_ab_ax, spec * visual(BarPlot), scales(Color = (; palette = colors_species)))
+    heatmap!(v3_ab_ax, collect(abundances(prof))'; colormap=:magma, colorrange=hm_abundances_range)
 end
 
 for (i, v) in enumerate(["v1", "v2", "v3"])
+
     Label(tax_abundances[2,i], v; tellheight=true, tellwidth=false)
 end
 
-Label(tax_abundances[3, 1:3], "sample"; tellheight=true, tellwidth=false)
-Label(tax_abundances[1, 0], "abundance (%)"; rotation= π/2, tellheight=false, tellwidth=true)
 
+
+Label(tax_abundances[3, 1:3], "sample"; tellheight=true, tellwidth=false)
+Label(tax_abundances[1, 0], "species"; rotation= π/2, tellheight=false, tellwidth=true)
+
+tax_cbar = GridLayout(tax_abundances[4,:])
+Label(tax_cbar[1,1], "abundance (%)"; tellwidth=true, tellheight=true)
+Colorbar(tax_cbar[1,2], hm;
+         vertical=false, tellwidth=true, tellheight=true
+)
 tightlimits!.([v1_ab_ax, v2_ab_ax, v3_ab_ax])
 
-Legend(tax_abundances[4,:],
-       [MarkerElement(; marker=:rect, color=c[2]) for c in colors_species],
-       map(colors_species) do c
-            c[1] == "other" && return rich(c[1])
-       rich(replace(c[1], r"([A-Z])[a-z]+_([a-z]+)"=> s"\1. \2"), font=:italic)
-       end;
-       groupgap=-2, rowgap=-5, colgap=1, nbanks=4, orientation=:horizontal,
-       padding=(3f0, 3f0, 3f0, 3f0))
-
-# rowsize!(figure2.layout, 2, Relative(3/7))
 
 colgap!(tax_abundances, 2pt)
 rowgap!(tax_abundances, 2pt)
@@ -856,7 +864,7 @@ figure3
 
 # ##### Figure S1
 
-figureS1 = Figure(; size=(1100, 600))
+figureS1 = Figure(; size=(1100, 600));
 
 
 grid_fsea_dots = GridLayout(figureS1[1, 1])
@@ -1015,8 +1023,12 @@ end
 
 colsize!(legend_block, 1, Relative(1 / 8))
 
+Label(grid_fsea_dots[1,1, TopLeft()], "A"; font=:bold,padding=(0,0,0,0), halign=:right)
+Label(grid_fsea_dots[1,2, TopLeft()], "B"; font=:bold,padding=(0,0,0,0), halign=:right)
+
 save("/home/kevin/Downloads/figureS1-inprogress.png", figureS1)
 save("manuscript/mainfigures/figureS1.svg", figureS1)
+figureS1
 
 #-
 
@@ -1251,7 +1263,7 @@ save("manuscript/mainfigures/figure4.svg", figure4)
 figure4
 #-
 
-figureS2 = Figure(; size=(1050, 750))
+figureS2 = Figure(; size=(1050, 750));
 
 
 grid_future_violins = GridLayout(figureS2[1:2, 1]; alignmode=Outside())
@@ -1415,6 +1427,12 @@ for (j, feat) in enumerate(filter(contains("amp"), eeg_features))
 end
 
 #-
+
+
+Label(grid_future_violins[1,1, TopLeft()], "A"; font=:bold,padding=(0,0,0,0), halign=:right)
+Label(grid_futfsea_latency[1,1, TopLeft()], "B"; font=:bold,padding=(0,0,0,0), halign=:right)
+Label(grid_futfsea_amplitude[1,1, TopLeft()], "C"; font=:bold,padding=(0,0,0,0), halign=:right)
+
 Legend(legend_block[1, 1],
   [MarkerElement(; marker=:rect, color=colors_gstypes[g]) for g in keys(geneset_types)][[1, 3, 2, 4]],
   ["Neurotransmitters", "Amino acid metabolism", "SCFAs", "other"][[1, 3, 2, 4]];
@@ -1430,12 +1448,14 @@ Legend(legend_block[1, 2],
   ["(-)", "(+)"];
   orientation=:horizontal, tellheight=true, tellwidth=false
 )
+colsize!(legend_block, 1,Relative(1/3))
 
 colsize!(figureS2.layout, 2, Relative(4 / 5))
 linkyaxes!(ax_future_violins...)
 
 save("/home/kevin/Downloads/figureS2-inprogress.png", figureS2)
 save("manuscript/mainfigures/figureS2.svg", figureS2)
+figureS2
 
 # ## Summary Ideas
 #
@@ -1819,4 +1839,18 @@ using MultivariateStats
 
 cor(EEGMicrobiome.loadings(species_pco, 1), mdata.stool_age)
 cor(EEGMicrobiome.loadings(unirefs_pco, 1), mdata.stool_age)
+
+let grp = groupby(fsea_df, ["timepoint"])
+    println("Concurrent VEP:")
+    println("    v1 genesets: ", length(unique(grp[(;timepoint="v1")].geneset)))
+    println("    v2 genesets: ", length(unique(grp[(;timepoint="v2")].geneset)))
+    println("    v3 genesets: ", length(unique(grp[(;timepoint="v3")].geneset)))
+end
+
+let grp = groupby(futfsea_df, ["timepoint"])
+    println("Future VEP:")
+    println("    v1v2 genesets: ", length(unique(grp[(;timepoint="v1v2")].geneset)))
+    println("    v1v3 genesets: ", length(unique(grp[(;timepoint="v1v3")].geneset)))
+    println("    v2v3 genesets: ", length(unique(grp[(;timepoint="v2v3")].geneset)))
+end
 

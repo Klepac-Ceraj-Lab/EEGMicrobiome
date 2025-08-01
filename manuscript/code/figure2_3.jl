@@ -100,6 +100,16 @@ eeg_features = [eeg_features; replace.(eeg_features, "latency" => "amp")]
 na_map = FeatureSetEnrichments.get_neuroactive_unirefs()
 na_map_full = FeatureSetEnrichments.get_neuroactive_unirefs(; consolidate=false)
 
+# Response to mBio reviwer 1 - investigating whether there is equivalence between
+# eeg / mgx as dep/indep variable
+for feature in eeg_features[1:1]
+    @info feature
+    EEGMicrobiome.run_reverse_lms(v1_func, "./data/outputs/lms/$(feature)_reverse_v1_lms.csv",
+        feature, names(v1_func, r"^UniRef"); age_col="stool_age"
+    )
+end
+
+
 for feature in eeg_features
   @info feature
   EEGMicrobiome.runlms(v1_func, "./data/outputs/lms/$(feature)_nodiff_v1_lms.csv",

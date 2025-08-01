@@ -14,6 +14,20 @@
 
 #set par.line(numbering: "1")
 
+#set par.line(numbering: "1")
+
+#let rm(it) = {
+  strike(text(it,fill:red), stroke:red)
+}
+
+#let add(it) = {
+  text(it, fill: blue)
+}
+
+#let rp(it,ot) = {
+  rm(it)
+  add(ot)
+}
 
 
 // 89 / 200 char
@@ -22,7 +36,7 @@
 Kevin S. Bonham#super([1,2])\*,
 Emma T. Margolis#super([3])\*,
 Guilherme Fahur Bottino#super([1]),
-Ana C. Sobrino#super([3]),
+Ana #add([C. ])Sobrino#super([3]),
 Fadheela Patel#super([4]),
 Shelley McCann#super([1]),
 Michal R. Zieff#super([5]),
@@ -51,8 +65,8 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger,
 #super([1])Department of Biological Sciences, Wellesley College, Wellesley, MA, USA#linebreak()
 #super([1])Department of Medicine, Tufts Medical Center, Boston, MA, USA#linebreak()
 #super([3])Department of Psychology, Northeastern University, Boston, MA, USA#linebreak()
-#super([4])Division of Medical Microbiology, University of Cape Town, Cape Town, Western Cape, RSA#linebreak()
-#super([5])Department of Paediatrics and Child Health, University of Cape Town, Cape Town, Western Cape, RSA#linebreak()
+#super([#rp([s4],[4])])Division of Medical Microbiology, University of Cape Town, Cape Town, Western Cape, #rp([ZAF],[RSA])#linebreak()
+#super([5])Department of Paediatrics and Child Health, University of Cape Town, Cape Town, Western Cape, #rp([ZAF],[RSA])#linebreak()
 #super([6])Department of Biostatistics, Harvard T.H. Chan School of Public Health, Boston, MA, USA#linebreak()
 #super([7])Department of Psychiatry, Columbia University, Irving Medical Center, New York City, NY, USA#linebreak()
 #super([8])Division of Developmental Neuroscience, New York State Psychiatric Institute, New York City, NY, USA#linebreak()
@@ -63,7 +77,7 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger,
 #super([12])Department of Psychology, Columbia University, New York City, NY, USA#linebreak()
 #super([13])Department of Women and Children’s Health, Institute of Life Course and Medical Science,
     Alder Hey Children’s NHS Foundation Trust, University of Liverpool, Liverpool, United Kingdom#linebreak()
-#super([14])Neuroscience Institute, University of Cape Town, Cape Town, Western Cape, RSA
+#super([14])Neuroscience Institute, University of Cape Town, Cape Town, Western Cape, #rp([ZAF],[RSA])
 
 // 50 / 55 char
 *Running title*: Infant gut microbiome and visual neurodevelopment
@@ -75,7 +89,7 @@ Vanja Klepac-Ceraj#super([1])#sym.dagger,
     [Kevin S. Bonham], [0000-0003-3200-7533],
     [Emma T. Margolis], [0000-0002-2036-8078],
     [Guilherme Fahur Bottino], [0000-0003-1953-1576],
-    [Ana C. Sobrino], [0009-0000-4857-2591],
+    [Ana #add([C.]) Sobrino], [#add([0009-0000-4857-2591])],
     [Fadheela Patel], [0000-0001-5177-7416],
     [Shelley McCann], [0000-0002-9753-7968],
     [Michal Zieff], [0000-0001-9352-9947],
@@ -110,7 +124,7 @@ Infancy is a time of elevated neuroplasticity supporting rapid brain and sensory
 The gut microbiome,
 also undergoing extensive developmental changes in early life,
 may influence brain development through metabolism of neuroactive compounds.
-Here, we leverage longitudinal data from 194 South African infants across the first 18 months of life
+Here, we leverage longitudinal data from 194 #add([South African]) infants across the first 18 months of life
 to show that microbial genes encoding enzymes that metabolize molecules
 playing a key role in modulating early neuroplasticity
 are associated with visual cortical neurodevelopment,
@@ -215,13 +229,20 @@ yet the visual cortex undergoes its most rapid period of plasticity and maturati
 @deenOrganizationHighlevelVisual2017
 @ellisRetinotopicOrganizationVisual2021
 @kiorpesVisualDevelopmentPrimates2015.
-
 Visual cortical maturation can be robustly indexed via electroencephalography (EEG)
+#rp(
+  [with the Visual-Evoked Potential (VEP) response to visual stimuli from birth.
+The VEP morphology includes amplitude deflections,
+sensitive to neurotransmission changes, as well as latencies to those deflections, sensitive to structural changes.
+Moreover, the VEP is an important paradigm for indexing neurodevelopment given its translational potential,
+],[
 with the Visual-Evoked Potential (VEP) response to visual stimuli from birth. The VEP is an important paradigm for indexing neurodevelopment given its translational potential,
+]
+)
 as it can be studied mechanistically across species and has clinical utility
 @gabard-durnamSensitivePeriodsHuman2020
 @margolisLongitudinalEffectsPrenatal2024.
-It is an especially useful index of ongoing maturation as it includes amplitude deflections,
+#add([It is an especially useful index of ongoing maturation as it includes amplitude deflections,
 reflecting underlying cortical circuit function
 (i.e., the balance of excitatory/inhibitory postsynaptic potentials;
 @MuthukumaraswamyElevating_Endog2013
@@ -229,7 +250,8 @@ reflecting underlying cortical circuit function
 @ThompsonISCEV_standard_2024
 // Sustar, et al., 2025
 as well as latencies to those deflections,
-thought to reflect structural integrity and myelination of the parvocellular and magnocellular pathways
+thought to reflect structural integrity and myelination of the parvocellular and magnocellular p
+athways
 @DuboisMicrostructural2008
 @HeidariEvoked_potentia2019
 @margolisLongitudinalEffectsPrenatal2024
@@ -250,7 +272,7 @@ which is most sensitive to motion
 @McCullochMaturation_of_t1999
 @EllembergContrast_depend2001.
 The overall VEP morphology stabilizes, reflecting adult-like patterns, in the second year of life
-@lippeElectrophysiologicalMarkersVisuocortical2007.
+@lippeElectrophysiologicalMarkersVisuocortical2007.])
 
 Here, we investigated the longitudinal co-development of microbial metabolic potential quantified
 via genes encoding enzymes that metabolize neuroactive compounds and visual neurodevelopment
@@ -261,7 +283,12 @@ recruited as part of the prospective longitudinal “Khula” Study
 Stool samples and EEG were each collected at up to 3 visits in the first 18 months of life.
 Shotgun metagenomic sequencing was used to obtain microbial gene sequences from infant stool samples.
 To index visual cortical functional development,
-latencies and peak amplitudes were extracted from each component of the VEP,
+latencies and peak amplitudes were extracted from each component of the VEP
+#rm([(i.e.,
+first negative-going deflection, N1;
+first positive-going deflection, P1; and
+second negative-going deflection, N2)
+]),
 producing six VEP features of interest.
 We evaluated the concurrent association between microbial genes and VEP amplitudes and latencies,
 and we tested prospective influences of microbial genes from early visits on VEP changes at later visits.
@@ -309,20 +336,20 @@ and at the third study visit (hereafter visit-3),
 occurring when infants were between approximately 12 months and 17 months of age
 (age in months: M=14.10, SD=1.04, range=12.10-17.00),
 infant EEG and stool samples were collected again.
-These visits were selected
+#add([These visits were selected
 to capture the visual-evoked potential's dynamic course of maturation in early life:
 the transition from a predominantly single positive wave (i.e., P1)
 to a clearly triphasic waveform with the N1 and N2 components around 3 months,
 marked latency reductions in the first 7 months,
 and continued maturation with an adult-like pattern emerging in the second year of life
-@lippeElectrophysiologicalMarkersVisuocortical2007.
-At visits in which infants were unable to complete
-both EEG and stool samples on the same day,
+@lippeElectrophysiologicalMarkersVisuocortical2007.])
+At visits in which infants
+were unable to complete both EEG and stool samples on the same day,
 EEG and stool samples were collected on different days.
 For concurrent time point analyses,
 infants with EEG and stool collected more than two months apart were excluded.
-Not all infants had EEG and microbiome data collected at all three time points
-or contributed usable data at all three-time points.
+Not all infants had EEG and microbiome data
+collected at all three time points or contributed usable data at all three-time points.
 
 All enrolled infants received a comprehensive medical exam at each visit,
 which included assessments of eye-related conditions.
@@ -412,28 +439,30 @@ using the HAPPE+ER v3.3 GenerateERPs script
 Electrodes in the occipital region were selected as a region of interest
 (i.e., E70, E71, E75, E76, E83).
 The VEP waveform has three main components to be quantified:
-a negative N1 peak, a positive P1 peak, and a negative N2 peak.
-The windows for selecting the calculated features
+a negative N1 peak,
+a positive P1 peak,
+and a negative N2 peak.
+#add([The windows for selecting the calculated features
 were based on preliminary visualizations of the waveforms at each visit,
-such that the selected windows would capture the most component peaks across all subjects.
+such that the selected windows would capture the most component peaks across all subjects.])
 Due to normative maturation of the waveforms as infants age,
 one set of user-specified windows for calculating component features
 was used for visit-1 and 2 and another was used for visit-3.
 For visits 1 and 2,
-the window for calculating features for the N1 component
-was 40-100 ms, 75-175 ms for the P1 component, and 100-325 ms for the N2 component.
-For visit-3, the window for calculating features
-for the N1 component was 35-80 ms,
+the window for calculating features for the N1 component was 40-100 ms,
+75-175 ms for the P1 component,
+and 100-325 ms for the N2 component.
+For visit-3, the window for calculating features for the N1 component was 35-80 ms,
 75-130 ms for the P1 component,
 and 100-275 ms for the N2 component.
-All VEPs were visually inspected to ensure that the automatically extracted values
+#add([All VEPs were visually inspected to ensure that the automatically extracted values
 were correct and were adjusted if observable peaks
 occurred outside the automated window bounds.
 These visual checks ensure that peak amplitudes and latencies
 capture individual variability within and across visits.
 Participants were considered to have failed this visual inspection
 and were subsequently removed from the data set
-if their VEP did not produce three discernible peaks.
+if their VEP did not produce three discernible peaks.])
 HAPPE+ER parameters used in extracting the ERPs are summarized in Table S2.
 
 To correct for the potential influence of earlier components on later components,
@@ -447,6 +476,13 @@ the N2 amplitude was corrected for the P1 amplitude
 and the N2 latency was corrected for the P1 latency
 (corrected N2 latency = N2 - P1 latency).
 
+#rm([All VEPs were visually inspected to ensure that the automatically extracted values
+were correct and were adjusted if observable peaks
+occurred outside the automated window bounds.
+Participants were considered to have failed this visual inspection
+and were subsequently removed from the data set
+if their VEP did not produce three discernible peaks.
+])
 VEP waveforms of included participants by time point are included in @figure2\A.
 Ninety seven infants provided usable VEP data at visit-1,
 130 infants provided usable VEP data at visit-2,
@@ -507,13 +543,14 @@ using 150+150 bp paired-end P3 cells,
 generating 24M million raw reads and 3.6 Gb of sequence per sample
 @comeauPreparingMultiplexedWGS2023.
 
-=== Final Sample Sizes Across Analyses
+#add([=== Final Sample Sizes Across Analyses
 After data processing and cleaning, analyses of concurrent EEG and microbiome data
 included 97 infants for visit 1, 86 infants for visit 2, and 70 infants for visit 3.
 For predictive analyses,
 84 infants were included in the analyses of visit 1 stool on visit 2 EEG,
 76 infants were included for visit 1 stool on visit 3 EEG,
 and 69 infants were included for visit 2 stool on visit 3 EEG.
+])
 
 === Statistics / computational analysis
 
@@ -553,11 +590,10 @@ filtering for species-level classification.
 Classical multidimensional scaling
 was performed on the dissimilarity matrix (MultivariateStats.jl),
 and axes with negative eigenvalues were discarded.
-Overall community variance explained by each axis
+#add([Overall community variance explained by each axis
 is reported as the axis eigen value divided by the sum of positive eigen values.
 Pearson correlation (R) of the eigen vector with age at stool collection
 is also reported.
-
 
 Individual taxonomic features were assessed for associations
 with VEP features using MaAsLin v3
@@ -576,7 +612,7 @@ values for $"species"$ and $"age_months"$ are from the earlier visit
 and $"vep"$ and $"n_trials"$ are from the later visit (when VEP was measured).
 In addition, longitudinal models
 also included the term $+ "age_diff"$, which is the number of months between
-stool collection and VEP measurement.
+stool collection and VEP measurement.])
 
 ==== Feature Set Enrichment Analysis (FSEA)
 
@@ -600,8 +636,12 @@ For concurrently collected stool and VEP comparisons (@figure2, @figureS1),
 participants whose stool collection and VEP measurements
 were more than two months apart were excluded.
 
-$ "UniRef" ~ "vep" + "age_months" + "n_trials" $
+#rp([
+  $ "UniRef" ~ "vep" + "age_months" + "n_trials" + "age_diff" $
 
+],[
+  $ "UniRef" ~ "vep" + "age_months" + "n_trials" $])
+#add([
 Where $"UniRef"$ is the presence (1) or absence (2)
 of each annotated gene,
 $"vep"$ is the nummerical value of the VEP feature (eg N1 latency),
@@ -613,13 +653,15 @@ values for $"UniRef"$ and $"age_months"$ are from the earlier visit
 and $"vep"$ and $"n_trials"$ are from the later visit (when VEP was measured).
 In addition, longitudinal models
 also included the term $+ "age_diff"$, which is the number of months between
-stool collection and VEP measurement.
+stool collection and VEP measurement.])
 
 FSEA was performed on each gene set
 that had at least five members
-that were present in at least one sample in the relevant visit
+#rp([in each comparison group],
+[that were present in at least one sample in the relevant visit
 (17 at visit 1, 19 at visits 2 and 3),
 against each of the 6 VEP features (N1, P1, N2 latencies and amplitudes)
+])
 according to the procedure set out in Subramanian _et. al._ (2005)
 @subramanianGeneSetEnrichment2005.
 Briefly, enrichment scores (ES) are calculated
@@ -635,14 +677,14 @@ was performed separately on all concurrently tested geneset/VEP feature combinat
 and all longitudinal geneset/VEP feature combinations.
 Corrected p-values (q-values) less than 0.2
 were considered statistically significant.
-This high threshold for significance was chosen to maximize sensitivity
+#add([This high threshold for significance was chosen to maximize sensitivity
 (avoiding false-negatives)
 though it permits low specificity (higher false-positives)
 since this is a preliminary and exploratory study
 @YassourSub_clinical_de2016
 @FranzosaSpecies_level_f2018.
 Only significant hits are included in relevant tables
-(Table S4, @table2, 3, and 4)
+(Table S4, @table2, 3, and 4)])
 
 For longitudinal comparisons,
 all participants that had a stool sample collected
@@ -712,14 +754,13 @@ Early samples were dominated by _Bifidobacterium_ and _Bacteroides_
 species, while later samples have increasing _Prevotella_
 and anaerobic genera such as _Faecalibacterium_
 (@figure2\E).
-However, individual taxa were generally not associated with VEP features
+#add([However, individual taxa were generally not associated with VEP features
 after controlling for age;
 we analyzed taxonomic profiles for associations with each VEP feature
 at each visit using MaAsLin
 @NickolsMaAsLin_3_Refi2024,
 and only the only species to pass FDR correction was _F. prausnitzii_,
-which was negatively associated with P1 amplitude at visit 3 (Table S5).
-
+which was negatively associated with P1 amplitude at visit 3 (Table S5).])
 
 
 === Microbial genes with neuroactive potential are associated with concurrently measured visual development
@@ -732,7 +773,7 @@ and the concurrently measured VEP amplitude and latency features
 @valles-colomerNeuroactivePotentialHuman2019.
 For each gene set that had at least 5 genes represented in a given comparison group,
 logistic regression was performed using VEP features
-(corrected for previous visit values in the case of visits 2 and 3 - see methods)
+#add([(corrected for previous visit values in the case of visits 2 and 3 - see methods)])
 as predictors
 and the presence or absence of each microbial gene in the metagenome
 as the response to determine concurrent associations (see Methods).
@@ -741,12 +782,13 @@ using a permutation test to determine significance of the associations
 @subramanianGeneSetEnrichment2005.
 
 Of the 35 genesets assessed,
-17 had sufficient representation to test at visit 1,
-and 19 were tested at visits 2 and 3
-Off these, 18 were significantly associated with at least one VEP feature
+#rp([19],[17]) had sufficient representation to test
+#add([at visit 1, and 19 were tested at visits 2 and 3.])
+#rp([and of],[Of]) those, 18 were significantly associated with at least one VEP feature
 during at least one visit within the 18-month window,
 after correcting for false discovery rate
-(Benjamini-Hochberg, q < 0.2; @figure3\A, B, Table S4, S6 - only significant hits are included).
+(Benjamini-Hochberg, q < 0.2; @figure3\A, B, Table S4, 
+#rp([S5], [S6 - only significant hits are included])).
 Microbial genes involved in synthesis or degradation of molecules with neuroactive potential across all categories considered
 (i.e., neurotransmitters, amino acid metabolism, SCFAs, other)
 were associated with both concurrent VEP amplitudes and latencies at each visit (@figureS1),
@@ -788,14 +830,13 @@ the P1 and N2 component amplitudes and latencies were consistently the most sens
 Both P1 and N2 components are known to show the most protracted and dramatic changes with development during the first year of life
 @lippeDifferentialMaturationBrain2009
 and may best reflect underlying visual learning and plasticity at this stage
-(Table S7).
+(Table S#rp([6],[7])).
 
 === Microbial metabolic potential predicts future brain development in infancy
 
 We initially hypothesized that the earliest microbial influences
 would have the largest effects on brain development,
-but in cross-sectional analysis with concurrently measured VEP,
-we observed the fewest number of associations at visit-1. 
+but in cross-sectional analysis with concurrently measured VEP, we observed the fewest number of associations at visit-1. 
 To differentiate whether this cross-sectional finding indicated the early microbiome
 was sparsely related to visual cortical development
 or instead took time to manifest its influence,
@@ -805,11 +846,11 @@ We therefore performed FSEA on stool samples collected at visit-1 with visit-2 V
 or visit-3 VEP
 (see @table3, age at stool collection = 3.7 ± 0.7 months, age at VEP = 14.1 ± 1.1 months),
 as well as visit-2 stool samples with visit-3 VEP
-(see @table4, age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; @figure4\A, @table4, Table S8).
+(see @table4, age at stool collection = 8.9 ± 1.5 months, age at VEP = 14.3 ± 1.0 months; @figure4\A, @table4, Table S#rp([7],[8])).
 
 All gene sets 
 that had a significant hit with concurrently measured VEP
-were also significantly associated with at least one future VEP feature,
+were also significantly associated with at least one future VEP feature#rm([e]),
 except those involved in the synthesis of 3,4-dihydroxyphenylacetic acid (DOPAC),
 a metabolite of dopamine
 (@figureS2\B, Tables 2-4).
@@ -819,10 +860,10 @@ For example, only 6 visit-1 microbial gene sets were associated with visit-1 VEP
 and each of those was only associated with a single concurrently measured VEP feature.
 By contrast, these longitudinal analyses revealed that visit-1 microbial gene sets
 showed a much richer pattern of associations with future VEP feature development.
-Specifically, 13 of 17 visit-1 gene sets that were tested
-were associated with visit-2 VEP features,
-and 11 were associated with visit-3 VEP features.
-Of these, the majority
+Specifically, 13 #add([of 17]) visit-1 gene sets #add([that])
+were #add([tested were]) associated with visit-2 VEP features,
+and 11 were associated with visit-3 VEP features#rp([,],[.])
+#add([Of these, ])the majority
 (9/13 for visit-2, 8/11 for visit-3)
 were associated with at least 2 VEP features,
 and nearly half
@@ -830,12 +871,17 @@ and nearly half
 were associated with more than 2 future VEP features (@figure4\B, C).
 
 Longitudinally, the early microbiome (visit-1)
-was related to VEP features at visit-2 and visit-3 fairly evenly;
+#rp([was related to VEP features at visit-2 and visit-3 fairly evenly
+(12/28 visit-1 microbiome associations to visit-3 VEP latencies,
+ 15/30 associations to visit-3 amplitudes),
+suggesting early microbiome metabolism in the first 6 months of life is associated with visual neurodevelopment over the next year.
+],[was related to VEP features at visit-2 and visit-3 fairly evenly;
 of 12/28 significant gene set / VEP latency test, 16 were from visit 2 and 12 were from visit 3,
 and of the 30 significant associations with VEP amplitudes,
 15 were from visit 2 and 15 were from visit 3.
 This suggests that early microbiome metabolism in the first 6 months of life
 is associated with visual neurodevelopment over the next year.
+])
 Microbiome metabolism from visit-2 was associated with
 similar numbers of visit-3 VEP features as visit-1 microbiome
 (17 visit-3 latency features, 18 visit-3 amplitude features),
@@ -921,6 +967,7 @@ the amino acid tryptophan,
 and short-chain fatty acids involved in myelination,
 including acetate and butyrate.
 
+
 Specifically, we have shown a robust, prospective relationship
 between microbial genes involved in the metabolism of neuroactive compounds
 and the development of visual cortical function as measured by the VEP electrophysiological response.
@@ -943,6 +990,7 @@ are stronger prospectively than concurrently
 Moreover, specific associations between gene sets and VEP features
 showed temporal specificity within the 18-month developmental window assessed,
 suggesting that the impact of early microbial metabolism on the brain is developmentally dependent.
+
 
 Notably, the gene sets most highly associated
 with visual functional neurodevelopment over infancy
@@ -978,6 +1026,7 @@ and can operate via indirect mechanisms
 or via regulating glutamate levels in the bloodstream
 that impact glutamate transfer from brain to bloodstream).
 
+
 Tryptophan related pathway genes were also identified here
 that are responsible for generating serotonin
 as well as other neuroactive molecules such as kynurenic acid (an SMDAR antagonist)
@@ -1008,6 +1057,7 @@ and this biosynthesis is regulated by microbes
 @jamesonLinkingGutMicrobiota2018,
 making this pathway an especially promising candidate intervention target
 for future research in development.
+
 
 We further found that gene sets for short-chain fatty acids
 important in downregulating neuroinflammation and promoting myelination within the brain
@@ -1047,7 +1097,7 @@ across GABA, glutamate, tryptophan, and SCFA gene sets
 suggests early postnatal microbiome-derived metabolites
 relate to key neuroplasticity regulation processes within the cortex.
 
-Recent global-scale studies
+#add([Recent global-scale studies
 @Fahur_BottinoEarly_life_micr2025
 have shown that gut microbiome maturation follows a normative,
 stage-like trajectory,
@@ -1095,23 +1145,23 @@ also differ from many settings in the global North and likely contribute
 to a distinct microbial and environmental exposure landscape.
 Therefore, studying infant development in this context
 enables us to identify both universal and context-specific features
-of gut microbial development and their potential influence on neurodevelopment.
+of gut microbial development and their potential influence on neurodevelopment.])
 
 Our study is a substantial advancement over prior work
 on the microbial-gut-brain axis in early life
 due to the sequencing method,
 the large number of participants,
 the longitudinal study design,
-and the inclusion of participants from a scientifically under-represented region of the world.
+and the inclusion of participants from #add([a]) scientifically under-represented region of the world.
 The use of shotgun metagenomic sequencing
 enables direct interrogation of microbial metabolic potential.
 Prior research primarily used amplicon (16S rRNA gene) sequencing,
 which enables lower-resolution taxonomic identification
 and is restricted to inferring metabolic potential based on taxonomy.
-This was particularly important in this study,
+#add([This was particularly important in this study,
 since investigation of taxonomic profiles revealed
 only a single microbe (_F. prausnitzii_) was associated
-with any VEP feature at any visit we tested.
+with any VEP feature at any visit we tested.])
 Moreover, several studies in infancy have inferred gut-brain associations
 by linking microbiome measures to subsequent neurodevelopmental measures using behavioral assessments
 (e.g., Bayley Scales of Infant Development),
@@ -1134,8 +1184,7 @@ While prior work focused on single time point measures of microbiome and neurode
 @gaoGutMicrobiomeBrain2019,
 longitudinal associations allowed us to investigate the changing relation between gut microbial metabolism and the development of visual neurocircuitry over time.
 
-One limitation of this study is the fact
-that we are only able to observe the genomic composition of the microbiome,
+One limitation of this study is the fact that we are only able to observe the genomic composition of the microbiome,
 rather than the concentration of metabolites themselves.
 This prevents us from determining the concentration of these molecules
 in the gastrointestinal tract, blood, and brain,
@@ -1160,12 +1209,12 @@ could provide more accurate systemic concentrations of molecules,
 but challenges remain on how to interpret them in humans
 @dengComparisonFecalBlood2023
 @dekkersOnlineAtlasHuman2022.
-Further computational modeling of community-scale metabolism
+#add([Further computational modeling of community-scale metabolism
 may also yield important insights,
 though to our knowledge this has not previously been done
 in infant populations
 @DienerMICOM_Metageno2020
-@GarzaTowards_predict2018.
+@GarzaTowards_predict2018.])
 
 Given that the VEP is evolutionarily conserved in mammals
 and can be accurately measured during development,
@@ -1598,7 +1647,7 @@ The authors declare no financial or other conflicts of interest.
     (A) Study design; participants (N=194) were seen up to 3 times over the first 18 months of life.
         Stool samples and EEG data were collected, generating microbial functional profiles (stool)
         and VEP waveforms (EEG) used in subsequent analyses.
-        Analyses included generalized linear models (GLM) and feature set enrichment analysis (FSEA).
+        #add([Analyses included generalized linear models (GLM) and feature set enrichment analysis (FSEA).])
     (B) Longitudinal sampling of study participants;
         Density plots (top) for stool and EEG collection show the ages represented in each visit.
         The scatter plot (bottom) shows individual participant visits.
@@ -1622,15 +1671,19 @@ The authors declare no financial or other conflicts of interest.
         percent variance explained (fraction of positive eigenvalues)
         by each of the first two axes are indicated on the x and y axes respectively.
     (D) PCoA of microbial functional profiles (UniRef90s).
-    (E) Relative abundance of dominant bacterial taxa across three study visits.
-        Heatmap showing the relative abundance (%) of the top 12 bacterial taxa (rows) 
+    (E) Relative abundance of #rp([the top 11 microbial species],[dominant bacterial taxa])
+        across #rp([all],[three study]) visits.
+        #rp([        All other species were summed so that the total abundance is 100%.
+        Each column represents a single sample, and samples are ordered by hierarchical clustering
+        based on Bray-Curtis dissimilarity of the full microbial composition.
+],[Heatmap showing the relative abundance (%) of the top 12 bacterial taxa (rows)
         detected in participant stool samples across three longitudinal visits
         (v1, v2, v3; columns).
         Each column within a visit represents an individual sample from a participant
         and samples are ordered by hierarchical clustering.
         “Other” represents the sum of all taxa not in the top 12.
         The X-axis within each visit is sorted by hierarchical clustering,
-        and the y-axis is sorted by total abundance across all samples.
+        and the y-axis is sorted by total abundance across all samples.])
 
 ],
 ) <figure2>
@@ -1644,14 +1697,14 @@ The authors declare no financial or other conflicts of interest.
         with enrichment score (E.S.) compared to log scaled FDR-corrected p-value (Q).
         Colored dots were significantly enriched (positive E.S.) or depleted (negative E.S.)
         relative to the tested VEP feature.
-        All VEP feature/gene set combinations are represented here -
-        see @figureS1 for disambiguated results.
+        #add([All VEP feature/gene set combinations are represented here -
+        see @figureS1 for disambiguated results.])
     (B) Summary of results in (A), showing the fraction of each class of neuroactive genes
         (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
-        that were statistically significantly enriched (bars above 0) or depleted (bars below 0)
-        for each VEP feature
+        that were statistically significantly enriched #add([(bars above 0)])
+        or depleted #add([(bars below 0)]) for each VEP feature
         for each visit in the analysis.
-    (C) Enrichment plots for selected gene sets and their association with concurrently measured P1 latency.
+    (C) Enrichment plots for selected gene sets and their association with #add([concurrently measured]) P1 latency.
         Each plot shows the distribution of associations of individual genes
         within the gene set and the VEP feature.
         Dots are colored if the geneset as a whole was significantly associated.
@@ -1662,7 +1715,7 @@ The authors declare no financial or other conflicts of interest.
 #figure(
   image("mainfigures/figure4.svg"),
   caption: [
-      *Early gut microbial metabolism is associated with future VEP development*#linebreak()
+    *Early gut microbial metabolism is associated with future VEP development*#linebreak()
     (A) Age distributions for cross-visit comparisons,
         with age at stool collection (left) and age of VEP measurement (right)
         for each participant included in the analysis.
@@ -1674,9 +1727,8 @@ The authors declare no financial or other conflicts of interest.
         relative to the tested VEP feature.
     (C) Summary of results in (B), showing the fraction of each class of neuroactive genes
         (neurotransmitter metabolism, SCFA metabolism, amino acid metabolism, or other)
-        that were statistically significantly enriched (bars above 0) or depleted (bars below 0)
-        for each VEP feature
-        for each cross-visit comparison in the analysis.
+        Colored dots were significantly enriched (positive E.S.) or depleted (negative E.S.)
+        relative to the tested VEP feature.
     (D) Enrichment plots for selected gene sets and there association with P1 latency.
         Each plot shows the distribution of associations of individual genes
         within the gene set and the VEP feature.
@@ -1724,87 +1776,4 @@ The authors declare no financial or other conflicts of interest.
         since there were fewer than 5 genes from those genesets present in the sample (See Methods).
 ]) <figureS2>
 
-#figure(
-        image("mainfigures/figureS3.svg"),
-        caption: [
-        *Taxa contributing neuroactive genes to pathways significantly associated with N1 latency*
-        For gene sets that were significantly associated with N1 latency,
-        the sum of reads per kilobase per million reads (RPKM)
-        for all UniRef90s in that gene set was calculated
-        for each genus.
-        If more than 5 genera contributed UniRefs,
-        contributions from the top 5 genera were plotted,
-        and other genera were summed and plotted together.
-        Titles of each plot are colored by visit (see @figure1)
-]) <figureS3>
-
-#figure(
-        image("mainfigures/figureS4.svg"),
-        caption: [
-        *Taxa contributing neuroactive genes to pathways significantly associated with P1 latency*
-        For gene sets that were significantly associated with P1 latency,
-        the sum of reads per kilobase per million reads (RPKM)
-        for all UniRef90s in that gene set was calculated
-        for each genus.
-        If more than 5 genera contributed UniRefs,
-        contributions from the top 5 genera were plotted,
-        and other genera were summed and plotted together.
-        Titles of each plot are colored by visit (see @figure1)
-]) <figureS4>
-
-#figure(
-        image("mainfigures/figureS5.svg"),
-        caption: [
-        *Taxa contributing neuroactive genes to pathways significantly associated with N2 latency*
-        For gene sets that were significantly associated with N2 latency,
-        the sum of reads per kilobase per million reads (RPKM)
-        for all UniRef90s in that gene set was calculated
-        for each genus.
-        If more than 5 genera contributed UniRefs,
-        contributions from the top 5 genera were plotted,
-        and other genera were summed and plotted together.
-        Titles of each plot are colored by visit (see @figure1)
-]) <figureS5>
-
-#figure(
-        image("mainfigures/figureS6.svg"),
-        caption: [
-        *Taxa contributing neuroactive genes to pathways significantly associated with N1 amplitude*
-        For gene sets that were significantly associated with N1 amplitude,
-        the sum of reads per kilobase per million reads (RPKM)
-        for all UniRef90s in that gene set was calculated
-        for each genus.
-        If more than 5 genera contributed UniRefs,
-        contributions from the top 5 genera were plotted,
-        and other genera were summed and plotted together.
-        Titles of each plot are colored by visit (see @figure1)
-]) <figureS6>
-
-#figure(
-        image("mainfigures/figureS7.svg"),
-        caption: [
-        *Taxa contributing neuroactive genes to pathways significantly associated with P1 amplitude*
-        For gene sets that were significantly associated with P1 amplitude,
-        the sum of reads per kilobase per million reads (RPKM)
-        for all UniRef90s in that gene set was calculated
-        for each genus.
-        If more than 5 genera contributed UniRefs,
-        contributions from the top 5 genera were plotted,
-        and other genera were summed and plotted together.
-        Titles of each plot are colored by visit (see @figure1)
-]) <figureS7>
-
-#figure(
-        image("mainfigures/figureS8.svg"),
-        caption: [
-        *Taxa contributing neuroactive genes to pathways significantly associated with N2 amplitude*
-        For gene sets that were significantly associated with N2 amplitude,
-        the sum of reads per kilobase per million reads (RPKM)
-        for all UniRef90s in that gene set was calculated
-        for each genus.
-        If more than 5 genera contributed UniRefs,
-        contributions from the top 5 genera were plotted,
-        and other genera were summed and plotted together.
-        Titles of each plot are colored by visit (see @figure1)
-]) <figureS8>
 
